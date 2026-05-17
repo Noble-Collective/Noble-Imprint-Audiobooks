@@ -1,9 +1,10 @@
 /**
  * generate.js — Generate audiobook audio via ElevenLabs standard TTS API.
  *
- * Uses the /v1/text-to-speech endpoint with chunking and ffmpeg concatenation.
- * Each chapter is split into ~4,500-char chunks at paragraph boundaries,
- * generated individually, then concatenated into a single chapter MP3.
+ * Uses chunk-level change detection: each chapter is split into ~4,500-char
+ * chunks at paragraph boundaries. Only chunks whose content hash changed
+ * are regenerated. Unchanged chunks are downloaded from GCS. All chunks
+ * are then concatenated into the final chapter MP3.
  *
  * Environment:
  *   ELEVENLABS_API_KEY - ElevenLabs API key
@@ -13,17 +14,16 @@
  *   WORK_FILE - path to changed_sessions.json from detect-changes.js
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
 
 const API_BASE = 'https://api.elevenlabs.io/v1';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const GCS_BUCKET = process.env.GCS_BUCKET || 'noble-imprint-audiobooks';
-const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
-const RESOURCES_TOKEN = process.env.RESOURCES_TOKEN || '';
-const CHUNK_SIZE = 4500; // chars per TTS request (headroom below 5K limit)
+const CHUNK_SIZE = 4500;
 
 const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
@@ -52,7 +52,6 @@ function chunkText(plainText, maxChars = CHUNK_SIZE) {
     if (chunk.length <= maxChars) {
       finalChunks.push(chunk);
     } else {
-      // Split on sentence endings
       const sentences = chunk.split(/(?<=[.!?])\s+/);
       let sub = '';
       for (const sentence of sentences) {
@@ -66,90 +65,76 @@ function chunkText(plainText, maxChars = CHUNK_SIZE) {
       if (sub.trim()) finalChunks.push(sub.trim());
     }
   }
-
   return finalChunks;
+}
+
+function hashChunk(text) {
+  return createHash('sha256').update(text).digest('hex').slice(0, 16);
 }
 
 /**
  * Call ElevenLabs TTS for a single text chunk. Returns MP3 buffer.
  */
 async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat) {
-  const body = {
-    text,
-    model_id: modelId || 'eleven_multilingual_v2',
-    voice_settings: voiceSettings || {
-      stability: 0.71,
-      similarity_boost: 0.5,
-      style: 0.0,
-    },
-  };
-
   const res = await fetch(
     `${API_BASE}/text-to-speech/${voiceId}?output_format=${outputFormat || 'mp3_44100_128'}`,
     {
       method: 'POST',
-      headers: {
-        'xi-api-key': API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        model_id: modelId || 'eleven_multilingual_v2',
+        voice_settings: voiceSettings || { stability: 0.71, similarity_boost: 0.5, style: 0.0 },
+      }),
     }
   );
-
-  if (res.status === 429) {
-    throw Object.assign(new Error('Rate limited'), { status: 429 });
-  }
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`TTS failed (${res.status}): ${errText}`);
-  }
-
+  if (res.status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 });
+  if (!res.ok) throw new Error(`TTS failed (${res.status}): ${await res.text()}`);
   return Buffer.from(await res.arrayBuffer());
 }
 
-/**
- * Generate with retry logic for rate limits.
- */
 async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat);
     } catch (err) {
       if (err.status === 429 && i < retries - 1) {
-        const wait = Math.pow(4, i + 1) * 1000; // 4s, 16s, 64s
+        const wait = Math.pow(4, i + 1) * 1000;
         console.log(`    Rate limited, waiting ${wait / 1000}s...`);
         await new Promise(r => setTimeout(r, wait));
-      } else {
-        throw err;
-      }
+      } else throw err;
     }
   }
 }
 
-/**
- * Concatenate MP3 chunks into a single file using ffmpeg.
- */
 function concatenateChunks(chunkPaths, outputPath) {
   const listPath = outputPath + '.concat.txt';
-  const listContent = chunkPaths.map(p => `file '${p}'`).join('\n');
-  writeFileSync(listPath, listContent);
+  writeFileSync(listPath, chunkPaths.map(p => `file '${p}'`).join('\n'));
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
 }
 
-/**
- * Upload a file to GCS.
- */
 async function uploadToGCS(localPath, gcsPath) {
   await bucket.upload(localPath, { destination: gcsPath });
   console.log(`    Uploaded: gs://${GCS_BUCKET}/${gcsPath}`);
 }
 
+async function downloadFromGCS(gcsPath, localPath) {
+  await bucket.file(gcsPath).download({ destination: localPath });
+}
+
 /**
- * Build or update manifest in GCS.
+ * Load existing chunk hashes from the manifest for a session.
  */
+function getExistingChunkHashes(manifest, sessionFile) {
+  if (!manifest) return {};
+  const session = manifest.sessions.find(s => s.sessionFile === sessionFile);
+  if (!session || !session.chunkHashes) return {};
+  // chunkHashes: { "0": "abc123", "1": "def456", ... }
+  return session.chunkHashes;
+}
+
 async function updateManifest(bookSlugPath, bookRepoPath, sessions) {
   const manifestPath = `audio/${bookSlugPath}/manifest.json`;
-
   let manifest;
   try {
     const [contents] = await bucket.file(manifestPath).download();
@@ -182,7 +167,6 @@ async function main() {
     return;
   }
 
-  // Group by book
   const bookGroups = {};
   for (const item of workItems) {
     if (!bookGroups[item.bookRepoPath]) bookGroups[item.bookRepoPath] = [];
@@ -200,46 +184,82 @@ async function main() {
     console.log(`  Model: ${meta.model_id || 'eleven_multilingual_v2'}`);
     console.log(`  ${items.length} session(s) to generate`);
 
+    // Load existing manifest for chunk-level comparison
+    let existingManifest = null;
+    try {
+      const [contents] = await bucket.file(`audio/${bookSlugPath}/manifest.json`).download();
+      existingManifest = JSON.parse(contents.toString());
+    } catch { /* no manifest yet */ }
+
     const sessionResults = [];
 
     for (const item of items) {
       const slug = item.sessionFile.replace('.md', '').toLowerCase();
-      // Support per-chapter voice override for testing
       const voiceId = (meta.voice_test_map && meta.voice_test_map[item.sessionFile]) || meta.voice_id;
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
 
-      // Chunk the plain text
+      // Chunk the plain text and hash each chunk
       const chunks = chunkText(item.plainText);
-      console.log(`    ${item.plainText.length} chars → ${chunks.length} chunks`);
-
-      // Generate each chunk
-      const chunkPaths = [];
+      const chunkHashes = {};
       for (let c = 0; c < chunks.length; c++) {
-        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)...`);
-        const mp3Buffer = await generateWithRetry(
-          chunks[c],
-          voiceId,
-          meta.model_id,
-          meta.voice_settings,
-          meta.output_format || 'mp3_44100_128'
-        );
+        chunkHashes[c] = hashChunk(chunks[c]);
+      }
+
+      // Compare against existing chunk hashes
+      const existingHashes = getExistingChunkHashes(existingManifest, item.sessionFile);
+      const gcsChunksDir = `audio/${bookSlugPath}/chunks/${slug}`;
+
+      let regeneratedCount = 0;
+      let reusedCount = 0;
+      const chunkPaths = [];
+
+      for (let c = 0; c < chunks.length; c++) {
         const chunkPath = join(tmpDir, `${slug}_chunk_${String(c).padStart(3, '0')}.mp3`);
-        writeFileSync(chunkPath, mp3Buffer);
         chunkPaths.push(chunkPath);
 
-        // Brief pause between chunks to avoid rate limits
-        if (c < chunks.length - 1) {
-          await new Promise(r => setTimeout(r, 500));
+        // Check if this chunk's content is unchanged AND the chunk MP3 exists in GCS
+        if (existingHashes[String(c)] === chunkHashes[c]) {
+          try {
+            await downloadFromGCS(`${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`, chunkPath);
+            reusedCount++;
+            continue;
+          } catch {
+            // Chunk file missing in GCS — regenerate
+          }
+        }
+
+        // Generate this chunk
+        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars) — generating...`);
+        const mp3Buffer = await generateWithRetry(
+          chunks[c], voiceId, meta.model_id, meta.voice_settings,
+          meta.output_format || 'mp3_44100_128'
+        );
+        writeFileSync(chunkPath, mp3Buffer);
+        regeneratedCount++;
+
+        // Upload individual chunk to GCS for future reuse
+        await uploadToGCS(chunkPath, `${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`);
+
+        if (c < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
+      }
+
+      console.log(`    ${chunks.length} chunks: ${regeneratedCount} generated, ${reusedCount} reused`);
+
+      // Clean up stale chunks in GCS (if chunk count decreased)
+      if (existingHashes) {
+        const oldCount = Object.keys(existingHashes).length;
+        for (let c = chunks.length; c < oldCount; c++) {
+          try {
+            await bucket.file(`${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`).delete();
+          } catch { /* already gone */ }
         }
       }
 
-      // Concatenate chunks
+      // Concatenate all chunks into final chapter MP3
       const outputPath = join(tmpDir, `${slug}.mp3`);
       if (chunkPaths.length === 1) {
-        // Single chunk — just rename
-        const { renameSync } = await import('node:fs');
-        renameSync(chunkPaths[0], outputPath);
+        copyFileSync(chunkPaths[0], outputPath);
       } else {
         console.log(`    Concatenating ${chunkPaths.length} chunks...`);
         concatenateChunks(chunkPaths, outputPath);
@@ -256,11 +276,10 @@ async function main() {
       } catch { /* fallback to 0 */ }
       console.log(`    Duration: ${Math.floor(duration / 60)}m ${duration % 60}s`);
 
-      // Upload audio to GCS
-      const gcsAudioPath = `audio/${bookSlugPath}/${slug}.mp3`;
-      await uploadToGCS(outputPath, gcsAudioPath);
+      // Upload final chapter MP3
+      await uploadToGCS(outputPath, `audio/${bookSlugPath}/${slug}.mp3`);
 
-      // Upload TTS JSON for debugging
+      // Upload TTS JSON
       const ttsJsonPath = join(tmpDir, `${slug}.tts.json`);
       writeFileSync(ttsJsonPath, JSON.stringify({
         name: item.chapterName,
@@ -276,19 +295,24 @@ async function main() {
         ttsFile: `${slug}.tts.json`,
         timestampsFile: `${slug}.timestamps.json`,
         contentHash: item.contentHash,
+        chunkHashes,
+        chunkCount: chunks.length,
+        chunksRegenerated: regeneratedCount,
+        chunksReused: reusedCount,
         durationSeconds: duration,
         characterCount: item.plainText.length,
-        chunks: chunks.length,
         generatedAt: new Date().toISOString(),
       });
     }
 
-    // Update manifest
     await updateManifest(bookSlugPath, bookRepoPath, sessionResults);
 
     const totalDuration = sessionResults.reduce((s, r) => s + r.durationSeconds, 0);
     const totalChars = sessionResults.reduce((s, r) => s + r.characterCount, 0);
+    const totalRegen = sessionResults.reduce((s, r) => s + r.chunksRegenerated, 0);
+    const totalReused = sessionResults.reduce((s, r) => s + r.chunksReused, 0);
     console.log(`\n  Done: ${sessionResults.length} sessions, ${totalChars.toLocaleString()} chars, ${Math.floor(totalDuration / 60)}m ${totalDuration % 60}s total`);
+    console.log(`  Chunks: ${totalRegen} generated, ${totalReused} reused`);
   }
 
   console.log('\nGeneration complete!');
