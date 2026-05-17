@@ -1,0 +1,6 @@
+node_modules/
+test-output/
+*.mp3
+*.wav
+*.zip
+.env

@@ -1,0 +1,191 @@
+/**
+ * preprocess-tts.js — Convert session markdown to ElevenLabs Studio from_content_json structure.
+ *
+ * Strips all markdown syntax, custom tags, and visual formatting.
+ * Preserves text content structured as chapters with typed blocks (headings, paragraphs).
+ * Studio handles pauses, pacing, and volume normalization via sub_type.
+ */
+
+import { convertBibleRef } from './bible-refs.js';
+
+// Greek Unicode ranges (Basic Greek + Extended Greek)
+const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
+
+/**
+ * Preprocess a single session markdown file into a Studio chapter object.
+ * @param {string} markdown - Raw session markdown content
+ * @param {string} voiceId - ElevenLabs voice ID for TTS nodes
+ * @returns {{ name: string, blocks: Array, plainText: string }}
+ */
+export function preprocessSession(markdown, voiceId) {
+  const lines = markdown.split('\n');
+  const blocks = [];
+  let chapterName = '';
+  let currentParagraph = [];
+
+  function flushParagraph() {
+    if (currentParagraph.length === 0) return;
+    const text = currentParagraph.join(' ').trim();
+    if (text) {
+      blocks.push(makeBlock('p', text, voiceId));
+    }
+    currentParagraph = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+
+    // Skip empty lines — flush current paragraph
+    if (!trimmed) {
+      flushParagraph();
+      continue;
+    }
+
+    // Skip table rows
+    if (trimmed.startsWith('|')) continue;
+
+    // Skip horizontal rules
+    if (/^-{3,}$/.test(trimmed)) continue;
+
+    // Parse headings
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      flushParagraph();
+      const level = headingMatch[1].length;
+      const text = cleanText(headingMatch[2]);
+
+      // H1 = chapter title — extract name, emit as h1 block
+      if (level === 1) {
+        chapterName = text;
+        blocks.push(makeBlock('h1', text, voiceId));
+        continue;
+      }
+
+      // H2-H6 = section headings
+      const subType = `h${Math.min(level, 3)}`; // Studio supports h1, h2, h3
+      blocks.push(makeBlock(subType, text, voiceId));
+      continue;
+    }
+
+    // Regular text line — clean and accumulate into paragraph
+    const cleaned = cleanLine(trimmed);
+    if (cleaned) {
+      currentParagraph.push(cleaned);
+    }
+  }
+
+  flushParagraph();
+
+  // Build plain text for hashing (all block text concatenated)
+  const plainText = blocks.map(b => b.nodes[0].text).join('\n\n');
+
+  return {
+    name: chapterName || 'Untitled',
+    blocks,
+    plainText,
+  };
+}
+
+/**
+ * Clean a single line of markdown, stripping formatting and tags.
+ */
+function cleanLine(line) {
+  let s = line;
+
+  // Strip <Question> tags (keep content)
+  s = s.replace(/<Question[^>]*>/g, '');
+  s = s.replace(/<\/Question>/g, '');
+
+  // Strip <Callout> tags (keep content)
+  s = s.replace(/<\/?Callout>/g, '');
+
+  // Strip <sup> tags (keep content)
+  s = s.replace(/<\/?sup>/g, '');
+
+  // Strip <br> tags
+  s = s.replace(/<br\s*\/?>/g, '');
+
+  // Strip image references
+  s = s.replace(/!\[.*?\]\(.*?\)/g, '');
+
+  // Strip links (keep text)
+  s = s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+  // Convert attributions to spoken form
+  if (s.startsWith('<< ')) {
+    s = s.slice(3).trim();
+    s = convertBibleRef(s);
+  }
+
+  // Strip blockquote markers
+  if (s.startsWith('> ')) {
+    s = s.slice(2);
+  }
+
+  // Strip bold and italic markers
+  s = s.replace(/\*\*(.+?)\*\*/g, '$1');
+  s = s.replace(/\*(.+?)\*/g, '$1');
+  s = s.replace(/_(.+?)_/g, '$1');
+
+  // Strip citation markers that weren't caught
+  s = s.replace(/^<<\s*/, '');
+
+  // Strip lines that are entirely Greek text
+  if (GREEK_RE.test(s) && !s.replace(/[\u0370-\u03FF\u1F00-\u1FFF\s.,;:!?'"()—–\-]/g, '').trim()) {
+    return '';
+  }
+
+  return s.trim();
+}
+
+/**
+ * Clean heading text (strip bold/italic markers).
+ */
+function cleanText(text) {
+  let s = text;
+  s = s.replace(/\*\*(.+?)\*\*/g, '$1');
+  s = s.replace(/\*(.+?)\*/g, '$1');
+  s = s.replace(/_(.+?)_/g, '$1');
+  return s.trim();
+}
+
+/**
+ * Create a Studio block.
+ */
+function makeBlock(subType, text, voiceId) {
+  return {
+    sub_type: subType,
+    nodes: [{
+      voice_id: voiceId,
+      text,
+      type: 'tts_node',
+    }],
+  };
+}
+
+/**
+ * Preprocess multiple session files into the full from_content_json array.
+ * @param {Array<{filename: string, content: string}>} sessions
+ * @param {string} voiceId
+ * @returns {{ chapters: Array, hashes: Object<string, string> }}
+ */
+export async function preprocessBook(sessions, voiceId) {
+  const { createHash } = await import('node:crypto');
+  const chapters = [];
+  const hashes = {};
+
+  for (const { filename, content } of sessions) {
+    const chapter = preprocessSession(content, voiceId);
+    chapters.push({
+      name: chapter.name,
+      blocks: chapter.blocks,
+    });
+
+    // SHA-256 of preprocessed plain text for change detection
+    const hash = createHash('sha256').update(chapter.plainText).digest('hex');
+    hashes[filename] = `sha256:${hash}`;
+  }
+
+  return { chapters, hashes };
+}

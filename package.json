@@ -1,0 +1,16 @@
+{
+  "name": "noble-imprint-audiobook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automated audiobook generation for Noble Imprint resources",
+  "type": "module",
+  "scripts": {
+    "detect": "node src/detect-changes.js",
+    "generate": "node src/generate.js",
+    "align": "node src/align.js",
+    "preprocess-test": "node src/preprocess-test.js"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.0.0"
+  }
+}
