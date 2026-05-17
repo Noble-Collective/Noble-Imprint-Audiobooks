@@ -58,13 +58,16 @@ export function preprocessSession(markdown, voiceId) {
       // H1 = chapter title — extract name, emit as h1 block
       if (level === 1) {
         chapterName = text;
-        blocks.push(makeBlock('h1', text, voiceId));
+        // Add period if heading doesn't end with punctuation (helps TTS pause)
+        const spokenText = /[.!?]$/.test(text) ? text : text + '.';
+        blocks.push(makeBlock('h1', spokenText, voiceId));
         continue;
       }
 
-      // H2-H6 = section headings
-      const subType = `h${Math.min(level, 3)}`; // Studio supports h1, h2, h3
-      blocks.push(makeBlock(subType, text, voiceId));
+      // H2-H6 = section headings — add period for TTS pause
+      const subType = `h${Math.min(level, 3)}`;
+      const spokenHeading = /[.!?]$/.test(text) ? text : text + '.';
+      blocks.push(makeBlock(subType, spokenHeading, voiceId));
       continue;
     }
 
