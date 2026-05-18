@@ -252,7 +252,23 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
     wIdx = lastMatched + 1;
   }
 
-  // Pass 2: fill gaps — interpolate unmatched sentences from neighbors.
+  // Pass 2a: sanity check — detect segments with duration too short for their
+  // text length. These are false matches where the algorithm matched to wrong
+  // Whisper words. Mark them as unmatched so the gap-filler picks them up.
+  const totalChars = segments.reduce((s, seg) => s + seg.text.length, 0);
+  const avgCharsPerSec = totalChars / totalDuration;
+  for (const seg of segments) {
+    if (seg.start < 0) continue;
+    const duration = seg.end - seg.start;
+    const expectedDuration = seg.text.length / avgCharsPerSec;
+    // If actual duration is less than 15% of expected, it's a bad match
+    if (duration < expectedDuration * 0.15 && seg.text.length > 20) {
+      seg.start = -1;
+      seg.end = -1;
+    }
+  }
+
+  // Pass 2b: fill gaps — interpolate unmatched sentences from neighbors.
   // Every sentence gets timing coverage.
   for (let i = 0; i < segments.length; i++) {
     if (segments[i].start >= 0) continue;
