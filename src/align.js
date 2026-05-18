@@ -200,6 +200,17 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
     wIdx = matchEnd + 1;
   }
 
+  // Enforce monotonic timestamps — if any segment starts before the previous
+  // one ends, adjust it forward. Fixes cases where word matching drifted.
+  for (let i = 1; i < segments.length; i++) {
+    if (segments[i].start < segments[i - 1].end) {
+      segments[i].start = segments[i - 1].end;
+    }
+    if (segments[i].end < segments[i].start) {
+      segments[i].end = segments[i].start + 1;
+    }
+  }
+
   return { segments };
 }
 
