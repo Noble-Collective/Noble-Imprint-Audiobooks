@@ -104,33 +104,13 @@ function norm(s) {
 }
 
 /**
- * Split source plainText into sentences.
- */
-function splitSentences(plainText) {
-  // Split on sentence-ending punctuation followed by space/newline
-  // Keep headings (lines ending with period we added) as separate sentences
-  const lines = plainText.split('\n\n').filter(l => l.trim());
-  const sentences = [];
-
-  for (const line of lines) {
-    // Split each paragraph/block into sentences
-    const parts = line.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-    for (const part of parts) {
-      if (part.trim().length > 0) {
-        sentences.push(part.trim());
-      }
-    }
-  }
-
-  return sentences;
-}
-
-/**
- * Map source sentences to Whisper word timestamps.
+ * Map source sentences (with blockIndex/sentenceIndex) to Whisper word timestamps.
  *
  * Walks through Whisper words and source sentences in parallel.
  * For each source sentence, finds the span of Whisper words that
  * best covers it by matching normalized words sequentially.
+ *
+ * @param {Array<{blockIndex, sentenceIndex, text}>} sentences - from preprocessor
  */
 function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
   if (!whisperWords || whisperWords.length === 0) return null;
@@ -145,7 +125,8 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
   const segments = [];
   let wIdx = 0; // current position in Whisper word list
 
-  for (const sentence of sentences) {
+  for (const sentenceObj of sentences) {
+    const sentence = sentenceObj.text;
     const sentenceWords = norm(sentence).split(/\s+/).filter(w => w.length > 0);
     if (sentenceWords.length === 0) continue;
 
@@ -169,6 +150,8 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
       segments.push({
         start: Math.round(estStart * 100) / 100,
         end: Math.round(estEnd * 100) / 100,
+        blockIndex: sentenceObj.blockIndex,
+        sentenceIndex: sentenceObj.sentenceIndex,
         text: sentence,
       });
       continue;
@@ -193,6 +176,8 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
     segments.push({
       start: Math.round(wWords[matchStart].start * 100) / 100,
       end: Math.round(wWords[matchEnd].end * 100) / 100,
+      blockIndex: sentenceObj.blockIndex,
+      sentenceIndex: sentenceObj.sentenceIndex,
       text: sentence,
     });
 
@@ -217,22 +202,23 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
 /**
  * Fallback: estimate timestamps by character proportion.
  */
-function estimateTimestamps(plainText, durationSeconds) {
-  if (!plainText || !durationSeconds) return { segments: [] };
+function estimateTimestamps(sentences, durationSeconds) {
+  if (!sentences || !durationSeconds) return { segments: [] };
 
-  const sentences = splitSentences(plainText);
-  const totalChars = sentences.reduce((sum, s) => sum + s.length, 0);
+  const totalChars = sentences.reduce((sum, s) => sum + s.text.length, 0);
   const segments = [];
   let charOffset = 0;
 
-  for (const sentence of sentences) {
+  for (const sentenceObj of sentences) {
     const start = (charOffset / totalChars) * durationSeconds;
-    charOffset += sentence.length;
+    charOffset += sentenceObj.text.length;
     const end = (charOffset / totalChars) * durationSeconds;
     segments.push({
       start: Math.round(start * 100) / 100,
       end: Math.round(end * 100) / 100,
-      text: sentence,
+      blockIndex: sentenceObj.blockIndex,
+      sentenceIndex: sentenceObj.sentenceIndex,
+      text: sentenceObj.text,
     });
   }
 
@@ -284,8 +270,23 @@ async function main() {
     } catch { /* use 0 */ }
     console.log(`[align] Duration: ${Math.floor(duration / 60)}m ${Math.round(duration % 60)}s`);
 
-    // Split source text into sentences
-    const sentences = splitSentences(item.plainText);
+    // Use preprocessor's sentence list (with blockIndex/sentenceIndex)
+    // Rebuild from the work item's TTS blocks if sentences aren't passed directly
+    let sentences;
+    if (item.sentences) {
+      sentences = item.sentences;
+    } else {
+      // Reconstruct from blocks — split each block into sentences
+      sentences = [];
+      const blocks = item.ttsBlocks || [];
+      for (let bi = 0; bi < blocks.length; bi++) {
+        const blockText = blocks[bi].nodes[0].text;
+        const sents = blockText.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+        for (let si = 0; si < sents.length; si++) {
+          sentences.push({ blockIndex: bi, sentenceIndex: si, text: sents[si].trim() });
+        }
+      }
+    }
     console.log(`[align] Source sentences: ${sentences.length}`);
 
     let timestamps;
@@ -309,7 +310,7 @@ async function main() {
 
     if (!timestamps) {
       console.log('[align] Falling back to character-proportion estimation');
-      timestamps = estimateTimestamps(item.plainText, duration);
+      timestamps = estimateTimestamps(sentences, duration);
       console.log(`[align] Estimated: ${timestamps.segments.length} segments`);
     }
 

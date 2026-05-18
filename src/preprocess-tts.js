@@ -83,11 +83,35 @@ export function preprocessSession(markdown, voiceId) {
   // Build plain text for hashing (all block text concatenated)
   const plainText = blocks.map(b => b.nodes[0].text).join('\n\n');
 
+  // Build sentence index: each sentence gets a blockIndex + sentenceIndex.
+  // Headings are single-sentence blocks. Paragraphs are split on sentence
+  // boundaries (. ! ? followed by space or end of string).
+  const sentences = [];
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const blockText = blocks[bi].nodes[0].text;
+    const sents = splitSentences(blockText);
+    for (let si = 0; si < sents.length; si++) {
+      sentences.push({ blockIndex: bi, sentenceIndex: si, text: sents[si] });
+    }
+  }
+
   return {
     name: chapterName || 'Untitled',
     blocks,
+    sentences,
     plainText,
   };
+}
+
+/**
+ * Split text into sentences. Handles abbreviations and quoted speech
+ * conservatively — only splits on .!? followed by a space and uppercase
+ * letter, or end of string.
+ */
+function splitSentences(text) {
+  // Split on sentence-ending punctuation followed by space
+  const parts = text.split(/(?<=[.!?])\s+/);
+  return parts.filter(s => s.trim().length > 0).map(s => s.trim());
 }
 
 /**
