@@ -9,7 +9,7 @@
  *   WORK_FILE - path to changed_sessions.json from detect-changes.js
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Storage } from '@google-cloud/storage';
@@ -53,7 +53,7 @@ function runWhisper(mp3Path, outputDir) {
     );
 
     // Find the output JSON file
-    const jsonFiles = require('node:fs').readdirSync(outputDir)
+    const jsonFiles = readdirSync(outputDir)
       .filter(f => f.endsWith('.json') && !f.endsWith('.timestamps.json'));
 
     if (jsonFiles.length === 0) {
