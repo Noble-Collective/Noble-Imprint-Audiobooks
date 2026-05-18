@@ -104,14 +104,18 @@ function norm(s) {
 }
 
 /**
- * Compare two normalized words. Exact match for short words (<=3 chars)
- * to avoid false positives like "the" matching "there". For longer words,
- * allow prefix matching (first 4 chars) to handle Whisper transcription
- * differences like "honour"/"honor" or verb forms.
+ * Compare two normalized words. Uses exact match for very short words
+ * (1 char) and progressively looser matching for longer words.
  */
 function wordsMatch(a, b) {
   if (a === b) return true;
-  if (a.length <= 3 || b.length <= 3) return false;
+  if (a.length <= 1 || b.length <= 1) return false;
+  // For short words (2-3 chars), one must contain the other
+  // e.g., "my" matches "my", "in" matches "in", but "in" won't match "on"
+  if (a.length <= 3 || b.length <= 3) {
+    return a.includes(b) || b.includes(a);
+  }
+  // For longer words, prefix match (first 4 chars)
   const prefix = Math.min(4, a.length, b.length);
   return a.substring(0, prefix) === b.substring(0, prefix);
 }
@@ -211,16 +215,28 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
       continue;
     }
 
-    // Walk forward matching words. Only advance lastMatched on actual matches.
+    // Walk forward matching words. Allow skipping unmatched words on both sides.
+    // For each Whisper word, check if it matches the current or next few source words.
+    // This handles Whisper dropping, inserting, or altering individual words.
     let lastMatched = matchStart;
     let sWordIdx = 1; // first word already matched via findSentenceStart
     const walkLimit = Math.min(matchStart + sentenceWords.length * 2 + 10, wWords.length);
 
     for (let i = matchStart + 1; i < walkLimit; i++) {
       if (sWordIdx >= sentenceWords.length) break;
+      // Try matching current source word
       if (wordsMatch(wWords[i].norm, sentenceWords[sWordIdx])) {
         lastMatched = i;
         sWordIdx++;
+      } else {
+        // Try skipping 1-2 source words (Whisper may have dropped them)
+        for (let skip = 1; skip <= 2 && sWordIdx + skip < sentenceWords.length; skip++) {
+          if (wordsMatch(wWords[i].norm, sentenceWords[sWordIdx + skip])) {
+            lastMatched = i;
+            sWordIdx += skip + 1;
+            break;
+          }
+        }
       }
     }
 
