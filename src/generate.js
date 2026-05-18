@@ -107,9 +107,26 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
   }
 }
 
-function concatenateChunks(chunkPaths, outputPath) {
+const CHUNK_GAP_SECONDS = 0.5; // silence between chunks (paragraph break pause)
+
+function concatenateChunks(chunkPaths, outputPath, tmpDir) {
+  // Generate a silent MP3 gap to insert between chunks
+  const gapPath = join(tmpDir, '_silence.mp3');
+  execSync(
+    `ffmpeg -f lavfi -i anullsrc=r=44100:cl=mono -t ${CHUNK_GAP_SECONDS} -c:a libmp3lame -b:a 128k "${gapPath}" -y`,
+    { stdio: 'pipe' }
+  );
+
+  // Build concat list: chunk, gap, chunk, gap, ..., chunk (no trailing gap)
   const listPath = outputPath + '.concat.txt';
-  writeFileSync(listPath, chunkPaths.map(p => `file '${p}'`).join('\n'));
+  const entries = [];
+  for (let i = 0; i < chunkPaths.length; i++) {
+    entries.push(`file '${chunkPaths[i]}'`);
+    if (i < chunkPaths.length - 1) {
+      entries.push(`file '${gapPath}'`);
+    }
+  }
+  writeFileSync(listPath, entries.join('\n'));
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
 }
 
@@ -261,8 +278,8 @@ async function main() {
       if (chunkPaths.length === 1) {
         copyFileSync(chunkPaths[0], outputPath);
       } else {
-        console.log(`    Concatenating ${chunkPaths.length} chunks...`);
-        concatenateChunks(chunkPaths, outputPath);
+        console.log(`    Concatenating ${chunkPaths.length} chunks with ${CHUNK_GAP_SECONDS}s gaps...`);
+        concatenateChunks(chunkPaths, outputPath, tmpDir);
       }
 
       // Get duration
