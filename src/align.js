@@ -104,11 +104,75 @@ function norm(s) {
 }
 
 /**
+ * Compare two normalized words. Exact match for short words (<=3 chars)
+ * to avoid false positives like "the" matching "there". For longer words,
+ * allow prefix matching (first 4 chars) to handle Whisper transcription
+ * differences like "honour"/"honor" or verb forms.
+ */
+function wordsMatch(a, b) {
+  if (a === b) return true;
+  if (a.length <= 3 || b.length <= 3) return false;
+  const prefix = Math.min(4, a.length, b.length);
+  return a.substring(0, prefix) === b.substring(0, prefix);
+}
+
+/**
+ * Find the start of a sentence in the Whisper word list by matching
+ * multiple anchor words (not just the first word). Requires at least
+ * 2 of the first 3 significant words to match in sequence to avoid
+ * false positives from common words.
+ */
+function findSentenceStart(wWords, sentenceWords, startIdx, endIdx) {
+  // Get anchor words: first 3 words with length > 3 chars (skip "the", "a", etc.)
+  const anchors = [];
+  for (let i = 0; i < sentenceWords.length && anchors.length < 3; i++) {
+    if (sentenceWords[i].length > 3 || anchors.length === 0) {
+      anchors.push({ word: sentenceWords[i], srcIdx: i });
+    }
+  }
+
+  for (let i = startIdx; i < endIdx; i++) {
+    if (!wordsMatch(wWords[i].norm, anchors[0].word)) continue;
+
+    // Found first anchor — verify by checking remaining anchors nearby
+    if (anchors.length === 1) return i;
+
+    let confirmed = 1;
+    let searchPos = i + 1;
+    for (let a = 1; a < anchors.length; a++) {
+      // Look for the next anchor within a reasonable window
+      const gap = anchors[a].srcIdx - anchors[a - 1].srcIdx;
+      const searchEnd = Math.min(searchPos + gap + 5, endIdx);
+      for (let j = searchPos; j < searchEnd; j++) {
+        if (wordsMatch(wWords[j].norm, anchors[a].word)) {
+          confirmed++;
+          searchPos = j + 1;
+          break;
+        }
+      }
+    }
+
+    // Accept if we confirmed at least 2 anchors (or only 1 anchor exists)
+    if (confirmed >= Math.min(2, anchors.length)) return i;
+  }
+
+  // Fallback: single-word match for very short sentences (headings, numbers)
+  if (sentenceWords.length <= 3) {
+    for (let i = startIdx; i < endIdx; i++) {
+      if (wWords[i].norm === sentenceWords[0]) return i;
+    }
+  }
+
+  return -1;
+}
+
+/**
  * Map source sentences (with blockIndex/sentenceIndex) to Whisper word timestamps.
  *
- * Walks through Whisper words and source sentences in parallel.
- * For each source sentence, finds the span of Whisper words that
- * best covers it by matching normalized words sequentially.
+ * For each source sentence, finds where it starts and ends in the Whisper
+ * word stream using multi-word anchor matching. Only advances the end
+ * pointer on actual word matches (never overshoots). Unmatched sentences
+ * are gap-filled from their neighbors so every sentence has coverage.
  *
  * @param {Array<{blockIndex, sentenceIndex, text}>} sentences - from preprocessor
  */
@@ -122,77 +186,97 @@ function mapSentencesToTiming(sentences, whisperWords, totalDuration) {
     end: w.end,
   })).filter(w => w.norm.length > 0);
 
+  // Pass 1: match sentences to Whisper words. Unmatched get start=-1.
   const segments = [];
-  let wIdx = 0; // current position in Whisper word list
+  let wIdx = 0;
 
   for (const sentenceObj of sentences) {
     const sentence = sentenceObj.text;
     const sentenceWords = norm(sentence).split(/\s+/).filter(w => w.length > 0);
     if (sentenceWords.length === 0) continue;
 
-    // Find the first Whisper word that matches the first word of our sentence
-    // Search forward from current position (but allow some lookahead)
-    const searchLimit = Math.min(wIdx + 50, wWords.length);
-    let matchStart = -1;
-
-    for (let i = wIdx; i < searchLimit; i++) {
-      if (wWords[i].norm.includes(sentenceWords[0]) || sentenceWords[0].includes(wWords[i].norm)) {
-        matchStart = i;
-        break;
-      }
-    }
+    // Search for sentence start using multi-word anchoring
+    const searchLimit = Math.min(wIdx + 200, wWords.length);
+    const matchStart = findSentenceStart(wWords, sentenceWords, wIdx, searchLimit);
 
     if (matchStart < 0) {
-      // Couldn't find start word — use proportional estimate for this sentence
-      const proportion = segments.length / Math.max(sentences.length, 1);
-      const estStart = proportion * totalDuration;
-      const estEnd = ((segments.length + 1) / Math.max(sentences.length, 1)) * totalDuration;
+      // Mark for gap-filling in pass 2
       segments.push({
-        start: Math.round(estStart * 100) / 100,
-        end: Math.round(estEnd * 100) / 100,
+        start: -1, end: -1,
         blockIndex: sentenceObj.blockIndex,
         sentenceIndex: sentenceObj.sentenceIndex,
         text: sentence,
       });
+      // Don't advance wIdx — next sentence should search from the same position
       continue;
     }
 
-    // Walk forward through Whisper words to find the end of this sentence
-    let matchEnd = matchStart;
-    let sWordIdx = 0;
+    // Walk forward matching words. Only advance lastMatched on actual matches.
+    let lastMatched = matchStart;
+    let sWordIdx = 1; // first word already matched via findSentenceStart
+    const walkLimit = Math.min(matchStart + sentenceWords.length * 2 + 10, wWords.length);
 
-    for (let i = matchStart; i < Math.min(matchStart + sentenceWords.length + 10, wWords.length); i++) {
-      matchEnd = i;
-      // Check if this Whisper word matches the next expected sentence word
-      if (sWordIdx < sentenceWords.length) {
-        if (wWords[i].norm.includes(sentenceWords[sWordIdx]) || sentenceWords[sWordIdx].includes(wWords[i].norm)) {
-          sWordIdx++;
-        }
+    for (let i = matchStart + 1; i < walkLimit; i++) {
+      if (sWordIdx >= sentenceWords.length) break;
+      if (wordsMatch(wWords[i].norm, sentenceWords[sWordIdx])) {
+        lastMatched = i;
+        sWordIdx++;
       }
-      // Stop if we've matched most of our sentence words
-      if (sWordIdx >= sentenceWords.length - 1) break;
     }
 
     segments.push({
-      start: Math.round(wWords[matchStart].start * 100) / 100,
-      end: Math.round(wWords[matchEnd].end * 100) / 100,
+      start: wWords[matchStart].start,
+      end: wWords[lastMatched].end,
       blockIndex: sentenceObj.blockIndex,
       sentenceIndex: sentenceObj.sentenceIndex,
       text: sentence,
     });
 
-    // Advance word pointer past this sentence
-    wIdx = matchEnd + 1;
+    // Advance pointer past the last matched word
+    wIdx = lastMatched + 1;
   }
 
-  // Enforce monotonic timestamps — if any segment starts before the previous
-  // one ends, adjust it forward. Fixes cases where word matching drifted.
+  // Pass 2: fill gaps — interpolate unmatched sentences from neighbors.
+  // Every sentence gets timing coverage.
+  for (let i = 0; i < segments.length; i++) {
+    if (segments[i].start >= 0) continue;
+
+    // Find the nearest matched segments before and after this gap
+    let prevEnd = 0;
+    for (let j = i - 1; j >= 0; j--) {
+      if (segments[j].end >= 0) { prevEnd = segments[j].end; break; }
+    }
+    let nextStart = totalDuration;
+    let gapCount = 0;
+    for (let j = i; j < segments.length; j++) {
+      if (segments[j].start >= 0) { nextStart = segments[j].start; break; }
+      gapCount++;
+    }
+
+    // Distribute the gap proportionally by character count
+    const gapChars = segments.slice(i, i + gapCount).reduce((s, seg) => s + seg.text.length, 0);
+    const gapDuration = nextStart - prevEnd;
+    let charOffset = 0;
+    for (let j = 0; j < gapCount; j++) {
+      const seg = segments[i + j];
+      const ratio = seg.text.length / gapChars;
+      seg.start = prevEnd + (charOffset / gapChars) * gapDuration;
+      charOffset += seg.text.length;
+      seg.end = prevEnd + (charOffset / gapChars) * gapDuration;
+    }
+  }
+
+  // Pass 3: round and enforce monotonic timestamps
+  for (const seg of segments) {
+    seg.start = Math.round(seg.start * 100) / 100;
+    seg.end = Math.round(seg.end * 100) / 100;
+  }
   for (let i = 1; i < segments.length; i++) {
     if (segments[i].start < segments[i - 1].end) {
       segments[i].start = segments[i - 1].end;
     }
-    if (segments[i].end < segments[i].start) {
-      segments[i].end = segments[i].start + 1;
+    if (segments[i].end <= segments[i].start) {
+      segments[i].end = segments[i].start + 0.5;
     }
   }
 
