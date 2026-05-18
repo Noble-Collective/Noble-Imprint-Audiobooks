@@ -1,0 +1,59 @@
+name: Voice Test Samples
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_path:
+        description: 'Book path in Resources repo (e.g., Narrative Journey Series/Foundations/L''Appel du Christ)'
+        required: true
+      sessions:
+        description: 'Comma-separated session filenames (e.g., 4-Session1-LEvangile.md,5-Session2-LEau.md,6-Session3-LeChemin.md)'
+        required: true
+      voices:
+        description: 'Comma-separated voice search names (e.g., Nicolas,Martin Dupont,Guillaume)'
+        required: true
+      max_chars:
+        description: 'Max characters per sample (1000 ≈ 1 minute)'
+        required: false
+        default: '1000'
+
+jobs:
+  generate-samples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout audiobook tooling
+        uses: actions/checkout@v4
+
+      - name: Checkout resources content
+        uses: actions/checkout@v4
+        with:
+          repository: Noble-Collective/Noble-Imprint-Resources
+          token: ${{ secrets.RESOURCES_TOKEN }}
+          path: resources
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate voice test samples
+        run: node src/voice-test.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          RESOURCES_PATH: resources
+          BOOK_PATH: ${{ github.event.inputs.book_path }}
+          SESSIONS: ${{ github.event.inputs.sessions }}
+          VOICES: ${{ github.event.inputs.voices }}
+          MAX_CHARS: ${{ github.event.inputs.max_chars }}
+
+      - name: Upload samples
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-test-samples
+          path: voice-test-output/*.mp3
+          retention-days: 30
