@@ -1,8 +1,8 @@
 /**
- * align.js — Generate sentence-level timestamps via Whisper forced alignment.
+ * align.js — Generate sentence-level timestamps via Whisper transcription.
  *
- * Reads generated MP3s and their TTS JSON from GCS, runs Whisper to produce
- * timestamps, uploads .timestamps.json files back to GCS.
+ * Runs OpenAI Whisper (tiny.en model) on each chapter MP3 to get accurate
+ * word/sentence-level timestamps. Uploads .timestamps.json to GCS.
  *
  * Environment:
  *   GCS_BUCKET - GCS bucket name
@@ -19,82 +19,82 @@ const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
 
 /**
- * Run Whisper on an audio file to generate timestamps.
- * Uses whisper.cpp or falls back to OpenAI Whisper Python.
+ * Install Whisper if not already available.
  */
-function runWhisper(audioPath, outputDir) {
-  const baseName = audioPath.replace(/\.[^.]+$/, '');
-
-  // Try whisper.cpp first (faster, no Python needed)
+function ensureWhisper() {
   try {
-    // Convert MP3 to WAV (16kHz mono, required by whisper.cpp)
-    const wavPath = join(outputDir, 'temp.wav');
-    execSync(`ffmpeg -i "${audioPath}" -ar 16000 -ac 1 -y "${wavPath}"`, { stdio: 'pipe' });
-
-    // Run whisper.cpp with word-level timestamps
-    const modelPath = process.env.WHISPER_MODEL || 'models/ggml-base.en.bin';
-    if (existsSync(modelPath)) {
-      execSync(`whisper-cpp -m "${modelPath}" -f "${wavPath}" -oj -of "${join(outputDir, 'whisper_out')}"`, { stdio: 'pipe' });
-      const jsonPath = join(outputDir, 'whisper_out.json');
-      if (existsSync(jsonPath)) {
-        return JSON.parse(readFileSync(jsonPath, 'utf-8'));
-      }
-    }
+    execSync('whisper --help', { stdio: 'pipe' });
+    console.log('[align] Whisper already installed');
+    return true;
   } catch {
-    // whisper.cpp not available, continue to fallback
+    console.log('[align] Installing Whisper...');
+    try {
+      execSync('pip install -q openai-whisper', { stdio: 'inherit', timeout: 120000 });
+      console.log('[align] Whisper installed');
+      return true;
+    } catch (err) {
+      console.error('[align] Failed to install Whisper:', err.message);
+      return false;
+    }
   }
+}
 
-  // Fallback: use OpenAI Whisper Python (if installed)
+/**
+ * Run Whisper on an audio file and return segments with timestamps.
+ */
+function runWhisper(mp3Path, outputDir) {
+  const baseName = mp3Path.replace(/\.[^.]+$/, '');
+
   try {
-    execSync(`whisper "${audioPath}" --model base.en --output_format json --output_dir "${outputDir}" --language en`, { stdio: 'pipe' });
-    const jsonFiles = require('node:fs').readdirSync(outputDir).filter(f => f.endsWith('.json') && f !== 'whisper_out.json');
-    if (jsonFiles.length > 0) {
-      return JSON.parse(readFileSync(join(outputDir, jsonFiles[0]), 'utf-8'));
-    }
-  } catch {
-    // Whisper Python not available either
-  }
+    // Run whisper with tiny.en model for speed — outputs JSON with timestamps
+    execSync(
+      `whisper "${mp3Path}" --model tiny.en --output_format json --output_dir "${outputDir}" --language en --word_timestamps True`,
+      { stdio: 'inherit', timeout: 600000 } // 10 min timeout per chapter
+    );
 
-  // Final fallback: estimate timestamps from character proportions
-  console.log('  Warning: Whisper not available, using character-proportion estimation');
-  return null;
+    // Find the output JSON file
+    const jsonFiles = require('node:fs').readdirSync(outputDir)
+      .filter(f => f.endsWith('.json') && !f.endsWith('.timestamps.json'));
+
+    if (jsonFiles.length === 0) {
+      console.warn('[align] No Whisper output JSON found');
+      return null;
+    }
+
+    const whisperOut = JSON.parse(readFileSync(join(outputDir, jsonFiles[jsonFiles.length - 1]), 'utf-8'));
+    return whisperOut;
+  } catch (err) {
+    console.error('[align] Whisper failed:', err.message);
+    return null;
+  }
 }
 
 /**
  * Convert Whisper output to our timestamps format.
+ * Whisper outputs segments that roughly correspond to sentences.
  */
 function formatTimestamps(whisperOutput) {
-  if (!whisperOutput) return null;
+  if (!whisperOutput || !whisperOutput.segments) return null;
 
-  // Whisper outputs segments with start/end times
-  const segments = (whisperOutput.segments || whisperOutput.transcription || []).map(seg => ({
-    start: seg.timestamps?.from ? parseTimestamp(seg.timestamps.from) : (seg.start || 0),
-    end: seg.timestamps?.to ? parseTimestamp(seg.timestamps.to) : (seg.end || 0),
-    text: (seg.text || '').trim(),
-  })).filter(s => s.text);
+  const segments = whisperOutput.segments
+    .map(seg => ({
+      start: Math.round(seg.start * 100) / 100,
+      end: Math.round(seg.end * 100) / 100,
+      text: (seg.text || '').trim(),
+    }))
+    .filter(s => s.text.length > 0);
 
   return { segments };
 }
 
-function parseTimestamp(ts) {
-  // "00:01:23.456" → seconds
-  if (typeof ts === 'number') return ts;
-  const parts = ts.split(':');
-  if (parts.length === 3) {
-    return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
-  }
-  return parseFloat(ts) || 0;
-}
-
 /**
- * Estimate timestamps by character proportion when Whisper is unavailable.
+ * Estimate timestamps by character proportion (fallback).
  */
 function estimateTimestamps(plainText, durationSeconds) {
-  const totalChars = plainText.length;
-  if (totalChars === 0 || durationSeconds === 0) return { segments: [] };
+  if (!plainText || !durationSeconds) return { segments: [] };
 
-  // Split into sentences
   const sentences = plainText.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  const totalChars = sentences.reduce((sum, s) => sum + s.length, 0);
   const segments = [];
   let charOffset = 0;
 
@@ -115,24 +115,26 @@ function estimateTimestamps(plainText, durationSeconds) {
 async function main() {
   const workFile = process.env.WORK_FILE || join(process.env.RUNNER_TEMP || '/tmp', 'changed_sessions.json');
   if (!existsSync(workFile)) {
-    console.log('No work file found, skipping alignment.');
+    console.log('[align] No work file found, skipping.');
     return;
   }
 
   const workItems = JSON.parse(readFileSync(workFile, 'utf-8'));
   if (workItems.length === 0) {
-    console.log('No sessions to align.');
+    console.log('[align] No sessions to align.');
     return;
   }
+
+  const whisperAvailable = ensureWhisper();
 
   for (const item of workItems) {
     const slug = item.sessionFile.replace('.md', '').toLowerCase();
     const audioGcsPath = `audio/${item.bookSlugPath}/${slug}.mp3`;
     const timestampsGcsPath = `audio/${item.bookSlugPath}/${slug}.timestamps.json`;
 
-    console.log(`Aligning: ${item.sessionFile}`);
+    console.log(`[align] ${item.sessionFile}`);
 
-    const tmpDir = join('/tmp', 'align', item.bookSlugPath);
+    const tmpDir = join('/tmp', 'align', item.bookSlugPath, slug);
     mkdirSync(tmpDir, { recursive: true });
 
     // Download MP3 from GCS
@@ -140,42 +142,52 @@ async function main() {
     try {
       await bucket.file(audioGcsPath).download({ destination: mp3Path });
     } catch (err) {
-      console.log(`  Skipping: MP3 not found in GCS (${err.message})`);
+      console.log(`[align] Skipping: MP3 not in GCS (${err.message})`);
       continue;
     }
 
     // Get duration
     let duration = 0;
     try {
-      const probe = execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${mp3Path}"`, { encoding: 'utf-8' });
+      const probe = execSync(
+        `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${mp3Path}"`,
+        { encoding: 'utf-8' }
+      );
       duration = parseFloat(probe.trim());
     } catch { /* use 0 */ }
+    console.log(`[align] Duration: ${Math.floor(duration / 60)}m ${Math.round(duration % 60)}s`);
 
-    // Run Whisper
-    const whisperOutput = runWhisper(mp3Path, tmpDir);
     let timestamps;
 
-    if (whisperOutput) {
-      timestamps = formatTimestamps(whisperOutput);
-      console.log(`  Whisper: ${timestamps.segments.length} segments`);
-    } else {
-      // Fallback to estimation
+    if (whisperAvailable) {
+      console.log('[align] Running Whisper (tiny.en)...');
+      const t0 = Date.now();
+      const whisperOutput = runWhisper(mp3Path, tmpDir);
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+
+      if (whisperOutput) {
+        timestamps = formatTimestamps(whisperOutput);
+        console.log(`[align] Whisper: ${timestamps.segments.length} segments in ${elapsed}s`);
+      }
+    }
+
+    if (!timestamps) {
+      console.log('[align] Falling back to character-proportion estimation');
       timestamps = estimateTimestamps(item.plainText, duration);
-      console.log(`  Estimated: ${timestamps.segments.length} segments (Whisper unavailable)`);
+      console.log(`[align] Estimated: ${timestamps.segments.length} segments`);
     }
 
     // Upload timestamps to GCS
     const tsPath = join(tmpDir, `${slug}.timestamps.json`);
     writeFileSync(tsPath, JSON.stringify(timestamps, null, 2));
     await bucket.upload(tsPath, { destination: timestampsGcsPath });
-    console.log(`  Uploaded: gs://${GCS_BUCKET}/${timestampsGcsPath}`);
+    console.log(`[align] Uploaded: gs://${GCS_BUCKET}/${timestampsGcsPath}`);
   }
 
-  console.log('\nAlignment complete!');
+  console.log('\n[align] Complete!');
 }
 
 main().catch(err => {
-  console.error('Alignment failed:', err);
-  // Non-fatal — audio works without timestamps
-  process.exit(0);
+  console.error('[align] Failed:', err);
+  process.exit(0); // Non-fatal — audio works without timestamps
 });
