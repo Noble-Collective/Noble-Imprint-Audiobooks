@@ -25,7 +25,10 @@ export function preprocessSession(markdown, voiceId) {
 
   function flushParagraph() {
     if (currentParagraph.length === 0) return;
-    const text = currentParagraph.join(' ').trim();
+    let text = currentParagraph.join(' ').trim();
+    // Add a paragraph break after numbered oration starts (e.g. "103. In the...")
+    // so TTS pauses after the number instead of treating it as a list marker
+    text = text.replace(/^(\d{1,3}\.)\s+/, '$1\n\n');
     if (text) {
       blocks.push(makeBlock('p', text, voiceId));
     }
