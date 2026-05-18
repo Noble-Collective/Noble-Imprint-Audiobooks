@@ -99,7 +99,15 @@ async function main() {
   }
 
   // Process each session
-  const sessionsDir = join(RESOURCES_PATH, 'series', BOOK_PATH, 'sessions');
+  // Normalize apostrophes: input may use straight ' but filesystem uses Unicode \u2019
+  let bookPathNorm = BOOK_PATH;
+  const candidatePath = join(RESOURCES_PATH, 'series', BOOK_PATH, 'sessions');
+  if (!existsSync(candidatePath)) {
+    // Try replacing straight apostrophe with curly
+    bookPathNorm = BOOK_PATH.replace(/'/g, '\u2019');
+    console.log(`  Path not found, trying: ${bookPathNorm}`);
+  }
+  const sessionsDir = join(RESOURCES_PATH, 'series', bookPathNorm, 'sessions');
 
   for (let si = 0; si < SESSIONS.length; si++) {
     const sessionFile = SESSIONS[si];
