@@ -303,7 +303,7 @@ async function main() {
     const sessionResults = [];
 
     for (const item of items) {
-      const slug = item.sessionFile.replace('.md', '').toLowerCase();
+      const slug = item.sessionFile.replace('.md', '').toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       const voiceId = (meta.voice_test_map && meta.voice_test_map[item.sessionFile]) || meta.voice_id;
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
