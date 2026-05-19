@@ -129,6 +129,7 @@ async function main() {
           contentHash: hash,
           meta: meta.audiobook,
           ttsBlocks: chapter.blocks,
+          sentences: chapter.sentences,
           chapterName: chapter.name,
           plainText: chapter.plainText,
         });

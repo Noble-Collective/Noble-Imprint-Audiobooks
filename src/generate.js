@@ -73,11 +73,12 @@ function hashChunk(text) {
 }
 
 /**
- * Call ElevenLabs TTS for a single text chunk. Returns MP3 buffer.
+ * Call ElevenLabs TTS with timestamps for a single text chunk.
+ * Returns { audio: Buffer, alignment: { characters, character_start_times_seconds, character_end_times_seconds } }
  */
 async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat) {
   const res = await fetch(
-    `${API_BASE}/text-to-speech/${voiceId}?output_format=${outputFormat || 'mp3_44100_128'}`,
+    `${API_BASE}/text-to-speech/${voiceId}/with-timestamps?output_format=${outputFormat || 'mp3_44100_128'}`,
     {
       method: 'POST',
       headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
@@ -90,7 +91,11 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   );
   if (res.status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 });
   if (!res.ok) throw new Error(`TTS failed (${res.status}): ${await res.text()}`);
-  return Buffer.from(await res.arrayBuffer());
+  const data = await res.json();
+  return {
+    audio: Buffer.from(data.audio_base64, 'base64'),
+    alignment: data.alignment || null,
+  };
 }
 
 async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 3) {
@@ -105,6 +110,93 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
       } else throw err;
     }
   }
+}
+
+/**
+ * Build sentence-level timestamps from per-chunk character alignments.
+ * Each chunk's alignment has character-level start/end times relative to chunk start.
+ * We offset by cumulative chunk durations + silence gaps to get chapter-level times.
+ */
+function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences) {
+  // Build a chapter-level character timeline: for each character position in the
+  // concatenated plain text, what's its absolute time in the chapter?
+  const charTimes = []; // [{start, end}] for each character in plain text
+
+  // The plain text is blocks joined by \n\n. Chunks are the plain text split at
+  // paragraph boundaries. We need to map chunk characters back to plain text positions.
+  let chapterOffset = 0; // cumulative time offset for current chunk
+
+  for (let c = 0; c < chunkAlignments.length; c++) {
+    const alignment = chunkAlignments[c];
+    if (!alignment || !alignment.character_start_times_seconds) {
+      // No alignment data — estimate proportionally for this chunk
+      const chunkChars = chunkTexts[c].length;
+      const duration = chunkDurations[c];
+      for (let i = 0; i < chunkChars; i++) {
+        charTimes.push({
+          start: chapterOffset + (i / chunkChars) * duration,
+          end: chapterOffset + ((i + 1) / chunkChars) * duration,
+        });
+      }
+    } else {
+      const starts = alignment.character_start_times_seconds;
+      const ends = alignment.character_end_times_seconds;
+      for (let i = 0; i < starts.length; i++) {
+        charTimes.push({
+          start: chapterOffset + starts[i],
+          end: chapterOffset + ends[i],
+        });
+      }
+    }
+
+    chapterOffset += chunkDurations[c] + CHUNK_GAP_SECONDS;
+  }
+
+  // Now map sentences to character positions in the plain text.
+  // The plain text = blocks joined by \n\n. Sentences have blockIndex + sentenceIndex.
+  // We need to find each sentence's start/end character position in the concatenated
+  // chunk text (which is the same as plain text but possibly with \n\n for the
+  // paragraph break we added after numbered starts like "103.\n\n").
+  const fullText = chunkTexts.join('\n\n');
+
+  const segments = [];
+  let searchFrom = 0;
+
+  for (const sent of sentences) {
+    // Find the sentence text in the full concatenated text
+    const idx = fullText.indexOf(sent.text, searchFrom);
+    if (idx < 0) {
+      // Sentence not found — use proportional estimate
+      const proportion = segments.length / Math.max(sentences.length, 1);
+      const totalDuration = chapterOffset - CHUNK_GAP_SECONDS; // remove last gap
+      segments.push({
+        start: Math.round(proportion * totalDuration * 100) / 100,
+        end: Math.round(((segments.length + 1) / sentences.length) * totalDuration * 100) / 100,
+        blockIndex: sent.blockIndex,
+        sentenceIndex: sent.sentenceIndex,
+        text: sent.text,
+      });
+      continue;
+    }
+
+    const startChar = idx;
+    const endChar = idx + sent.text.length - 1;
+    searchFrom = idx + sent.text.length;
+
+    // Look up times from charTimes array
+    const startTime = startChar < charTimes.length ? charTimes[startChar].start : 0;
+    const endTime = endChar < charTimes.length ? charTimes[endChar].end : startTime + 1;
+
+    segments.push({
+      start: Math.round(startTime * 100) / 100,
+      end: Math.round(endTime * 100) / 100,
+      blockIndex: sent.blockIndex,
+      sentenceIndex: sent.sentenceIndex,
+      text: sent.text,
+    });
+  }
+
+  return { segments };
 }
 
 const CHUNK_GAP_SECONDS = 0.5; // silence between chunks (paragraph break pause)
@@ -230,15 +322,24 @@ async function main() {
       let regeneratedCount = 0;
       let reusedCount = 0;
       const chunkPaths = [];
+      const chunkAlignments = [];
 
       for (let c = 0; c < chunks.length; c++) {
         const chunkPath = join(tmpDir, `${slug}_chunk_${String(c).padStart(3, '0')}.mp3`);
+        const chunkAlignPath = join(tmpDir, `${slug}_chunk_${String(c).padStart(3, '0')}.align.json`);
         chunkPaths.push(chunkPath);
 
         // Check if this chunk's content is unchanged AND the chunk MP3 exists in GCS
         if (existingHashes[String(c)] === chunkHashes[c]) {
           try {
             await downloadFromGCS(`${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`, chunkPath);
+            // Try to download cached alignment
+            try {
+              await downloadFromGCS(`${gcsChunksDir}/${String(c).padStart(3, '0')}.align.json`, chunkAlignPath);
+              chunkAlignments.push(JSON.parse(readFileSync(chunkAlignPath, 'utf-8')));
+            } catch {
+              chunkAlignments.push(null); // no cached alignment — will estimate
+            }
             reusedCount++;
             continue;
           } catch {
@@ -246,17 +347,22 @@ async function main() {
           }
         }
 
-        // Generate this chunk
+        // Generate this chunk with timestamps
         console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars) — generating...`);
-        const mp3Buffer = await generateWithRetry(
+        const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
           meta.output_format || 'mp3_44100_128'
         );
-        writeFileSync(chunkPath, mp3Buffer);
+        writeFileSync(chunkPath, result.audio);
+        chunkAlignments.push(result.alignment);
         regeneratedCount++;
 
-        // Upload individual chunk to GCS for future reuse
+        // Upload individual chunk + alignment to GCS for future reuse
         await uploadToGCS(chunkPath, `${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`);
+        if (result.alignment) {
+          writeFileSync(chunkAlignPath, JSON.stringify(result.alignment));
+          await uploadToGCS(chunkAlignPath, `${gcsChunksDir}/${String(c).padStart(3, '0')}.align.json`);
+        }
 
         if (c < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
       }
@@ -295,6 +401,33 @@ async function main() {
 
       // Upload final chapter MP3
       await uploadToGCS(outputPath, `audio/${bookSlugPath}/${slug}.mp3`);
+
+      // Build sentence-level timestamps from ElevenLabs character alignments
+      const sentences = item.sentences || [];
+      if (sentences.length > 0) {
+        // Get per-chunk durations via ffprobe
+        const chunkDurations = [];
+        for (const cp of chunkPaths) {
+          try {
+            const probe = execSync(
+              `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${cp}"`,
+              { encoding: 'utf-8' }
+            );
+            chunkDurations.push(parseFloat(probe.trim()));
+          } catch {
+            // Estimate from total duration proportionally
+            chunkDurations.push(duration / chunks.length);
+          }
+        }
+
+        const timestamps = buildTimestampsFromAlignments(
+          chunkAlignments, chunks, chunkDurations, sentences
+        );
+        const tsPath = join(tmpDir, `${slug}.timestamps.json`);
+        writeFileSync(tsPath, JSON.stringify(timestamps, null, 2));
+        await uploadToGCS(tsPath, `audio/${bookSlugPath}/${slug}.timestamps.json`);
+        console.log(`    Timestamps: ${timestamps.segments.length} segments (from ElevenLabs alignment)`);
+      }
 
       // Upload TTS JSON
       const ttsJsonPath = join(tmpDir, `${slug}.tts.json`);
