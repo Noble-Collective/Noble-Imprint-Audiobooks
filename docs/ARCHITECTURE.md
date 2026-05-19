@@ -46,13 +46,13 @@ Content push to Resources repo
        |
        +-> preprocess markdown -> strip syntax, add heading periods for TTS pauses
        |
-       +-> generate audio via ElevenLabs /v1/text-to-speech endpoint
+       +-> generate audio via ElevenLabs /v1/text-to-speech/{voice}/with-timestamps
        |   +-> split into ~4,500 char chunks at paragraph boundaries
        |   +-> per-chunk hash comparison -- only regenerate changed chunks
-       |   +-> unchanged chunks downloaded from GCS and reused
+       |   +-> unchanged chunks downloaded from GCS and reused (with cached alignment)
+       |   +-> character-level timestamps returned alongside audio per chunk
        |   +-> all chunks concatenated with ffmpeg into chapter MP3 (0.5s silence between chunks)
-       |
-       +-> Whisper alignment (tiny.en model) -> sentence-level timestamps
+       |   +-> sentence timestamps built from character alignments + chunk offsets
        |
        +-> upload to GCS: MP3 + .tts.json + .timestamps.json + manifest
        |
@@ -154,34 +154,33 @@ On subsequent runs:
 
 ## ElevenLabs Integration
 
-Uses the standard TTS endpoint:
+Uses the TTS with timestamps endpoint:
 
 ```
-POST /v1/text-to-speech/{voice_id}?output_format=mp3_44100_128
+POST /v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128
 ```
 
-Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration.
+Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level start/end times). Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration.
 
 **Plan:** Pro plan with Impact Program (600K credits/month).
 
 **Rate limiting:** 3 retries with exponential backoff (4s, 16s, 64s). A 500ms pause is inserted between chunk requests.
 
-**Note:** The Studio/Projects API requires an Enterprise plan (not available). Standard TTS with chunking produces identical quality. The system handles splitting and concatenation itself.
+**Note:** The with-timestamps endpoint uses the same credits as the standard endpoint (billed by character count). The alignment data adds no extra cost.
 
 ---
 
-## Whisper Alignment
+## Timestamp Alignment
 
-After audio generation, OpenAI Whisper runs on each chapter MP3 to produce word-level timestamps. These are then mapped back to our source sentences by `align.js`.
+Sentence-level timestamps are generated directly by ElevenLabs using the `/text-to-speech/{voice_id}/with-timestamps` endpoint, which returns character-level timing alongside the audio. This replaces a previous Whisper-based approach.
 
-- **Model:** `tiny.en`
-- **Installation:** `pip install openai-whisper`
-- **Whisper output:** Word-level timestamps from the audio.
+- **Source:** ElevenLabs character-level alignment data, returned with each TTS chunk.
+- **`generate.js`:** Calls the with-timestamps endpoint per chunk, collects character start/end times, then maps them to source sentences using character positions.
+- **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations + 0.5s silence gaps to produce chapter-level timestamps.
 - **Preprocessor output:** Source sentences with `blockIndex` (which content block in the DOM) and `sentenceIndex` (which sentence within that block).
-- **align.js:** Maps Whisper word timing onto the preprocessor's source sentences. Each output segment contains our exact source text (not Whisper's transcription) paired with Whisper's timing, plus the `blockIndex` and `sentenceIndex` needed for DOM lookup.
-- **Storage:** `.timestamps.json` files in GCS.
+- **Storage:** `.timestamps.json` files in GCS. Per-chunk alignment data cached as `.align.json` in the chunks directory.
 - **Consumer:** The website player uses these timestamps for sentence-level text highlighting.
-- **Performance:** Approximately 2 minutes per chapter on GitHub Actions CPU.
+- **Accuracy:** Character-level precision from the TTS engine — no transcription or fuzzy matching needed. Zero gaps, ~97% coverage.
 
 ---
 

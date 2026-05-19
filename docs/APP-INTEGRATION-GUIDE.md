@@ -272,7 +272,7 @@ If found, that session has audio. If not found (or if the session is in `skip_se
 
 ## Timestamps Format
 
-This is the critical file for text synchronization. Each timestamps file contains sentence-level segments with timing from OpenAI Whisper and structural indices for reliable element lookup.
+This is the critical file for text synchronization. Each timestamps file contains sentence-level segments with character-level timing from ElevenLabs and structural indices for reliable element lookup.
 
 ```json
 {
@@ -346,10 +346,10 @@ Multiple segments share the same `blockIndex` when they're different sentences w
 
 ### Important notes
 
-- **Text comes from our preprocessor**, not Whisper. It matches the rendered markdown content directly.
+- **Text comes from our preprocessor**. It matches the rendered markdown content directly.
 - **Headings have trailing periods** added for TTS pause (e.g., `"Chapter Six."` vs rendered `"Chapter Six"`). Strip trailing period when matching.
-- **Timing comes from Whisper** word-level analysis — accurate to the actual audio.
-- **Segments are contiguous** — timestamps cover the full chapter duration.
+- **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy.
+- **Segments are contiguous** — timestamps cover the full chapter duration with no gaps.
 - **Typical count:** 60–330 segments per chapter depending on length.
 
 ---
@@ -550,7 +550,7 @@ These are the components the app developer needs to implement:
 ### What you do NOT need to build
 
 - Audio generation — handled by the pipeline
-- Timestamp alignment — handled by Whisper in the pipeline
+- Timestamp alignment — handled by ElevenLabs character-level timestamps (generated alongside audio)
 - Text preprocessing — handled by the pipeline
 - GCS storage management — handled by the pipeline
 - Content change detection — handled by the pipeline
@@ -563,7 +563,7 @@ The website's implementation can serve as a reference. The key files are:
 
 | File | Location | What it does |
 |------|----------|--------------|
-| `audio-player.js` | `Noble-Imprint-Resource-Website/src/public/js/audio-player.js` | Full player + text sync in ~250 lines of vanilla JS |
+| `audio-player.js` | `Noble-Imprint-Resource-Website/src/public/js/audio-player.js` | Full player + text sync with autoscroll, "Jump to audio" link, expandable mobile controls |
 | `audio.js` | `Noble-Imprint-Resource-Website/src/server/audio.js` | Server-side GCS manifest loading + signed URL generation |
 | `style.css` | `Noble-Imprint-Resource-Website/src/public/css/style.css` | Player bar + highlight styles (search for `.audio-`) |
 | `session.ejs` | `Noble-Imprint-Resource-Website/src/views/session.ejs` | Player HTML template (search for `audio-fab`) |
@@ -575,6 +575,10 @@ The website player:
 - Uses `blockIndex` to find the DOM element by counting (no text search for element lookup)
 - Uses `sentenceIndex` to split the element's text and find the target sentence
 - Creates a `Range` over the sentence and uses `getClientRects()` to position transparent highlight overlays (no DOM modification — works across `<strong>`, `<em>` boundaries)
+- Autoscroll follows the highlighted sentence, accounting for sticky header and player bar height
+- "Jump to audio location" link appears when user scrolls away from the highlight — tapping re-engages autoscroll
+- Skip ±15s and scrub force-update the highlight immediately
+- Mobile: expandable player bar (tap chevron for speed control and ±15s skip)
 - Saves position to `localStorage`
 - Auto-advances to the next chapter using a `localStorage` flag
 - Floating headphones icon expands to sticky bottom bar when playing

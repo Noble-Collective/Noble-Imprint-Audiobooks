@@ -1,6 +1,6 @@
 # Noble Imprint Audiobooks
 
-Automated audiobook generation for Noble Imprint resources via ElevenLabs TTS with Whisper-aligned sentence-level text sync.
+Automated audiobook generation for Noble Imprint resources via ElevenLabs TTS with character-level sentence sync.
 
 ```
 Noble-Imprint-Resources (content push)
@@ -80,8 +80,8 @@ All `meta.json` `audiobook` fields:
 src/
   preprocess-tts.js    -- markdown -> clean spoken text (Studio block format)
   detect-changes.js    -- chunk-level content hash comparison against GCS manifest
-  generate.js          -- ElevenLabs TTS + chunk-level caching + GCS upload
-  align.js             -- Whisper forced alignment (sentence-level timestamps)
+  generate.js          -- ElevenLabs TTS with timestamps + chunk-level caching + GCS upload
+  align.js             -- legacy Whisper alignment (no longer used by main pipeline)
   bible-refs.js        -- scripture reference -> spoken form conversion
   preprocess-test.js   -- local testing utility (runs against Resources repo)
   find-voices.js       -- voice search utility
@@ -127,10 +127,9 @@ Chunks are ~4,500 characters each, split at paragraph boundaries. Only chunks wh
 |---------|-------------|
 | "0 sessions need regeneration" | Check that `meta.json` has `audiobook.enabled: true` and the book path matches any `book_path` filter |
 | Generation fails with 429 | Rate limited by ElevenLabs. Retries automatically with exponential backoff (4s, 16s, 64s) |
-| Timestamps inaccurate | Whisper may have failed; check the align step logs. Falls back to character-proportion estimation |
+| Timestamps inaccurate | Check that the with-timestamps endpoint returned alignment data; generate.js logs segment count |
 | No audio icon on website | Manifest may not exist in GCS, or the website content tree needs a refresh (`POST /api/refresh-audio`) |
 | CORS errors on audio/timestamps | GCS bucket CORS config must include the website domain |
-| Whisper install fails in CI | `pip install openai-whisper` timeout; align step exits non-fatal (audio still works, timestamps estimated) |
 
 ## Secrets required
 
