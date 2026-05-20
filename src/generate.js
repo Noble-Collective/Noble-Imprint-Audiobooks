@@ -152,23 +152,30 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
     chapterOffset += chunkDurations[c] + CHUNK_GAP_SECONDS;
   }
 
-  // Now map sentences to character positions in the plain text.
-  // The plain text = blocks joined by \n\n. Sentences have blockIndex + sentenceIndex.
-  // We need to find each sentence's start/end character position in the concatenated
-  // chunk text (which is the same as plain text but possibly with \n\n for the
-  // paragraph break we added after numbered starts like "103.\n\n").
-  const fullText = chunkTexts.join('\n\n');
+  // Now map sentences to character positions.
+  // charTimes is a flat array of per-character timestamps across all chunks
+  // (no separators). The plain text joins blocks with \n\n, and chunks are
+  // joined with \n\n too. We need to find sentence positions in the chunk
+  // text and convert to charTimes indices, skipping the \n\n separators.
+
+  // Build a combined text that matches charTimes indexing (no \n\n between chunks)
+  const flatText = chunkTexts.join('');
+
+  // Also build a mapping from flatText position to charTimes index
+  // (they should be 1:1, but we validate the lengths match)
+  if (charTimes.length !== flatText.length) {
+    console.log(`    Warning: charTimes (${charTimes.length}) != flatText (${flatText.length}) — using proportional fallback for mismatched chars`);
+  }
 
   const segments = [];
   let searchFrom = 0;
 
   for (const sent of sentences) {
-    // Find the sentence text in the full concatenated text
-    const idx = fullText.indexOf(sent.text, searchFrom);
+    const idx = flatText.indexOf(sent.text, searchFrom);
     if (idx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
-      const totalDuration = chapterOffset - CHUNK_GAP_SECONDS; // remove last gap
+      const totalDuration = chapterOffset - CHUNK_GAP_SECONDS;
       segments.push({
         start: Math.round(proportion * totalDuration * 100) / 100,
         end: Math.round(((segments.length + 1) / sentences.length) * totalDuration * 100) / 100,
