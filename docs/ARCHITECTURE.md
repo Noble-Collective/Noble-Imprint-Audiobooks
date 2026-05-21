@@ -13,7 +13,7 @@ Automated audiobook generation system that converts markdown book content to nar
 - [Preprocessing Pipeline](#preprocessing-pipeline)
 - [Chunk-Level Change Detection](#chunk-level-change-detection)
 - [ElevenLabs Integration](#elevenlabs-integration)
-- [Whisper Alignment](#whisper-alignment)
+- [Timestamp Alignment](#timestamp-alignment)
 - [GCS Storage](#gcs-storage)
 - [Website Integration](#website-integration)
 - [IAM and Secrets](#iam-and-secrets)
@@ -28,7 +28,7 @@ The system spans three repositories:
 | Repository | Role |
 |---|---|
 | **Noble-Imprint-Resources** | Content repo. Markdown files and `meta.json` per book. Push to main triggers dispatch to the other repos. |
-| **Noble-Imprint-Audiobooks** | Generation tooling. Preprocessing, ElevenLabs TTS, Whisper alignment, GCS upload. |
+| **Noble-Imprint-Audiobooks** | Generation tooling. Preprocessing, ElevenLabs TTS with character-level timestamps, GCS upload. |
 | **Noble-Imprint-Resource-Website** | Serves audio via signed URLs. Player UI with sentence-level text highlighting. |
 
 ---
@@ -146,7 +146,7 @@ On subsequent runs:
 3. Compare against `chunkHashes` in the existing GCS manifest.
 4. Only regenerate chunks whose hash has changed.
 5. Download unchanged chunks from GCS.
-6. Re-concatenate all chunks into the chapter MP3 with ffmpeg. A 0.5-second silence gap is inserted between chunks during concatenation to produce natural pauses at paragraph boundaries.
+6. Re-concatenate all chunks into the chapter MP3 with ffmpeg (no silence gaps — ElevenLabs handles paragraph pacing naturally).
 
 **Example:** A typo fix in a 47K-character chapter (12 chunks) regenerates only the 1 affected chunk (~4.5K characters) instead of the full 47K.
 
@@ -176,7 +176,7 @@ Sentence-level timestamps are generated directly by ElevenLabs using the `/text-
 
 - **Source:** ElevenLabs character-level alignment data, returned with each TTS chunk.
 - **`generate.js`:** Calls the with-timestamps endpoint per chunk, collects character start/end times, then maps them to source sentences using character positions.
-- **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations + 0.5s silence gaps to produce chapter-level timestamps.
+- **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations to produce chapter-level timestamps (no silence gaps).
 - **Preprocessor output:** Source sentences with `blockIndex` (which content block in the DOM) and `sentenceIndex` (which sentence within that block).
 - **Storage:** `.timestamps.json` files in GCS. Per-chunk alignment data cached as `.align.json` in the chunks directory.
 - **Consumer:** The website player uses these timestamps for sentence-level text highlighting.
@@ -199,9 +199,10 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
   manifest.json
   02-chapterone.mp3
   02-chapterone.tts.json              <- preprocessed text sent to ElevenLabs (debug)
-  02-chapterone.timestamps.json       <- Whisper sentence-level timestamps
+  02-chapterone.timestamps.json       <- sentence-level timestamps (from ElevenLabs character alignment)
   chunks/02-chapterone/
     000.mp3                            <- individual chunk audio (for reuse)
+    000.align.json                     <- cached ElevenLabs character alignment
     001.mp3
     ...
 ```
@@ -231,7 +232,7 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
 
 ### Timestamps Format
 
-Each segment contains the original source text, Whisper-derived timing, and positional indices for DOM lookup:
+Each segment contains the original source text, ElevenLabs character-level timing, and positional indices for DOM lookup:
 
 ```json
 {
@@ -268,21 +269,27 @@ Each segment contains the original source text, Whisper-derived timing, and posi
 - Expands to a sticky bottom bar when playing.
 - Controls: play/pause, scrubber, speed (0.75x--1.5x), skip forward/back 15s, close (X).
 - FAB hides when the player bar is visible (no overlap).
+- Mobile: expandable player bar (tap chevron to reveal speed control and ±15s skip).
+- H2 section markers on the scrubber bar — clickable tick marks at exact heading positions.
+- Clickable headphone icons on h1-h6 headings — seeks audio to that heading's timestamp.
 
 **Sentence-level text highlighting:**
 
-1. Fetches `.timestamps.json` via signed URL on first play.
-2. Uses `blockIndex` to find the target DOM element by counting content blocks (no text matching needed).
+1. Fetches `.timestamps.json` eagerly on page load (heading icons appear immediately).
+2. Matches segments to DOM elements by **text content** (not blockIndex counting) — handles extra DOM elements from Question tags, tables, list items. Uses blockIndex as a hint, searches outward by distance, tracks matched elements to handle repeated headings.
 3. Uses `sentenceIndex` to locate the specific sentence within that block.
 4. A `requestAnimationFrame` loop tracks `audio.currentTime`.
 5. Uses `Range.getClientRects()` to measure the sentence position, then positions transparent overlay divs for the highlight (no DOM modification -- the document text is never wrapped or altered).
-6. Smooth-scrolls to the highlighted sentence. Pauses auto-scroll for 5 seconds if the user scrolls manually.
+6. Clears highlight when current time falls in a gap between segments.
+7. Auto-scrolls to the highlighted sentence by default. When the user scrolls away, auto-scroll disengages and a "Jump to audio location" pill link appears above the player. Tapping re-engages auto-scroll.
 
 **Auto-advance:** Navigates to the next chapter when audio ends. Auto-plays via a `localStorage` flag.
 
 **Resume:** Saves playback position to `localStorage` and restores it on page load.
 
 **Book page:** Displays an audiobook badge with total duration when a manifest exists.
+
+**Homepage:** Small headphones icon next to session count on book cards that have audio enabled.
 
 **Branding:** ElevenLabs logo displayed in the footer per Impact Program requirements.
 
@@ -321,5 +328,5 @@ Reference data point: first book (Oration II) -- approximately 153K characters, 
 |---|---|
 | **ElevenLabs** | ~7.6% of the 2M monthly Pro quota, or ~25% of the 600K Impact quota. |
 | **GCS storage** | ~180 MB, approximately $0.004/month. |
-| **Whisper on GitHub Actions** | ~10 minutes CPU time (free tier). |
+| **Retimestamp rebuild** | ~5 minutes CPU time (free tier, no ElevenLabs credits). |
 | **Per-edit regeneration** | ~4.5K characters (1 chunk) = negligible. |

@@ -108,12 +108,12 @@ The app can detect this by periodically re-fetching the manifest (or on each boo
 
 ### Example: adding audio to an existing book
 
-Today, the app ships with "HomeStead" (no audio) and "Oration II" (has audio). Six months later, audio is generated for HomeStead:
+Suppose a new book "Venture" has no audio yet, while "Oration II" and "HomeStead" already have audiobooks. When audio is added for Venture:
 
-1. We add `audiobook.enabled: true` to HomeStead's `meta.json`
+1. We add `audiobook.enabled: true` to Venture's `meta.json`
 2. The pipeline generates MP3s and timestamps, uploads to GCS
-3. A manifest appears at `audio/passage-series/homestead/manifest.json`
-4. Next time a user opens HomeStead in the app, the manifest fetch returns 200 instead of 404
+3. A manifest appears at `audio/passage-series/venture/manifest.json`
+4. Next time a user opens Venture in the app, the manifest fetch returns 200 instead of 404
 5. The app shows the audio player — no app update required
 
 ---
@@ -188,6 +188,7 @@ The slug function lowercases, strips apostrophes, replaces non-alphanumeric char
 "A Library of Classics" → "a-library-of-classics"
 "A Pastoral Shelf"      → "a-pastoral-shelf"
 "Oration II"            → "oration-ii"
+"L'Appel du Christ"     → "lappel-du-christ"
 ```
 
 Full path example:
@@ -434,7 +435,7 @@ This is the most impactful feature — highlighting the sentence being spoken an
    - Skip (±15s) and scrub always force-scroll to the new position
 
 6. HEADING AUDIO ICONS:
-   - After timestamps load, add clickable headphone icons to h1-h4 headings
+   - After timestamps load, add clickable headphone icons to h1-h6 headings
    - Clicking an icon starts playback (if not already playing) and seeks to
      that heading's exact timestamp
 ```
@@ -585,7 +586,7 @@ These are the components the app developer needs to implement:
 | **Sentence highlighting** | Apply background color to the character range of the target sentence within the correct text view | iOS: `NSAttributedString` with `NSBackgroundColorAttributeName`. Android: `SpannableString` with `BackgroundColorSpan`. |
 | **Sync loop** | Timer or display link (~100ms) that reads `currentTime`, finds active segment, updates highlight | See [Algorithm](#algorithm) |
 | **Scroll behavior** | Smooth scroll to the highlighted element. When user scrolls away, show "Jump to audio" link instead of force-scrolling back. | See step 5 in the [Algorithm](#algorithm) |
-| **Heading audio icons** | Clickable headphone icons on h1-h4 headings that seek audio to that heading's timestamp | See step 6 in the [Algorithm](#algorithm) |
+| **Heading audio icons** | Clickable headphone icons on h1-h6 headings that seek audio to that heading's timestamp | See step 6 in the [Algorithm](#algorithm) |
 | **H2 scrubber markers** | Tick marks on the progress bar at H2 heading positions, clickable to seek | Use H2 segments from timestamps |
 | **Resume playback** | Save/restore position in UserDefaults / SharedPreferences | See [Resume Playback](#resume-playback) |
 | **Auto-advance** | Navigate to next chapter and auto-play when current chapter ends | See [Auto-Advance](#auto-advance-between-chapters) |
@@ -626,7 +627,7 @@ The website player:
 - "Jump to audio location" pill link appears when user scrolls away — tapping re-engages autoscroll
 - Skip ±15s and scrub force-update the highlight and scroll immediately
 - H2 section markers on the scrubber bar — clickable tick marks at exact heading positions
-- Clickable headphone icons on h1-h4 headings — seeks audio to that heading's timestamp
+- Clickable headphone icons on h1-h6 headings — seeks audio to that heading's timestamp
 - Mobile: expandable player bar (tap chevron for speed control and ±15s skip)
 - Saves position to `localStorage`
 - Auto-advances to the next chapter using a `localStorage` flag
