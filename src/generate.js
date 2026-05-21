@@ -117,7 +117,7 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
  * Each chunk's alignment has character-level start/end times relative to chunk start.
  * We offset by cumulative chunk durations + silence gaps to get chapter-level times.
  */
-function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences) {
+function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gapSeconds) {
   // Build a chapter-level character timeline: for each character position in the
   // concatenated plain text, what's its absolute time in the chapter?
   const charTimes = []; // [{start, end}] for each character in plain text
@@ -149,15 +149,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
       }
     }
 
-    // Use alignment's last character end time as chunk duration (more accurate
-    // than ffprobe which includes trailing MP3 padding). Fall back to ffprobe.
-    let chunkDur = chunkDurations[c];
-    const al = chunkAlignments[c];
-    if (al && al.character_end_times_seconds) {
-      const alEnds = al.character_end_times_seconds;
-      chunkDur = alEnds[alEnds.length - 1];
-    }
-    chapterOffset += chunkDur + CHUNK_GAP_SECONDS;
+    chapterOffset += chunkDurations[c] + gapSeconds;
   }
 
   // Now map sentences to character positions.
@@ -214,25 +206,11 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   return { segments };
 }
 
-const CHUNK_GAP_SECONDS = 0.5; // silence between chunks (paragraph break pause)
+const CHUNK_GAP_SECONDS = 0; // no silence gaps — ElevenLabs handles paragraph pauses naturally
 
 function concatenateChunks(chunkPaths, outputPath, tmpDir) {
-  // Generate a silent MP3 gap to insert between chunks
-  const gapPath = join(tmpDir, '_silence.mp3');
-  execSync(
-    `ffmpeg -f lavfi -i anullsrc=r=44100:cl=mono -t ${CHUNK_GAP_SECONDS} -c:a libmp3lame -b:a 128k "${gapPath}" -y`,
-    { stdio: 'pipe' }
-  );
-
-  // Build concat list: chunk, gap, chunk, gap, ..., chunk (no trailing gap)
   const listPath = outputPath + '.concat.txt';
-  const entries = [];
-  for (let i = 0; i < chunkPaths.length; i++) {
-    entries.push(`file '${chunkPaths[i]}'`);
-    if (i < chunkPaths.length - 1) {
-      entries.push(`file '${gapPath}'`);
-    }
-  }
+  const entries = chunkPaths.map(p => `file '${p}'`);
   writeFileSync(listPath, entries.join('\n'));
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
 }
@@ -436,7 +414,7 @@ async function main() {
         }
 
         const timestamps = buildTimestampsFromAlignments(
-          chunkAlignments, chunks, chunkDurations, sentences
+          chunkAlignments, chunks, chunkDurations, sentences, CHUNK_GAP_SECONDS
         );
         const tsPath = join(tmpDir, `${slug}.timestamps.json`);
         writeFileSync(tsPath, JSON.stringify(timestamps, null, 2));

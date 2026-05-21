@@ -21,7 +21,7 @@ const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources
 const GCS_BUCKET = process.env.GCS_BUCKET || 'noble-imprint-audiobooks';
 const BOOK_FILTER = process.env.BOOK_PATH_FILTER || '';
 const CHUNK_SIZE = 4500;
-const CHUNK_GAP_SECONDS = 0.5;
+const CHUNK_GAP_SECONDS = 0;
 
 const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
@@ -85,7 +85,7 @@ function chunkText(plainText, maxChars = CHUNK_SIZE) {
   return finalChunks;
 }
 
-function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences) {
+function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gapSeconds) {
   const charTimes = [];
   let chapterOffset = 0;
 
@@ -111,15 +111,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
       }
     }
 
-    // Use alignment's last character end time as chunk duration (more accurate
-    // than ffprobe which includes trailing MP3 padding). Fall back to ffprobe.
-    let chunkDur = chunkDurations[c];
-    const al = chunkAlignments[c];
-    if (al && al.character_end_times_seconds) {
-      const alEnds = al.character_end_times_seconds;
-      chunkDur = alEnds[alEnds.length - 1];
-    }
-    chapterOffset += chunkDur + CHUNK_GAP_SECONDS;
+    chapterOffset += chunkDurations[c] + gapSeconds;
   }
 
   // Join without separators so char positions match charTimes indices
@@ -265,7 +257,7 @@ async function main() {
 
       // Rebuild timestamps
       const timestamps = buildTimestampsFromAlignments(
-        chunkAlignments, chunks, chunkDurations, sentences
+        chunkAlignments, chunks, chunkDurations, sentences, CHUNK_GAP_SECONDS
       );
 
       // Upload
