@@ -133,6 +133,9 @@ function cleanLine(line) {
   // Strip <Callout> tags (keep content)
   s = s.replace(/<\/?Callout>/g, '');
 
+  // Strip <ChapterNum> tags (keep content)
+  s = s.replace(/<\/?ChapterNum>/g, '');
+
   // Strip <sup> tags (keep content)
   s = s.replace(/<\/?sup>/g, '');
 
