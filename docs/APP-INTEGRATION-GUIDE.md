@@ -127,15 +127,14 @@ Each book has a `meta.json` in the Resources repo. If the book has audiobook gen
   "title": "Oration II",
   "subtitle": "In Defense of His Flight to Pontus",
   "audiobook": {
-    "enabled": true,
-    "skip_sessions": ["01-FrontMatter.md", "08-Bibliography.md"]
+    "enabled": true
   }
 }
 ```
 
 **Check:** `meta.audiobook && meta.audiobook.enabled === true`
 
-Sessions listed in `skip_sessions` do NOT have audio — don't show a play button for those.
+If `skip_sessions` is present, sessions listed there do NOT have audio — don't show a play button for those. Most books include all sessions.
 
 ---
 
@@ -263,8 +262,8 @@ If found, that session has audio. If not found (or if the session is in `skip_se
 ## Audio Files
 
 - **Format:** MP3, 44.1kHz, 128kbps
-- **One file per chapter** (concatenated from ~4,500-char chunks)
-- **Duration:** ranges from ~10 minutes (short chapters) to ~58 minutes (long chapters)
+- **One file per chapter** (concatenated from ~4,500-char chunks, no silence gaps between chunks)
+- **Duration:** ranges from ~10 minutes (short chapters) to ~390 minutes (very long chapters like HomeStead Part One)
 - **File size:** roughly 1 MB per minute of audio
 - **Streaming:** the signed URL supports HTTP range requests for streaming/seeking
 
@@ -320,11 +319,11 @@ This is the critical file for text synchronization. Each timestamps file contain
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `start` | number | Start time in seconds (from beginning of the chapter audio) |
+| `start` | number | Start time in seconds (from beginning of the chapter audio). Character-level precision from ElevenLabs. |
 | `end` | number | End time in seconds |
-| `blockIndex` | number | Index of the block element (heading or paragraph) in document order, 0-based. Use this to find the correct element by counting. |
+| `blockIndex` | number | Sequential index of the block (heading or paragraph) as counted by the preprocessor. **Important:** do not use as a direct array index into rendered DOM elements — the rendered page may have extra elements (from Question tags, tables, list items, etc.). Use `text` matching instead (see below). |
 | `sentenceIndex` | number | Index of the sentence within that block, 0-based. A heading is always sentence 0. A paragraph with 3 sentences has indices 0, 1, 2. |
-| `text` | string | The source sentence text (from our preprocessor, not Whisper's transcription). Matches the rendered content. |
+| `text` | string | The exact source sentence text from the preprocessor. Use this to find the correct element in your rendered content via text matching. |
 
 ### How blockIndex and sentenceIndex work
 
@@ -346,11 +345,13 @@ Multiple segments share the same `blockIndex` when they're different sentences w
 
 ### Important notes
 
-- **Text comes from our preprocessor**. It matches the rendered markdown content directly.
-- **Headings have trailing periods** added for TTS pause (e.g., `"Chapter Six."` vs rendered `"Chapter Six"`). Strip trailing period when matching.
-- **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy.
+- **Text comes from our preprocessor**. It matches the rendered markdown content directly. Use this field for element matching — it is the authoritative join key between timestamps and rendered content.
+- **Headings have trailing periods** added for TTS pause (e.g., `"Chapter Six."` vs rendered `"Chapter Six"`). Strip trailing period when matching against rendered text.
+- **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy. No silence gaps between chunks — timestamps are contiguous with zero cumulative drift.
 - **Segments are contiguous** — timestamps cover the full chapter duration with no gaps.
-- **Typical count:** 60–330 segments per chapter depending on length.
+- **blockIndex is a hint, not an index.** The preprocessor and renderer may count elements differently. Always match by `text`, using `blockIndex` only as a starting position for the search.
+- **Typical count:** 60–4,400+ segments per chapter depending on length. HomeStead Part One has 4,425 segments across 390 minutes.
+- **Numbered oration paragraphs** (e.g., "103.") have a paragraph break inserted after the number to produce a TTS pause: `"103.\n\nIn the next place..."`. This does not affect the rendered content.
 
 ---
 
@@ -395,41 +396,83 @@ This is the most impactful feature — highlighting the sentence being spoken an
 ### Algorithm
 
 ```
-1. LOAD timestamps JSON when audio starts playing
+1. LOAD timestamps JSON eagerly on page load (not just on first play).
+   This allows heading audio icons and scrubber markers to appear immediately.
 
-2. BUILD a list of block elements in your view (headings and paragraphs in order).
-   These map 1:1 to the blockIndex values in the timestamps.
-   - On the web: document.querySelectorAll('.session-content h1, h2, h3, h4, h5, h6, p')
-   - In a native app: your ordered list of rendered text blocks/views
+2. BUILD a segment map by matching each timestamp segment to a rendered element.
 
-3. FOR EACH timestamp segment, resolve its target:
-   - blockIndex → the Nth block element (0-based counting)
+   IMPORTANT: Do NOT use blockIndex as a direct array index. The preprocessor
+   and renderer may produce different element counts (the preprocessor strips
+   Question tags, tables, list items, etc. but the renderer keeps them). Instead,
+   match segments to elements by TEXT CONTENT:
+
+   a. Collect all block elements (h1-h6, p) in document order
+   b. Pre-normalize the text content of each element (lowercase, strip quotes/punctuation)
+   c. For each segment, use blockIndex as a HINT for approximate position,
+      then search nearby elements for one whose text contains the segment's text
+   d. Track which elements have been matched to avoid duplicate assignments
+      (handles repeated headings like "Overview" that appear in every section)
+
+3. FOR EACH timestamp segment, resolve its sentence within the matched element:
    - sentenceIndex → the Nth sentence within that block's text
      (split on .!? followed by whitespace — same rule the preprocessor uses)
 
 4. SYNC LOOP (run on every frame or every ~100ms while playing):
    a. Get current playback time
    b. Find the segment where: start <= currentTime < end
-   c. If this segment is different from the last highlighted one:
+   c. If no segment matches (gap between segments): clear the highlight
+   d. If this segment is different from the last highlighted one:
       - Remove previous highlight
-      - Highlight the sentence at blockIndex + sentenceIndex
-      - Scroll to that element (smooth scroll, centered)
+      - Highlight the sentence at the matched element + sentenceIndex
+      - If auto-scroll is engaged: scroll to that element
 
-5. RESPECT MANUAL SCROLL:
-   - If the user scrolls manually, pause auto-scrolling for 5 seconds
-   - Resume auto-scrolling after 5 seconds of no manual scroll
+5. SCROLL BEHAVIOR:
+   - Auto-scroll follows the highlighted sentence by default
+   - When the user manually scrolls away, auto-scroll disengages and a
+     "Jump to audio location" link appears above the player
+   - Tapping the link scrolls back to the highlight and re-engages auto-scroll
+   - Skip (±15s) and scrub always force-scroll to the new position
+
+6. HEADING AUDIO ICONS:
+   - After timestamps load, add clickable headphone icons to h1-h4 headings
+   - Clicking an icon starts playback (if not already playing) and seeks to
+     that heading's exact timestamp
 ```
 
-### Finding the element (blockIndex)
+### Finding the element (text matching, not blockIndex counting)
 
-**No text matching is needed to find the element.** The `blockIndex` is a sequential counter assigned during preprocessing. Your rendered content has the same blocks in the same order. Just count:
+**Use text matching, not direct blockIndex counting.** The rendered page may have more elements than the preprocessor counted (due to Question tags, table cells, list items rendered as paragraphs, etc.). A direct `blocks[blockIndex]` lookup can be off by dozens of elements in long chapters.
+
+The recommended approach:
 
 ```
-blocks = getAllBlockElements()  // h1, h2, h3, h4, h5, h6, p — in document order
-element = blocks[segment.blockIndex]
+// Pre-compute normalized text for all block elements (once)
+blocks = getAllBlockElements()  // h1-h6, p in document order
+blockTexts = blocks.map(el => normalize(el.textContent))
+
+// For each segment, search near the hinted position
+offsetAdjust = 0
+matchedElements = Set()
+
+for each segment:
+    hint = segment.blockIndex + offsetAdjust
+    needle = normalize(segment.text).stripTrailingPeriod().first30Chars()
+
+    // Search forward from hint, then backward if needed
+    for i from hint to end:
+        if blockTexts[i].contains(needle) and not already matched (for sentenceIndex 0):
+            element = blocks[i]
+            offsetAdjust = i - segment.blockIndex  // calibrate for future segments
+            break
+
+    // Mark element as matched (prevents duplicate assignment for repeated headings)
+    if sentenceIndex == 0: matchedElements.add(i)
 ```
 
-This is reliable regardless of text content, formatting, or special characters.
+This handles:
+- **Extra DOM elements** — the offset is tracked and calibrated per match
+- **Repeated headings** — "Overview", "Conclusion", etc. appearing multiple times won't double-match
+- **Long chapters** — HomeStead Part One has 1544 DOM elements vs 1460 preprocessor blocks (84 extra)
 
 ### Finding the sentence within the element (sentenceIndex)
 
@@ -537,11 +580,13 @@ These are the components the app developer needs to implement:
 | Component | What to build | Guidance |
 |-----------|--------------|---------|
 | **Audio player** | Native playback (AVPlayer / MediaPlayer) with play/pause, scrubber, speed, skip ±15s | See [Implementing the Player](#implementing-the-player) |
-| **Block element mapping** | Count your rendered text views (headings, paragraphs) in order to map `blockIndex` → native view | See [Finding the element](#finding-the-element-blockindex) |
+| **Block element mapping** | Match segments to rendered views by **text content** (not blockIndex counting). Use blockIndex as a hint, search nearby for matching text. Track matched views to handle repeated headings. | See [Finding the element](#finding-the-element-text-matching-not-blockindex-counting) |
 | **Sentence splitting** | Split a paragraph's text on `.!?` followed by whitespace — same regex as the preprocessor: `split(/(?<=[.!?])\s+/)` | See [Finding the sentence](#finding-the-sentence-within-the-element-sentenceindex) |
 | **Sentence highlighting** | Apply background color to the character range of the target sentence within the correct text view | iOS: `NSAttributedString` with `NSBackgroundColorAttributeName`. Android: `SpannableString` with `BackgroundColorSpan`. |
 | **Sync loop** | Timer or display link (~100ms) that reads `currentTime`, finds active segment, updates highlight | See [Algorithm](#algorithm) |
-| **Scroll behavior** | Smooth scroll to the highlighted element, with manual scroll detection (pause auto-scroll for 5s) | See step 5 in the [Algorithm](#algorithm) |
+| **Scroll behavior** | Smooth scroll to the highlighted element. When user scrolls away, show "Jump to audio" link instead of force-scrolling back. | See step 5 in the [Algorithm](#algorithm) |
+| **Heading audio icons** | Clickable headphone icons on h1-h4 headings that seek audio to that heading's timestamp | See step 6 in the [Algorithm](#algorithm) |
+| **H2 scrubber markers** | Tick marks on the progress bar at H2 heading positions, clickable to seek | Use H2 segments from timestamps |
 | **Resume playback** | Save/restore position in UserDefaults / SharedPreferences | See [Resume Playback](#resume-playback) |
 | **Auto-advance** | Navigate to next chapter and auto-play when current chapter ends | See [Auto-Advance](#auto-advance-between-chapters) |
 | **Signed URL refresh** | Catch 403 errors (expired URL), request a fresh one, resume playback | See [Signed URL expiry](#signed-url-expiry) |
@@ -570,14 +615,18 @@ The website's implementation can serve as a reference. The key files are:
 
 The website player:
 - Uses HTML5 `<audio>` element (created via `new Audio(url)`) for playback
-- Fetches signed URLs lazily on first play
+- Fetches timestamps eagerly on page load (heading icons appear before playback starts)
+- Fetches signed audio URLs lazily on first play
 - Runs a `requestAnimationFrame` loop for sync
-- Uses `blockIndex` to find the DOM element by counting (no text search for element lookup)
+- Matches segments to DOM elements by **text content** (not blockIndex counting) — handles extra DOM elements from Question tags, tables, etc.
 - Uses `sentenceIndex` to split the element's text and find the target sentence
 - Creates a `Range` over the sentence and uses `getClientRects()` to position transparent highlight overlays (no DOM modification — works across `<strong>`, `<em>` boundaries)
+- Clears highlight when current time falls in a gap between segments
 - Autoscroll follows the highlighted sentence, accounting for sticky header and player bar height
-- "Jump to audio location" link appears when user scrolls away from the highlight — tapping re-engages autoscroll
-- Skip ±15s and scrub force-update the highlight immediately
+- "Jump to audio location" pill link appears when user scrolls away — tapping re-engages autoscroll
+- Skip ±15s and scrub force-update the highlight and scroll immediately
+- H2 section markers on the scrubber bar — clickable tick marks at exact heading positions
+- Clickable headphone icons on h1-h4 headings — seeks audio to that heading's timestamp
 - Mobile: expandable player bar (tap chevron for speed control and ±15s skip)
 - Saves position to `localStorage`
 - Auto-advances to the next chapter using a `localStorage` flag
