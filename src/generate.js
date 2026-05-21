@@ -149,7 +149,15 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
       }
     }
 
-    chapterOffset += chunkDurations[c] + CHUNK_GAP_SECONDS;
+    // Use alignment's last character end time as chunk duration (more accurate
+    // than ffprobe which includes trailing MP3 padding). Fall back to ffprobe.
+    let chunkDur = chunkDurations[c];
+    const al = chunkAlignments[c];
+    if (al && al.character_end_times_seconds) {
+      const alEnds = al.character_end_times_seconds;
+      chunkDur = alEnds[alEnds.length - 1];
+    }
+    chapterOffset += chunkDur + CHUNK_GAP_SECONDS;
   }
 
   // Now map sentences to character positions.
