@@ -133,8 +133,13 @@ function cleanLine(line) {
   // Strip <Callout> tags (keep content)
   s = s.replace(/<\/?Callout>/g, '');
 
-  // Strip <ChapterNum> tags (keep content)
-  s = s.replace(/<\/?ChapterNum>/g, '');
+  // Convert <ChapterNum>N</ChapterNum> to spoken word form ("Chapter Eighteen")
+  const numWords = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+    'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
+  s = s.replace(/<ChapterNum>(\d+)<\/ChapterNum>/g, (_, n) => {
+    const word = numWords[parseInt(n)] || n;
+    return `Chapter ${word}.`;
+  });
 
   // Strip <sup> tags (keep content)
   s = s.replace(/<\/?sup>/g, '');
