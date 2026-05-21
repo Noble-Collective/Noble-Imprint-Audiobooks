@@ -127,6 +127,9 @@ function cleanLine(line) {
   s = s.replace(/<Question[^>]*>/g, '');
   s = s.replace(/<\/Question>/g, '');
 
+  // Strip heading markers that may remain after Question tag removal
+  s = s.replace(/^#{1,6}\s+/, '');
+
   // Strip <Callout> tags (keep content)
   s = s.replace(/<\/?Callout>/g, '');
 
