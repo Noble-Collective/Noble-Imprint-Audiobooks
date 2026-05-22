@@ -189,9 +189,9 @@ function cleanLine(line) {
     s = s.replace(/[\u0370-\u03FF\u1F00-\u1FFF·;]+/g, '').replace(/\s+/g, ' ').replace(/^[,.\s]+/, '').trim();
   }
 
-  // Skip foreign-language lines (Latin, etc.) — no common English words + long enough to be a sentence
-  const COMMON_ENG = /\b(the|and|of|to|in|is|it|that|for|was|with|as|his|but|are|from|this|be|have|or|they|which|one|you|were|all|she|can|had|we|will|been|has|him|its|who|did|than|them|our|how|not|by|an|a|if|no|so|do|at|my|up|may|your|any|now|see|too|yet|let|say)\b/i;
-  if (!COMMON_ENG.test(s) && s.length > 50) {
+  // Skip lines that are predominantly Latin
+  const LATIN_WORDS = /\b(est|sed|non|nec|vitam|eius|sunt|enim|quod|quae|qui|aut|cum|etiam|esse|erat|fuit|haec|hoc|ille|illa|ipse|nunc|tamen|atque|inter|post|ante|apud|sicut|autem|igitur|ergo|quid|quem|quam|sumus|facimus|accipimus|prodigi|inopes|brevem)\b/i;
+  if (LATIN_WORDS.test(s) && s.split(/\s+/).filter(w => LATIN_WORDS.test(w)).length >= 3) {
     return '';
   }
 
