@@ -48,13 +48,86 @@ async function getCredits() {
 }
 
 /**
- * Split text into chunks at paragraph boundaries.
+ * Split text into chunks using stable heading-based boundaries.
+ *
+ * 1. Split at the deepest heading level that keeps sections under maxChars
+ * 2. Sections still over maxChars get split at paragraph boundaries
+ * 3. Paragraphs still over maxChars get split at sentence boundaries
+ *
+ * Because boundaries are anchored to headings (not cumulative character count),
+ * editing one section doesn't shift chunk boundaries in other sections.
  */
 function chunkText(plainText, maxChars = CHUNK_SIZE) {
-  const paragraphs = plainText.split('\n\n').filter(p => p.trim());
+  // Split into sections at progressively deeper heading levels
+  const sections = splitAtHeadings(plainText, maxChars);
+
+  // Sub-split oversized sections at paragraph boundaries, then sentence boundaries
+  const finalChunks = [];
+  for (const section of sections) {
+    if (section.length <= maxChars) {
+      finalChunks.push(section);
+    } else {
+      // Split at paragraph boundaries
+      const paraChunks = splitAtParagraphs(section, maxChars);
+      for (const chunk of paraChunks) {
+        if (chunk.length <= maxChars) {
+          finalChunks.push(chunk);
+        } else {
+          // Split at sentence boundaries
+          const sentences = chunk.split(/(?<=[.!?])\s+/);
+          let sub = '';
+          for (const sentence of sentences) {
+            if (sub.length + sentence.length + 1 > maxChars && sub) {
+              finalChunks.push(sub.trim());
+              sub = sentence;
+            } else {
+              sub += (sub ? ' ' : '') + sentence;
+            }
+          }
+          if (sub.trim()) finalChunks.push(sub.trim());
+        }
+      }
+    }
+  }
+  return finalChunks.filter(c => c.trim());
+}
+
+/**
+ * Split text at heading boundaries, using the shallowest level that keeps
+ * sections under maxChars. Tries H2 first, then H3, H4, H5, H6.
+ */
+function splitAtHeadings(text, maxChars) {
+  for (let level = 2; level <= 6; level++) {
+    const pattern = new RegExp(`^(?=${'#'.repeat(level)} )`, 'gm');
+    const sections = text.split(pattern).filter(s => s.trim());
+    const maxSection = Math.max(...sections.map(s => s.length));
+    if (maxSection <= maxChars) return sections;
+    // If this level helps but some sections are still over, split those further
+    if (sections.length > 1) {
+      const result = [];
+      for (const section of sections) {
+        if (section.length <= maxChars) {
+          result.push(section);
+        } else {
+          // Try deeper headings within this section
+          const deeper = splitAtHeadings(section, maxChars);
+          result.push(...deeper);
+        }
+      }
+      return result;
+    }
+  }
+  // No headings found or all sections still over — return as-is for paragraph splitting
+  return [text];
+}
+
+/**
+ * Split text at paragraph boundaries (greedy packing).
+ */
+function splitAtParagraphs(text, maxChars) {
+  const paragraphs = text.split('\n\n').filter(p => p.trim());
   const chunks = [];
   let current = '';
-
   for (const para of paragraphs) {
     if (current.length + para.length + 2 > maxChars && current) {
       chunks.push(current.trim());
@@ -64,27 +137,7 @@ function chunkText(plainText, maxChars = CHUNK_SIZE) {
     }
   }
   if (current.trim()) chunks.push(current.trim());
-
-  // Handle oversized paragraphs — split on sentence boundaries
-  const finalChunks = [];
-  for (const chunk of chunks) {
-    if (chunk.length <= maxChars) {
-      finalChunks.push(chunk);
-    } else {
-      const sentences = chunk.split(/(?<=[.!?])\s+/);
-      let sub = '';
-      for (const sentence of sentences) {
-        if (sub.length + sentence.length + 1 > maxChars && sub) {
-          finalChunks.push(sub.trim());
-          sub = sentence;
-        } else {
-          sub += (sub ? ' ' : '') + sentence;
-        }
-      }
-      if (sub.trim()) finalChunks.push(sub.trim());
-    }
-  }
-  return finalChunks;
+  return chunks;
 }
 
 function hashChunk(text) {
@@ -244,14 +297,24 @@ async function downloadFromGCS(gcsPath, localPath) {
 }
 
 /**
- * Load existing chunk hashes from the manifest for a session.
+ * Build a hash→GCS filename map from the manifest for a session.
+ * Supports both old format (chunkHashes: {"0":"abc"}) and new format (hashToFile: {"abc":"abc.mp3"}).
  */
-function getExistingChunkHashes(manifest, sessionFile) {
+function getExistingHashMap(manifest, sessionFile) {
   if (!manifest) return {};
   const session = manifest.sessions.find(s => s.sessionFile === sessionFile);
-  if (!session || !session.chunkHashes) return {};
-  // chunkHashes: { "0": "abc123", "1": "def456", ... }
-  return session.chunkHashes;
+  if (!session) return {};
+  // New format: hash → GCS filename
+  if (session.hashToFile) return session.hashToFile;
+  // Old format: index → hash — convert to hash → old index-based filename
+  if (session.chunkHashes) {
+    const map = {};
+    for (const [idx, hash] of Object.entries(session.chunkHashes)) {
+      map[hash] = `${String(idx).padStart(3, '0')}`;
+    }
+    return map;
+  }
+  return {};
 }
 
 async function updateManifest(bookSlugPath, bookRepoPath, sessions) {
@@ -334,38 +397,46 @@ async function main() {
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
 
-      // Chunk the plain text and hash each chunk
+      // Chunk the plain text using stable heading-based boundaries
       const chunks = chunkText(item.plainText);
-      const chunkHashes = {};
-      for (let c = 0; c < chunks.length; c++) {
-        chunkHashes[c] = hashChunk(chunks[c]);
-      }
+      const chunkHashes = chunks.map(c => hashChunk(c));
 
-      // Compare against existing chunk hashes
-      const existingHashes = getExistingChunkHashes(existingManifest, item.sessionFile);
+      // Build hash→file map from existing manifest (supports old and new format)
+      const existingHashMap = getExistingHashMap(existingManifest, item.sessionFile);
       const gcsChunksDir = `audio/${bookSlugPath}/chunks/${slug}`;
 
       let regeneratedCount = 0;
       let reusedCount = 0;
       const chunkPaths = [];
       const chunkAlignments = [];
+      const newHashToFile = {};
 
       for (let c = 0; c < chunks.length; c++) {
-        const chunkPath = join(tmpDir, `${slug}_chunk_${String(c).padStart(3, '0')}.mp3`);
-        const chunkAlignPath = join(tmpDir, `${slug}_chunk_${String(c).padStart(3, '0')}.align.json`);
+        const hash = chunkHashes[c];
+        const gcsName = hash; // use content hash as filename for stability
+        const chunkPath = join(tmpDir, `${slug}_chunk_${hash}.mp3`);
+        const chunkAlignPath = join(tmpDir, `${slug}_chunk_${hash}.align.json`);
         chunkPaths.push(chunkPath);
 
-        // Check if this chunk's content is unchanged AND the chunk MP3 exists in GCS
-        if (existingHashes[String(c)] === chunkHashes[c]) {
+        // Check if this chunk's content hash exists in any previous chunk (regardless of index)
+        const existingFile = existingHashMap[hash];
+        if (existingFile) {
           try {
-            await downloadFromGCS(`${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`, chunkPath);
-            // Try to download cached alignment
+            await downloadFromGCS(`${gcsChunksDir}/${existingFile}.mp3`, chunkPath);
             try {
-              await downloadFromGCS(`${gcsChunksDir}/${String(c).padStart(3, '0')}.align.json`, chunkAlignPath);
+              await downloadFromGCS(`${gcsChunksDir}/${existingFile}.align.json`, chunkAlignPath);
               chunkAlignments.push(JSON.parse(readFileSync(chunkAlignPath, 'utf-8')));
             } catch {
-              chunkAlignments.push(null); // no cached alignment — will estimate
+              chunkAlignments.push(null);
             }
+            // Re-upload under new hash-based name if it was stored under old index-based name
+            if (existingFile !== gcsName) {
+              await uploadToGCS(chunkPath, `${gcsChunksDir}/${gcsName}.mp3`);
+              if (chunkAlignments[chunkAlignments.length - 1]) {
+                await uploadToGCS(chunkAlignPath, `${gcsChunksDir}/${gcsName}.align.json`);
+              }
+            }
+            newHashToFile[hash] = gcsName;
             reusedCount++;
             continue;
           } catch {
@@ -383,25 +454,25 @@ async function main() {
         chunkAlignments.push(result.alignment);
         regeneratedCount++;
 
-        // Upload individual chunk + alignment to GCS for future reuse
-        await uploadToGCS(chunkPath, `${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`);
+        // Upload with hash-based filename
+        await uploadToGCS(chunkPath, `${gcsChunksDir}/${gcsName}.mp3`);
         if (result.alignment) {
           writeFileSync(chunkAlignPath, JSON.stringify(result.alignment));
-          await uploadToGCS(chunkAlignPath, `${gcsChunksDir}/${String(c).padStart(3, '0')}.align.json`);
+          await uploadToGCS(chunkAlignPath, `${gcsChunksDir}/${gcsName}.align.json`);
         }
+        newHashToFile[hash] = gcsName;
 
         if (c < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
       }
 
       console.log(`    ${chunks.length} chunks: ${regeneratedCount} generated, ${reusedCount} reused`);
 
-      // Clean up stale chunks in GCS (if chunk count decreased)
-      if (existingHashes) {
-        const oldCount = Object.keys(existingHashes).length;
-        for (let c = chunks.length; c < oldCount; c++) {
-          try {
-            await bucket.file(`${gcsChunksDir}/${String(c).padStart(3, '0')}.mp3`).delete();
-          } catch { /* already gone */ }
+      // Clean up stale chunks in GCS — remove hashes no longer in use
+      const activeHashes = new Set(Object.values(newHashToFile));
+      for (const [oldHash, oldFile] of Object.entries(existingHashMap)) {
+        if (!activeHashes.has(oldFile)) {
+          try { await bucket.file(`${gcsChunksDir}/${oldFile}.mp3`).delete(); } catch { /* already gone */ }
+          try { await bucket.file(`${gcsChunksDir}/${oldFile}.align.json`).delete(); } catch { /* already gone */ }
         }
       }
 
@@ -471,7 +542,7 @@ async function main() {
         ttsFile: `${slug}.tts.json`,
         timestampsFile: `${slug}.timestamps.json`,
         contentHash: item.contentHash,
-        chunkHashes,
+        hashToFile: newHashToFile,
         chunkCount: chunks.length,
         chunksRegenerated: regeneratedCount,
         chunksReused: reusedCount,
