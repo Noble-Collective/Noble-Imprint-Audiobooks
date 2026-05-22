@@ -189,9 +189,10 @@ function cleanLine(line) {
     s = s.replace(/[\u0370-\u03FF\u1F00-\u1FFF·;]+/g, '').replace(/\s+/g, ' ').replace(/^[,.\s]+/, '').trim();
   }
 
-  // Skip lines that are predominantly Latin
-  const LATIN_WORDS = /\b(est|sed|non|nec|vitam|eius|sunt|enim|quod|quae|qui|aut|cum|etiam|esse|erat|fuit|haec|hoc|ille|illa|ipse|nunc|tamen|atque|inter|post|ante|apud|sicut|autem|igitur|ergo|quid|quem|quam|sumus|facimus|accipimus|prodigi|inopes|brevem)\b/i;
-  if (LATIN_WORDS.test(s) && s.split(/\s+/).filter(w => LATIN_WORDS.test(w)).length >= 3) {
+  // Skip lines that are entirely Latin — every word must match Latin vocabulary
+  const LATIN_WORD = /^(a|ab|ac|ad|aeque|ante|apud|at|atque|aut|autem|brevem|cum|de|e|eius|enim|ergo|esse|est|et|etiam|ex|facimus|fuit|haec|hic|hoc|id|igitur|ille|illa|in|inopes|inter|ipse|ita|nec|neque|nihil|non|noster|nunc|ob|omnis|per|post|pro|prodigi|quae|quam|quasi|quem|qui|quia|quid|quod|se|sed|si|sic|sine|sub|sumus|sunt|tamen|ut|vel|vita|vitam|accipimus)$/i;
+  const words = s.replace(/[.,;:!?'"()—–\-]/g, '').trim().split(/\s+/).filter(w => w);
+  if (words.length >= 3 && words.every(w => LATIN_WORD.test(w))) {
     return '';
   }
 
