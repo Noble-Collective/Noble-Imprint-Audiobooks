@@ -173,6 +173,9 @@ function cleanLine(line) {
   s = s.replace(/\*(.+?)\*/g, '$1');
   s = s.replace(/_(.+?)_/g, '$1');
 
+  // Strip sub-paragraph numbers at start of line (e.g. "2 Hence arose..." → "Hence arose...")
+  s = s.replace(/^\d{1,2}\s+(?=[A-Z])/, '');
+
   // Strip citation markers that weren't caught
   s = s.replace(/^<<\s*/, '');
 
