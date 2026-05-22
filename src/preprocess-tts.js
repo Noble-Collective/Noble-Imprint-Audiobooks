@@ -130,6 +130,9 @@ function cleanLine(line) {
   // Strip heading markers that may remain after Question tag removal
   s = s.replace(/^#{1,6}\s+/, '');
 
+  // Normalize specific headings for natural TTS pronunciation
+  if (/^Reflection Questions$/i.test(s.trim())) s = 'Reflection questions';
+
   // Strip <Callout> tags (keep content)
   s = s.replace(/<\/?Callout>/g, '');
 
