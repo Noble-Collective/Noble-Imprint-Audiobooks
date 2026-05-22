@@ -170,14 +170,16 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   };
 }
 
-async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 3) {
+async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 5) {
+  const RETRYABLE = new Set([429, 500, 502, 503]);
   for (let i = 0; i < retries; i++) {
     try {
       return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat);
     } catch (err) {
-      if (err.status === 429 && i < retries - 1) {
-        const wait = Math.pow(4, i + 1) * 1000;
-        console.log(`    Rate limited, waiting ${wait / 1000}s...`);
+      const status = err.status || (err.message && parseInt(err.message.match(/\((\d+)\)/)?.[1]));
+      if (RETRYABLE.has(status) && i < retries - 1) {
+        const wait = Math.pow(3, i + 1) * 1000; // 3s, 9s, 27s, 81s
+        console.log(`    ${status === 429 ? 'Rate limited' : 'Server error (' + status + ')'}, retrying in ${wait / 1000}s... (attempt ${i + 2}/${retries})`);
         await new Promise(r => setTimeout(r, wait));
       } else throw err;
     }
