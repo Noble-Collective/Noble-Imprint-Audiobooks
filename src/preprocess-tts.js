@@ -184,6 +184,17 @@ function cleanLine(line) {
     return '';
   }
 
+  // Strip Greek text from mixed Greek+English lines (keep the English)
+  if (GREEK_RE.test(s)) {
+    s = s.replace(/[\u0370-\u03FF\u1F00-\u1FFF·;]+/g, '').replace(/\s+/g, ' ').replace(/^[,.\s]+/, '').trim();
+  }
+
+  // Strip italic foreign-language lines (Latin, etc.) — italic lines with no common English words
+  const COMMON_ENG = /\b(the|and|of|to|in|is|it|that|for|was|with|as|his|but|are|from|this|be|have|or|they|which|one|you|were|all|she|can|had|we|will|been|has|him|its|who|did|than|them|our|how|not)\b/i;
+  if (/^\*[^*]+\*$/.test(s) && !COMMON_ENG.test(s)) {
+    return '';
+  }
+
   return s.trim();
 }
 
