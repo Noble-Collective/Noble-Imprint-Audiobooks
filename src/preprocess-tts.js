@@ -144,9 +144,11 @@ function cleanLine(line) {
   // Strip <sup> tags (keep content)
   s = s.replace(/<\/?sup>/g, '');
 
-  // Strip footnote references [^1] and footnote definitions [^1]:
+  // Skip footnote definition lines [^1]: ... (must check before stripping references)
+  if (/^\[\^\d+\]:/.test(s)) return '';
+
+  // Strip footnote references [^1]
   s = s.replace(/\[\^\d+\]/g, '');
-  if (s.match(/^\[\^\d+\]:/)) return '';
 
   // Strip <br> tags
   s = s.replace(/<br\s*\/?>/g, '');
