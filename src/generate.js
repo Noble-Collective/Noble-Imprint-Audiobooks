@@ -161,8 +161,13 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
       }),
     }
   );
-  if (res.status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 });
-  if (!res.ok) throw new Error(`TTS failed (${res.status}): ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    const isQuota = body.includes('quota_exceeded');
+    const err = new Error(`TTS failed (${res.status}): ${body}`);
+    err.status = isQuota ? 'quota' : res.status;
+    throw err;
+  }
   const data = await res.json();
   return {
     audio: Buffer.from(data.audio_base64, 'base64'),
@@ -171,15 +176,23 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
 }
 
 async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 5) {
-  const RETRYABLE = new Set([429, 500, 502, 503]);
+  const RETRYABLE_STATUS = new Set([429, 500, 502, 503]);
   for (let i = 0; i < retries; i++) {
     try {
       return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat);
     } catch (err) {
-      const status = err.status || (err.message && parseInt(err.message.match(/\((\d+)\)/)?.[1]));
-      if (RETRYABLE.has(status) && i < retries - 1) {
-        const wait = Math.pow(3, i + 1) * 1000; // 3s, 9s, 27s, 81s
-        console.log(`    ${status === 429 ? 'Rate limited' : 'Server error (' + status + ')'}, retrying in ${wait / 1000}s... (attempt ${i + 2}/${retries})`);
+      const status = err.status;
+      const isRetryable = RETRYABLE_STATUS.has(status) || status === 'quota';
+      if (isRetryable && i < retries - 1) {
+        // Quota errors get longer backoff (60s, 120s, 180s, 240s) to allow auto top-up
+        // Server/rate errors get shorter backoff (3s, 9s, 27s, 81s)
+        const wait = status === 'quota'
+          ? (i + 1) * 60 * 1000
+          : Math.pow(3, i + 1) * 1000;
+        const label = status === 'quota' ? 'Quota exceeded (waiting for auto top-up)'
+          : status === 429 ? 'Rate limited'
+          : 'Server error (' + status + ')';
+        console.log(`    ${label}, retrying in ${wait / 1000}s... (attempt ${i + 2}/${retries})`);
         await new Promise(r => setTimeout(r, wait));
       } else throw err;
     }
