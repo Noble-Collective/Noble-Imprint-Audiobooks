@@ -163,6 +163,8 @@ function cleanLine(line) {
   if (s.startsWith('<< ')) {
     s = s.slice(3).trim();
     s = convertBibleRef(s);
+    // Ensure attributions end with sentence punctuation for a natural pause
+    if (s && !/[.!?]$/.test(s)) s += '.';
   }
 
   // Strip blockquote markers
