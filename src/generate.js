@@ -29,6 +29,25 @@ const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
 
 /**
+ * Query ElevenLabs subscription for credit usage.
+ * Returns { character_count, character_limit } or null on failure.
+ */
+async function getCredits() {
+  try {
+    const res = await fetch(`${API_BASE}/user/subscription`, {
+      headers: { 'xi-api-key': API_KEY },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      used: data.character_count || 0,
+      limit: data.character_limit || 0,
+      remaining: (data.character_limit || 0) - (data.character_count || 0),
+    };
+  } catch { return null; }
+}
+
+/**
  * Split text into chunks at paragraph boundaries.
  */
 function chunkText(plainText, maxChars = CHUNK_SIZE) {
@@ -264,9 +283,21 @@ async function main() {
   const workFile = process.env.WORK_FILE || join(process.env.RUNNER_TEMP || '/tmp', 'changed_sessions.json');
   const workItems = JSON.parse(readFileSync(workFile, 'utf-8'));
 
+  // Log trigger source
+  const triggerEvent = process.env.GITHUB_EVENT_NAME || 'unknown';
+  const bookFilter = process.env.BOOK_PATH_FILTER || '(all books)';
+  const forceRegen = process.env.FORCE_REGENERATE === 'true';
+  console.log(`[AUDIT] Trigger: ${triggerEvent} | Book filter: ${bookFilter} | Force: ${forceRegen}`);
+
   if (workItems.length === 0) {
     console.log('No work to do.');
     return;
+  }
+
+  // Snapshot credits before generation
+  const creditsBefore = await getCredits();
+  if (creditsBefore) {
+    console.log(`[AUDIT] Credits before: ${creditsBefore.remaining.toLocaleString()} remaining (${creditsBefore.used.toLocaleString()} / ${creditsBefore.limit.toLocaleString()})`);
   }
 
   const bookGroups = {};
@@ -274,6 +305,8 @@ async function main() {
     if (!bookGroups[item.bookRepoPath]) bookGroups[item.bookRepoPath] = [];
     bookGroups[item.bookRepoPath].push(item);
   }
+
+  let grandTotalChars = 0, grandTotalDuration = 0, grandTotalRegen = 0, grandTotalReused = 0, grandTotalSessions = 0;
 
   for (const [bookRepoPath, items] of Object.entries(bookGroups)) {
     const bookSlugPath = items[0].bookSlugPath;
@@ -456,7 +489,30 @@ async function main() {
     const totalReused = sessionResults.reduce((s, r) => s + r.chunksReused, 0);
     console.log(`\n  Done: ${sessionResults.length} sessions, ${totalChars.toLocaleString()} chars, ${Math.floor(totalDuration / 60)}m ${totalDuration % 60}s total`);
     console.log(`  Chunks: ${totalRegen} generated, ${totalReused} reused`);
+
+    grandTotalChars += totalChars;
+    grandTotalDuration += totalDuration;
+    grandTotalRegen += totalRegen;
+    grandTotalReused += totalReused;
+    grandTotalSessions += sessionResults.length;
   }
+
+  // Snapshot credits after generation
+  const creditsAfter = await getCredits();
+  const creditsUsed = (creditsBefore && creditsAfter)
+    ? creditsBefore.remaining - creditsAfter.remaining
+    : null;
+
+  console.log('\n[AUDIT] ═══════════════════════════════════════════');
+  console.log(`[AUDIT] Trigger: ${triggerEvent} | Book filter: ${bookFilter} | Force: ${forceRegen}`);
+  if (creditsBefore && creditsAfter) {
+    console.log(`[AUDIT] Credits: ${creditsBefore.remaining.toLocaleString()} → ${creditsAfter.remaining.toLocaleString()} (${creditsUsed.toLocaleString()} used)`);
+  } else {
+    console.log(`[AUDIT] Credits: unable to query (API key may lack permission)`);
+  }
+  console.log(`[AUDIT] Sessions: ${grandTotalSessions} | Characters: ${grandTotalChars.toLocaleString()} | Audio: ${Math.floor(grandTotalDuration / 60)}m ${grandTotalDuration % 60}s`);
+  console.log(`[AUDIT] Chunks: ${grandTotalRegen} generated, ${grandTotalReused} reused`);
+  console.log('[AUDIT] ═══════════════════════════════════════════');
 
   console.log('\nGeneration complete!');
 }
