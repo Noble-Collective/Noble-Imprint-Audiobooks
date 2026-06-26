@@ -12,5 +12,8 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.0.0"
+  },
+  "overrides": {
+    "gaxios": "^7.0.0"
   }
 }

@@ -52,16 +52,7 @@ jobs:
 
       - name: Detect changes
         id: detect
-        run: |
-          for attempt in 1 2 3; do
-            if node src/detect-changes.js; then
-              exit 0
-            fi
-            echo "Attempt $attempt failed, retrying in 10s..."
-            sleep 10
-          done
-          echo "All attempts failed"
-          exit 1
+        run: node src/detect-changes.js
         env:
           RESOURCES_PATH: resources
           GCS_BUCKET: noble-imprint-audiobooks
