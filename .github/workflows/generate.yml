@@ -32,7 +32,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          # Pinned to 20: node-fetch v2 (used by gaxios 6 / @google-cloud/storage 7)
+          # has a broken Gunzip stream on Node 22 + newer ubuntu runner images.
+          # Unpin when @google-cloud/storage moves to gaxios 7+.
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
