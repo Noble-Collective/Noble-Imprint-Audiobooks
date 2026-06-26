@@ -30,6 +30,22 @@ const BOOK_FILTER = process.env.BOOK_PATH_FILTER || '';
 const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
 
+/**
+ * Retry an async operation with exponential backoff.
+ */
+async function retry(fn, { retries = 3, baseDelay = 2000, label = 'operation' } = {}) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.warn(`  ${label} failed (attempt ${attempt}/${retries}), retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
 function slugify(name) {
   return name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -100,8 +116,10 @@ async function main() {
 
     console.log(`Checking book: ${bookRepoPath}`);
 
-    // Load existing manifest from GCS
-    const manifest = await loadManifest(bookSlugPath);
+    // Load existing manifest from GCS (with retry for transient auth/network errors)
+    const manifest = await retry(() => loadManifest(bookSlugPath), {
+      label: `Loading manifest for ${bookRepoPath}`,
+    });
     const existingHashes = {};
     if (manifest) {
       for (const s of manifest.sessions) {
