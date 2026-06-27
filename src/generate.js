@@ -332,13 +332,26 @@ function concatenateChunks(chunkPaths, outputPath, tmpDir) {
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
 }
 
+async function gcsRetry(fn, label, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = 2000 * Math.pow(2, attempt - 1);
+      console.warn(`    GCS ${label} failed (attempt ${attempt}/${retries}), retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
 async function uploadToGCS(localPath, gcsPath) {
-  await bucket.upload(localPath, { destination: gcsPath });
+  await gcsRetry(() => bucket.upload(localPath, { destination: gcsPath }), 'upload');
   console.log(`    Uploaded: gs://${GCS_BUCKET}/${gcsPath}`);
 }
 
 async function downloadFromGCS(gcsPath, localPath) {
-  await bucket.file(gcsPath).download({ destination: localPath });
+  await gcsRetry(() => bucket.file(gcsPath).download({ destination: localPath }), 'download');
 }
 
 /**
