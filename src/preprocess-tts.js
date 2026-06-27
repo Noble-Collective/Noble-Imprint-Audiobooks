@@ -58,13 +58,13 @@ export function preprocessSession(markdown, voiceId) {
       const level = headingMatch[1].length;
       const text = cleanText(headingMatch[2]);
 
-      // SSML break tags handle pauses, so headings don't need trailing periods.
-      // Periods caused ElevenLabs to misread multi-word titles like
-      // "Responsibility Commitment." as two separate sentences.
+      // Sentence-case headings for natural TTS (preserves proper nouns).
+      // SSML break tags handle pauses — no trailing periods needed.
+      const spoken = sentenceCaseHeading(text);
       if (level === 1) {
         chapterName = text;
         blocks.push(makeBlock('h1',
-          `<break time="2s"/>${text}<break time="2s"/>`, voiceId));
+          `<break time="2s"/>${spoken}<break time="2s"/>`, voiceId));
         continue;
       }
 
@@ -72,11 +72,11 @@ export function preprocessSession(markdown, voiceId) {
       if (level === 2) {
         // H2 = major section — clear structural transition
         blocks.push(makeBlock(subType,
-          `<break time="1.5s"/>${text}<break time="1.5s"/>`, voiceId));
+          `<break time="1.5s"/>${spoken}<break time="1.5s"/>`, voiceId));
       } else {
         // H3-H6 = subsections — 1s pause before, 0.5s after
         blocks.push(makeBlock(subType,
-          `<break time="1s"/>${text}<break time="0.5s"/>`, voiceId));
+          `<break time="1s"/>${spoken}<break time="0.5s"/>`, voiceId));
       }
       continue;
     }
@@ -227,6 +227,31 @@ function cleanText(text) {
   s = s.replace(/\*(.+?)\*/g, '$1');
   s = s.replace(/_(.+?)_/g, '$1');
   return s.trim();
+}
+
+/**
+ * Convert heading text to sentence case for natural TTS pronunciation.
+ * Preserves capitalization for proper nouns (God, Christ, Lord, etc.)
+ * and the first word. Prevents ElevenLabs from interpreting title-cased
+ * multi-word headings as separate sentences.
+ */
+const KEEP_CAPITALIZED = new Set([
+  'God', "God's", 'Lord', "Lord's", 'Christ', "Christ's", 'Jesus', "Jesus'",
+  'Christian', 'Christians', 'Bible', 'Biblical', 'Scripture', 'Scriptures',
+  'Holy', 'Spirit', "Spirit's", 'Father', "Father's", 'Son', "Son's",
+  'Israel', "Israel's", 'Israelite', 'Israelites',
+  'Moses', 'David', 'Mary', 'Joseph', 'Simeon', 'Anna',
+  'Psalm', 'Psalms', 'Proverbs', 'Ephesians', 'Hebrews',
+  'I', "I'm", "I'll", "I've", "I'd",
+]);
+function sentenceCaseHeading(text) {
+  return text.replace(/\S+/g, (word, offset) => {
+    if (offset === 0) return word; // keep first word as-is
+    if (KEEP_CAPITALIZED.has(word)) return word;
+    if (word[0] === word[0].toLowerCase()) return word; // already lowercase
+    // Fully lowercase the word (handles "THREE" → "three", "Commitment" → "commitment")
+    return word.toLowerCase();
+  });
 }
 
 /**
