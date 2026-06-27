@@ -238,11 +238,29 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   // joined with \n\n too. We need to find sentence positions in the chunk
   // text and convert to charTimes indices, skipping the \n\n separators.
 
-  // Build a combined text that matches charTimes indexing (no \n\n between chunks).
-  // Strip SSML break tags since ElevenLabs alignment data doesn't include them.
-  const strippedChunks = chunkTexts.map(t => t.replace(/<break[^>]*\/>/g, ''));
-  const flatText = strippedChunks.join('');
-  const flatLower = flatText.toLowerCase();
+  // Build two versions of the flat text:
+  // 1. flatText: includes SSML break tags — matches charTimes indexing from ElevenLabs
+  //    (ElevenLabs includes break tag characters in its alignment output)
+  // 2. flatTextClean/flatCleanLower: stripped of break tags — used for matching
+  //    sentence text which doesn't contain SSML tags
+  const flatText = chunkTexts.join('');
+  const flatTextClean = flatText.replace(/<break[^>]*\/>/g, '');
+  const flatCleanLower = flatTextClean.toLowerCase();
+
+  // Build a mapping from clean text positions back to original flatText positions
+  // so we can look up charTimes at the right index after matching in clean text
+  const cleanToOriginal = [];
+  let origIdx = 0;
+  for (let ci = 0; ci < flatTextClean.length; ci++) {
+    // Skip past any SSML tag characters in the original
+    while (origIdx < flatText.length && flatText[origIdx] === '<' && flatText.substring(origIdx).startsWith('<break')) {
+      const tagEnd = flatText.indexOf('/>', origIdx);
+      if (tagEnd >= 0) origIdx = tagEnd + 2;
+      else break;
+    }
+    cleanToOriginal.push(origIdx);
+    origIdx++;
+  }
 
   if (charTimes.length !== flatText.length) {
     console.log(`    Warning: charTimes (${charTimes.length}) != flatText (${flatText.length}) — using proportional fallback for mismatched chars`);
@@ -252,26 +270,23 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   let searchFrom = 0;
 
   for (const sent of sentences) {
-    // Find the NEAREST match from searchFrom, searching forward first.
-    // Case-insensitive since headings are sentence-cased in TTS.
-    // If forward search jumps too far (duplicate text), also try from searchFrom
-    // and pick the closest match to avoid skipping ahead.
+    // Search in the clean (tag-stripped) text, case-insensitive
     const needle = sent.text.toLowerCase();
-    let idx = flatLower.indexOf(needle, searchFrom);
+    let cleanIdx = flatCleanLower.indexOf(needle, searchFrom);
 
     // If not found forward, try from the beginning
-    if (idx < 0 && searchFrom > 0) {
-      idx = flatLower.indexOf(needle);
+    if (cleanIdx < 0 && searchFrom > 0) {
+      cleanIdx = flatCleanLower.indexOf(needle);
     }
 
     // If found but jumped far ahead, check if there's a closer match
     // (handles duplicates like "Personal Testimony" appearing multiple times)
-    if (idx > searchFrom + 500) {
-      const earlier = flatLower.indexOf(needle, Math.max(0, searchFrom - 50));
-      if (earlier >= 0 && earlier < idx) idx = earlier;
+    if (cleanIdx > searchFrom + 500) {
+      const earlier = flatCleanLower.indexOf(needle, Math.max(0, searchFrom - 50));
+      if (earlier >= 0 && earlier < cleanIdx) cleanIdx = earlier;
     }
 
-    if (idx < 0) {
+    if (cleanIdx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
       const totalDuration = chapterOffset - CHUNK_GAP_SECONDS;
@@ -282,12 +297,15 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
         sentenceIndex: sent.sentenceIndex,
         text: sent.text,
       });
+      searchFrom = cleanIdx >= 0 ? cleanIdx + sent.text.length : searchFrom;
       continue;
     }
 
-    const startChar = idx;
-    const endChar = idx + sent.text.length - 1;
-    searchFrom = idx + sent.text.length;
+    // Map clean text positions back to original positions for charTimes lookup
+    const startChar = cleanToOriginal[cleanIdx] || 0;
+    const endCleanIdx = cleanIdx + sent.text.length - 1;
+    const endChar = endCleanIdx < cleanToOriginal.length ? cleanToOriginal[endCleanIdx] : startChar + sent.text.length;
+    searchFrom = cleanIdx + sent.text.length;
 
     // Look up times from charTimes array
     const startTime = startChar < charTimes.length ? charTimes[startChar].start : 0;
