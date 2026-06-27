@@ -144,8 +144,9 @@ function cleanLine(line) {
     return `Chapter ${word}.`;
   });
 
-  // Strip <sup> tags (keep content)
-  s = s.replace(/<\/?sup>/g, '');
+  // Strip <sup> verse numbers entirely (tag + content)
+  // e.g. <sup>25</sup>, <sup>2:21</sup>
+  s = s.replace(/<sup>[^<]*<\/sup>\s*/g, '');
 
   // Skip footnote definition lines [^1]: ... (must check before stripping references)
   if (/^\[\^\d+\]:/.test(s)) return '';
@@ -179,6 +180,10 @@ function cleanLine(line) {
   s = s.replace(/\*\*(.+?)\*\*/g, '$1');
   s = s.replace(/\*(.+?)\*/g, '$1');
   s = s.replace(/_(.+?)_/g, '$1');
+
+  // Strip parenthetical verse references from commentary
+  // e.g. (2:23), (cf. Hebrews 10:25), (2:22; cf. 2:21, 23–24, 27, 39)
+  s = s.replace(/\s*\((?:cf\.\s*)?(?:\d+:\d+|[1-3]?\s*[A-Z][a-z]+\s+\d+)[^)]*\)/g, '');
 
   // Strip sub-paragraph numbers at start of line (e.g. "2 Hence arose..." → "Hence arose...")
   s = s.replace(/^\d{1,2}\s+(?=[A-Z])/, '');
