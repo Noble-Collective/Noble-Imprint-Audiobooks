@@ -157,13 +157,8 @@ function cleanLine(line) {
   // Strip <Callout> tags (keep content)
   s = s.replace(/<\/?Callout>/g, '');
 
-  // Convert <ChapterNum>N</ChapterNum> to spoken word form ("Chapter Eighteen")
-  const numWords = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
-    'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
-  s = s.replace(/<ChapterNum>(\d+)<\/ChapterNum>/g, (_, n) => {
-    const word = numWords[parseInt(n)] || n;
-    return `Chapter ${word}.`;
-  });
+  // Strip <ChapterNum> tags and content (section numbers, not spoken)
+  s = s.replace(/<ChapterNum>\d+<\/ChapterNum>\s*/g, '');
 
   // Strip <sup> verse numbers entirely (tag + content)
   // e.g. <sup>25</sup>, <sup>2:21</sup>
