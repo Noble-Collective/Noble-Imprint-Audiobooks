@@ -48,77 +48,65 @@ async function getCredits() {
 }
 
 /**
- * Split text into chunks using stable heading-based boundaries.
+ * Split text into chunks by walking through blocks linearly.
  *
- * 1. Split at the deepest heading level that keeps sections under maxChars
- * 2. Sections still over maxChars get split at paragraph boundaries
- * 3. Paragraphs still over maxChars get split at sentence boundaries
+ * Accumulates blocks into a chunk until one of two flush triggers:
+ *   1. An H1/H2/H3 heading is reached — structural break
+ *   2. Adding the next block would exceed TARGET_CHUNK_SIZE — size break
  *
- * Because boundaries are anchored to headings (not cumulative character count),
- * editing one section doesn't shift chunk boundaries in other sections.
+ * Minimum size guard: never flush a chunk under MIN_CHUNK_SIZE chars,
+ * even at a heading boundary — keeps chunks long enough for natural TTS.
+ *
+ * Uses block sub_type metadata (h1, h2, h3, p) from preprocessing.
  */
-function chunkText(plainText, maxChars = CHUNK_SIZE) {
-  // Split into sections at progressively deeper heading levels
-  const sections = splitAtHeadings(plainText, maxChars);
+const TARGET_CHUNK_SIZE = 800;
+const MIN_CHUNK_SIZE = 250;
+const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']);
 
-  // Sub-split oversized sections at paragraph boundaries, then sentence boundaries
-  const finalChunks = [];
-  for (const section of sections) {
-    if (section.length <= maxChars) {
-      finalChunks.push(section);
-    } else {
-      // Split at paragraph boundaries
-      const paraChunks = splitAtParagraphs(section, maxChars);
-      for (const chunk of paraChunks) {
-        if (chunk.length <= maxChars) {
-          finalChunks.push(chunk);
-        } else {
-          // Split at sentence boundaries
-          const sentences = chunk.split(/(?<=[.!?])\s+/);
-          let sub = '';
-          for (const sentence of sentences) {
-            if (sub.length + sentence.length + 1 > maxChars && sub) {
-              finalChunks.push(sub.trim());
-              sub = sentence;
-            } else {
-              sub += (sub ? ' ' : '') + sentence;
-            }
-          }
-          if (sub.trim()) finalChunks.push(sub.trim());
-        }
-      }
+function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
+  // If no blocks provided, fall back to paragraph splitting
+  if (!blocks || blocks.length === 0) {
+    return splitAtParagraphs(plainText, maxChars);
+  }
+
+  const chunks = [];
+  let currentTexts = [];
+  let currentLen = 0;
+
+  function flush() {
+    if (currentTexts.length > 0) {
+      chunks.push(currentTexts.join('\n\n'));
+      currentTexts = [];
+      currentLen = 0;
     }
   }
-  return finalChunks.filter(c => c.trim());
-}
 
-/**
- * Split text at heading boundaries, using the shallowest level that keeps
- * sections under maxChars. Tries H2 first, then H3, H4, H5, H6.
- */
-function splitAtHeadings(text, maxChars) {
-  for (let level = 2; level <= 6; level++) {
-    const pattern = new RegExp(`^(?=${'#'.repeat(level)} )`, 'gm');
-    const sections = text.split(pattern).filter(s => s.trim());
-    const maxSection = Math.max(...sections.map(s => s.length));
-    if (maxSection <= maxChars) return sections;
-    // If this level helps but some sections are still over, split those further
-    if (sections.length > 1) {
-      const result = [];
-      for (const section of sections) {
-        if (section.length <= maxChars) {
-          result.push(section);
-        } else {
-          // Try deeper headings within this section
-          const deeper = splitAtHeadings(section, maxChars);
-          result.push(...deeper);
-        }
-      }
-      return result;
+  for (const block of blocks) {
+    const text = block.nodes[0].text;
+    const addedLen = currentLen > 0 ? text.length + 2 : text.length; // +2 for \n\n separator
+
+    // Flush trigger 1: H1/H2/H3 heading (if chunk is large enough)
+    if (FORCE_SPLIT_TYPES.has(block.sub_type) && currentLen >= MIN_CHUNK_SIZE) {
+      flush();
     }
+
+    // Flush trigger 2: adding this block would exceed target (if chunk is large enough)
+    if (currentLen + addedLen > TARGET_CHUNK_SIZE && currentLen >= MIN_CHUNK_SIZE) {
+      flush();
+    }
+
+    currentTexts.push(text);
+    currentLen += currentLen > 0 ? text.length + 2 : text.length;
   }
-  // No headings found or all sections still over — return as-is for paragraph splitting
-  return [text];
+  flush();
+
+  // If the last chunk is tiny, merge it into the previous one
+  if (chunks.length > 1 && chunks[chunks.length - 1].length < MIN_CHUNK_SIZE) {
+    const last = chunks.pop();
+    chunks[chunks.length - 1] += '\n\n' + last;
+  }
+
+  return chunks.filter(c => c.trim());
 }
 
 /**
@@ -146,19 +134,24 @@ function hashChunk(text) {
 
 /**
  * Call ElevenLabs TTS with timestamps for a single text chunk.
+ * Uses previous_text/next_text for prosody continuity across chunks.
  * Returns { audio: Buffer, alignment: { characters, character_start_times_seconds, character_end_times_seconds } }
  */
-async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat) {
+async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText) {
+  const body = {
+    text,
+    model_id: modelId || 'eleven_multilingual_v2',
+    voice_settings: voiceSettings || { stability: 0.71, similarity_boost: 0.5, style: 0.0 },
+  };
+  if (previousText) body.previous_text = previousText;
+  if (nextText) body.next_text = nextText;
+
   const res = await fetch(
     `${API_BASE}/text-to-speech/${voiceId}/with-timestamps?output_format=${outputFormat || 'mp3_44100_128'}`,
     {
       method: 'POST',
       headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text,
-        model_id: modelId || 'eleven_multilingual_v2',
-        voice_settings: voiceSettings || { stability: 0.71, similarity_boost: 0.5, style: 0.0 },
-      }),
+      body: JSON.stringify(body),
     }
   );
   if (!res.ok) {
@@ -175,11 +168,11 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   };
 }
 
-async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, retries = 5) {
+async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, retries = 5) {
   const RETRYABLE_STATUS = new Set([429, 500, 502, 503]);
   for (let i = 0; i < retries; i++) {
     try {
-      return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat);
+      return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText);
     } catch (err) {
       const status = err.status;
       const isRetryable = RETRYABLE_STATUS.has(status) || status === 'quota';
@@ -413,7 +406,7 @@ async function main() {
       console.log(`    Voice: ${voiceId}`);
 
       // Chunk the plain text using stable heading-based boundaries
-      const chunks = chunkText(item.plainText);
+      const chunks = chunkText(item.plainText, CHUNK_SIZE, item.ttsBlocks);
       const chunkHashes = chunks.map(c => hashChunk(c));
 
       // Build hash→file map from existing manifest (supports old and new format)
@@ -459,11 +452,13 @@ async function main() {
           }
         }
 
-        // Generate this chunk with timestamps
+        // Generate this chunk with timestamps, providing surrounding text for prosody
+        const prevText = c > 0 ? chunks[c - 1].slice(-200) : undefined;
+        const nextChunkText = c < chunks.length - 1 ? chunks[c + 1].slice(0, 200) : undefined;
         console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars) — generating...`);
         const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
-          meta.output_format || 'mp3_44100_128'
+          meta.output_format || 'mp3_44100_128', prevText, nextChunkText
         );
         writeFileSync(chunkPath, result.audio);
         chunkAlignments.push(result.alignment);

@@ -75,8 +75,12 @@ export function preprocessSession(markdown, voiceId) {
         // H2 = major section — clear structural transition
         blocks.push(makeBlock(subType,
           `<break time="1.5s"/>${spokenHeading}<break time="1.5s"/>`, voiceId));
+      } else if (level <= 4) {
+        // H3-H4 = subsections — brief pause before only
+        blocks.push(makeBlock(subType,
+          `<break time="1s"/>${spokenHeading}`, voiceId));
       } else {
-        // H3-H6 = subsections — period provides natural pause, no break tags
+        // H5-H6 = minor headings — period provides natural pause, no break tags
         blocks.push(makeBlock(subType, spokenHeading, voiceId));
       }
       continue;
