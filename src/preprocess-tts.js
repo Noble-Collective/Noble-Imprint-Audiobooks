@@ -173,6 +173,8 @@ function cleanLine(line) {
   // Convert attributions to spoken form
   if (s.startsWith('<< ')) {
     s = s.slice(3).trim();
+    // Skip art/image citations (contain dimensions or medium)
+    if (/\d+\s*[×x]\s*\d+\s*cm|Oil on |Engraving|Woodcut/i.test(s)) return '';
     s = convertBibleRef(s);
     // Ensure attributions end with sentence punctuation for a natural pause
     if (s && !/[.!?]$/.test(s)) s += '.';
