@@ -26,6 +26,7 @@ const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources
 const GCS_BUCKET = process.env.GCS_BUCKET || 'noble-imprint-audiobooks';
 const FORCE = process.env.FORCE_REGENERATE === 'true';
 const BOOK_FILTER = process.env.BOOK_PATH_FILTER || '';
+const SESSION_FILTER = process.env.SESSION_FILTER || '';
 
 const storage = new Storage();
 const bucket = storage.bucket(GCS_BUCKET);
@@ -131,6 +132,7 @@ async function main() {
     const sessionsDir = join(bookFullPath, 'sessions');
     const sessionFiles = readdirSync(sessionsDir)
       .filter(f => f.endsWith('.md') && !skipSessions.has(f))
+      .filter(f => !SESSION_FILTER || f === SESSION_FILTER)
       .sort();
 
     for (const file of sessionFiles) {
