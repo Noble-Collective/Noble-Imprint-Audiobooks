@@ -62,24 +62,30 @@ export function preprocessSession(markdown, voiceId) {
 
       // Sentence-case headings for natural TTS (preserves proper nouns).
       // SSML break tags handle pauses — no trailing periods needed.
+      // Original text is stored as displayText for web reader highlighting.
       const spoken = sentenceCaseHeading(text);
       if (level === 1) {
         chapterName = text;
-        blocks.push(makeBlock('h1',
-          `<break time="2s"/>${spoken}<break time="2s"/>`, voiceId));
+        const block = makeBlock('h1',
+          `<break time="2s"/>${spoken}<break time="2s"/>`, voiceId);
+        block.displayText = text;
+        blocks.push(block);
         continue;
       }
 
       const subType = `h${Math.min(level, 3)}`;
+      let block;
       if (level === 2) {
         // H2 = major section — clear structural transition
-        blocks.push(makeBlock(subType,
-          `<break time="1.5s"/>${spoken}<break time="1.5s"/>`, voiceId));
+        block = makeBlock(subType,
+          `<break time="1.5s"/>${spoken}<break time="1.5s"/>`, voiceId);
       } else {
         // H3-H6 = subsections — 1s pause before, 1s after
-        blocks.push(makeBlock(subType,
-          `<break time="1s"/>${spoken}<break time="1s"/>`, voiceId));
+        block = makeBlock(subType,
+          `<break time="1s"/>${spoken}<break time="1s"/>`, voiceId);
       }
+      block.displayText = text;
+      blocks.push(block);
       continue;
     }
 
@@ -96,14 +102,19 @@ export function preprocessSession(markdown, voiceId) {
   const plainText = blocks.map(b => b.nodes[0].text).join('\n\n');
 
   // Build sentence index: each sentence gets a blockIndex + sentenceIndex.
-  // Headings are single-sentence blocks. Paragraphs are split on sentence
-  // boundaries (. ! ? followed by space or end of string).
+  // Headings use displayText (original case, no SSML tags) for web reader matching.
+  // Paragraphs are split on sentence boundaries (. ! ? followed by space or end).
   const sentences = [];
   for (let bi = 0; bi < blocks.length; bi++) {
-    const blockText = blocks[bi].nodes[0].text;
-    const sents = splitSentences(blockText);
-    for (let si = 0; si < sents.length; si++) {
-      sentences.push({ blockIndex: bi, sentenceIndex: si, text: sents[si] });
+    const block = blocks[bi];
+    if (block.displayText) {
+      // Heading block — use original text for matching
+      sentences.push({ blockIndex: bi, sentenceIndex: 0, text: block.displayText });
+    } else {
+      const sents = splitSentences(block.nodes[0].text);
+      for (let si = 0; si < sents.length; si++) {
+        sentences.push({ blockIndex: bi, sentenceIndex: si, text: sents[si] });
+      }
     }
   }
 
