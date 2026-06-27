@@ -44,14 +44,15 @@ Content push to Resources repo
        |
        +-> detect changed sessions (content hash per chunk)
        |
-       +-> preprocess markdown -> strip syntax, add heading periods for TTS pauses
+       +-> preprocess markdown -> strip syntax, sentence-case headings, add SSML <break> pauses
        |
        +-> generate audio via ElevenLabs /v1/text-to-speech/{voice}/with-timestamps
-       |   +-> split into ~4,500 char chunks at paragraph boundaries
+       |   +-> split into ~800 char chunks via linear block walk (force-split at H1/H2/H3, 250-char min)
        |   +-> per-chunk hash comparison -- only regenerate changed chunks
        |   +-> unchanged chunks downloaded from GCS and reused (with cached alignment)
+       |   +-> previous_text / next_text (200 chars) sent for prosody stitching across boundaries
        |   +-> character-level timestamps returned alongside audio per chunk
-       |   +-> all chunks concatenated with ffmpeg into chapter MP3 (0.5s silence between chunks)
+       |   +-> all chunks concatenated with ffmpeg into chapter MP3 (no silence between chunks)
        |   +-> sentence timestamps built from character alignments + chunk offsets
        |
        +-> upload to GCS: MP3 + .tts.json + .timestamps.json + manifest
@@ -71,7 +72,9 @@ Content push to Resources repo
 ### Audiobooks repo: `.github/workflows/generate.yml`
 
 - Triggers on `repository_dispatch` (`content-updated`) and `workflow_dispatch` (manual).
-- Manual trigger supports a `book_path` filter and a `force_regenerate` flag.
+- Manual trigger supports a `book_path` filter, a `session_filter` input for targeting individual chapters, and a `force_regenerate` flag.
+- Concurrency group queues runs instead of cancelling in-progress ones.
+- Node.js pinned to 20 (node-fetch v2 bug on Node 22).
 
 ---
 
@@ -122,13 +125,17 @@ Transforms markdown into clean spoken text suitable for TTS:
 
 | Markdown construct | Transformation |
 |---|---|
-| Headings (`# ...`) | Heading text with period appended (produces a TTS pause). |
+| Headings (`# ...`) | Sentence-cased for TTS (proper noun whitelist). SSML `<break>` tags added (H1: 2s, H2: 1.5s, H3-H6: 1s before/after). Original display text preserved in `block.displayText`. |
 | Bold/italic markers (`**`, `*`, `_`) | Stripped. |
 | `<Question>` tags | Tags stripped, inner content kept (read aloud). |
 | `<Callout>` tags | Tags stripped, inner content kept. |
 | Blockquote markers (`>`) | Stripped. |
 | Attribution markers (`<<`) | Scripture references converted to spoken form (e.g., "First Peter, chapter 2, verse 24."). |
-| `<sup>`, `<br>` tags | Stripped. |
+| `<sup>` tags | Stripped entirely (including verse number content). |
+| `<br>` tags | Stripped. |
+| Parenthetical verse refs | Stripped (e.g., `(v. 3)`, `(Matt 5:1)`). |
+| Art/image citations | Stripped. |
+| Paragraphs lacking terminal punctuation | Period appended. |
 | Greek text | Stripped (only appears in skipped front matter). |
 | Tables, links, images | Stripped. |
 | Paragraphs | Grouped into blocks. |
@@ -137,7 +144,7 @@ Transforms markdown into clean spoken text suitable for TTS:
 
 ## Chunk-Level Change Detection
 
-Each chapter is split into chunks of approximately 4,500 characters at paragraph boundaries. Each chunk is assigned a SHA-256 hash (first 16 hex characters).
+Each chapter is split into chunks of approximately 800 characters using a linear block walk. Chunks force-split at H1/H2/H3 heading boundaries with a 250-character minimum. Each chunk is assigned a SHA-256 hash (first 16 hex characters).
 
 On subsequent runs:
 
@@ -146,9 +153,9 @@ On subsequent runs:
 3. Compare against `chunkHashes` in the existing GCS manifest.
 4. Only regenerate chunks whose hash has changed.
 5. Download unchanged chunks from GCS.
-6. Re-concatenate all chunks into the chapter MP3 with ffmpeg (no silence gaps — ElevenLabs handles paragraph pacing naturally).
+6. Re-concatenate all chunks into the chapter MP3 with ffmpeg (no silence gaps between chunks).
 
-**Example:** A typo fix in a 47K-character chapter (12 chunks) regenerates only the 1 affected chunk (~4.5K characters) instead of the full 47K.
+**Example:** A typo fix in a 47K-character chapter regenerates only the 1 affected chunk (~800 characters) instead of the full chapter.
 
 ---
 
@@ -160,7 +167,7 @@ Uses the TTS with timestamps endpoint:
 POST /v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128
 ```
 
-Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level start/end times). Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration.
+Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level start/end times). Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration. `previous_text` and `next_text` parameters (last/first 200 chars of adjacent chunks) are sent for natural prosody across chunk boundaries.
 
 **Plan:** Pro plan with Impact Program (600K credits/month).
 
@@ -175,7 +182,7 @@ Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level
 Sentence-level timestamps are generated directly by ElevenLabs using the `/text-to-speech/{voice_id}/with-timestamps` endpoint, which returns character-level timing alongside the audio. This replaces a previous Whisper-based approach.
 
 - **Source:** ElevenLabs character-level alignment data, returned with each TTS chunk.
-- **`generate.js`:** Calls the with-timestamps endpoint per chunk, collects character start/end times, then maps them to source sentences using character positions.
+- **`generate.js`:** Calls the with-timestamps endpoint per chunk, collects character start/end times, then maps them to source sentences using a dual-text approach: full text (with SSML tags) for `charTimes` indexing, stripped text for sentence matching with `cleanToOriginal` position mapping. Case-insensitive matching with proximity check for duplicate sentences.
 - **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations to produce chapter-level timestamps (no silence gaps).
 - **Preprocessor output:** Source sentences with `blockIndex` (which content block in the DOM) and `sentenceIndex` (which sentence within that block).
 - **Storage:** `.timestamps.json` files in GCS. Per-chunk alignment data cached as `.align.json` in the chunks directory.
@@ -237,8 +244,8 @@ Each segment contains the original source text, ElevenLabs character-level timin
 ```json
 {
   "segments": [
-    { "start": 0.0, "end": 3.2, "blockIndex": 0, "sentenceIndex": 0, "text": "Chapter One." },
-    { "start": 3.5, "end": 8.1, "blockIndex": 1, "sentenceIndex": 0, "text": "Section 1: Gregory Addresses His Flight from Ministry." },
+    { "start": 0.0, "end": 3.2, "blockIndex": 0, "sentenceIndex": 0, "text": "Chapter one" },
+    { "start": 3.5, "end": 8.1, "blockIndex": 1, "sentenceIndex": 0, "text": "Section 1: Gregory addresses his flight from ministry" },
     { "start": 11.97, "end": 17.72, "blockIndex": 3, "sentenceIndex": 0, "text": "Gregory has yielded to the Lord's calling..." }
   ]
 }
@@ -329,4 +336,4 @@ Reference data point: first book (Oration II) -- approximately 153K characters, 
 | **ElevenLabs** | ~7.6% of the 2M monthly Pro quota, or ~25% of the 600K Impact quota. |
 | **GCS storage** | ~180 MB, approximately $0.004/month. |
 | **Retimestamp rebuild** | ~5 minutes CPU time (free tier, no ElevenLabs credits). |
-| **Per-edit regeneration** | ~4.5K characters (1 chunk) = negligible. |
+| **Per-edit regeneration** | ~800 characters (1 chunk) = negligible. |

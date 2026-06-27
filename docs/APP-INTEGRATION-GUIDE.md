@@ -263,7 +263,7 @@ If found, that session has audio. If not found (or if the session is in `skip_se
 ## Audio Files
 
 - **Format:** MP3, 44.1kHz, 128kbps
-- **One file per chapter** (concatenated from ~4,500-char chunks, no silence gaps between chunks)
+- **One file per chapter** (concatenated from ~800-char chunks, no silence gaps between chunks)
 - **Duration:** ranges from ~10 minutes (short chapters) to ~390 minutes (very long chapters like HomeStead Part One)
 - **File size:** roughly 1 MB per minute of audio
 - **Streaming:** the signed URL supports HTTP range requests for streaming/seeking
@@ -282,21 +282,21 @@ This is the critical file for text synchronization. Each timestamps file contain
       "end": 0.95,
       "blockIndex": 0,
       "sentenceIndex": 0,
-      "text": "Chapter Six."
+      "text": "Chapter six"
     },
     {
       "start": 0.95,
       "end": 7.72,
       "blockIndex": 1,
       "sentenceIndex": 0,
-      "text": "\"Set in the Midst Betwixt Two Fears\": Accepting God's Call With Humility and Duty."
+      "text": "\"Set in the midst betwixt two fears\": accepting God's call with humility and duty"
     },
     {
       "start": 7.72,
       "end": 11.97,
       "blockIndex": 2,
       "sentenceIndex": 0,
-      "text": "Section 102: Mutual Affection Brought Gregory Back."
+      "text": "Section 102: Mutual affection brought Gregory back"
     },
     {
       "start": 11.97,
@@ -328,26 +328,28 @@ This is the critical file for text synchronization. Each timestamps file contain
 
 ### How blockIndex and sentenceIndex work
 
-The preprocessor assigns a sequential `blockIndex` to every heading and paragraph in the chapter. Within each block, sentences are split on `.!?` followed by whitespace and assigned a `sentenceIndex`.
+The preprocessor assigns a sequential `blockIndex` to every heading and paragraph in the chapter. Within each block, sentences are split on `.!?` followed by whitespace (excluding ellipsis `...`) and assigned a `sentenceIndex`.
 
 Example for a chapter with: H1, H3 subtitle, H2 section heading, paragraph (3 sentences), H2 section heading:
 
 | blockIndex | sentenceIndex | Element | Text |
 |-----------|---------------|---------|------|
-| 0 | 0 | `<h1>` | "Chapter Six." |
-| 1 | 0 | `<h3>` | "Set in the Midst..." |
-| 2 | 0 | `<h2>` | "Section 102: Mutual Affection..." |
+| 0 | 0 | `<h1>` | "Chapter six" |
+| 1 | 0 | `<h3>` | "Set in the midst..." |
+| 2 | 0 | `<h2>` | "Section 102: Mutual affection..." |
 | 3 | 0 | `<p>` | "Gregory summarizes that..." |
 | 3 | 1 | `<p>` | "He knows it caused..." |
 | 3 | 2 | `<p>` | "The mutual love between..." |
 | 4 | 0 | `<h2>` | "Section 103: Conquered..." |
 
+Note: heading text in segments is sentence-cased (e.g., "Mutual affection" not "Mutual Affection") and has no trailing period.
+
 Multiple segments share the same `blockIndex` when they're different sentences within the same paragraph.
 
 ### Important notes
 
-- **Text comes from our preprocessor**. It matches the rendered markdown content directly. Use this field for element matching — it is the authoritative join key between timestamps and rendered content.
-- **Headings have trailing periods** added for TTS pause (e.g., `"Chapter Six."` vs rendered `"Chapter Six"`). Strip trailing period when matching against rendered text.
+- **Text comes from our preprocessor**. For paragraphs, it matches the rendered markdown content directly. For headings, the text is sentence-cased for TTS — use case-insensitive matching when joining to rendered content.
+- **Headings are sentence-cased** for TTS (e.g., `"Responsibility commitment"` not `"Responsibility Commitment"`), with proper nouns whitelisted. The original display text is stored in `block.displayText` for web reader matching. Headings get SSML `<break>` pauses (H1: 2s, H2: 1.5s, H3-H6: 1s) instead of trailing periods. Match heading segments against rendered text using the display text, not the TTS text.
 - **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy. No silence gaps between chunks — timestamps are contiguous with zero cumulative drift.
 - **Segments are contiguous** — timestamps cover the full chapter duration with no gaps.
 - **blockIndex is a hint, not an index.** The preprocessor and renderer may count elements differently. Always match by `text`, using `blockIndex` only as a starting position for the search.
@@ -410,7 +412,9 @@ This is the most impactful feature — highlighting the sentence being spoken an
    a. Collect all block elements (h1-h6, p) in document order
    b. Pre-normalize the text content of each element (lowercase, strip quotes/punctuation)
    c. For each segment, use blockIndex as a HINT for approximate position,
-      then search nearby elements for one whose text contains the segment's text
+      then search nearby elements for one whose text contains the segment's text.
+      For headings, match against the display text (original casing), not the
+      sentence-cased TTS text.
    d. Track which elements have been matched to avoid duplicate assignments
       (handles repeated headings like "Overview" that appear in every section)
 
@@ -457,7 +461,7 @@ matchedElements = Set()
 
 for each segment:
     hint = segment.blockIndex + offsetAdjust
-    needle = normalize(segment.text).stripTrailingPeriod().first30Chars()
+    needle = normalize(segment.text).first30Chars()
 
     // Search forward from hint, then backward if needed
     for i from hint to end:
@@ -480,7 +484,7 @@ This handles:
 Once you have the correct element, split its text content into sentences using the same rule the preprocessor uses:
 
 ```
-sentences = element.textContent.split(/(?<=[.!?])\s+/)
+sentences = element.textContent.split(/(?<=[.!?])(?<!\.\.\.)(?<!\.\.\.\s)\s+/)
 targetSentence = sentences[segment.sentenceIndex]
 ```
 
@@ -582,7 +586,7 @@ These are the components the app developer needs to implement:
 |-----------|--------------|---------|
 | **Audio player** | Native playback (AVPlayer / MediaPlayer) with play/pause, scrubber, speed, skip ±15s | See [Implementing the Player](#implementing-the-player) |
 | **Block element mapping** | Match segments to rendered views by **text content** (not blockIndex counting). Use blockIndex as a hint, search nearby for matching text. Track matched views to handle repeated headings. | See [Finding the element](#finding-the-element-text-matching-not-blockindex-counting) |
-| **Sentence splitting** | Split a paragraph's text on `.!?` followed by whitespace — same regex as the preprocessor: `split(/(?<=[.!?])\s+/)` | See [Finding the sentence](#finding-the-sentence-within-the-element-sentenceindex) |
+| **Sentence splitting** | Split a paragraph's text on `.!?` followed by whitespace, excluding ellipsis (`...`) — same regex as the preprocessor: `split(/(?<=[.!?])(?<!\.\.\.)(?<!\.\.\.\s)\s+/)` | See [Finding the sentence](#finding-the-sentence-within-the-element-sentenceindex) |
 | **Sentence highlighting** | Apply background color to the character range of the target sentence within the correct text view | iOS: `NSAttributedString` with `NSBackgroundColorAttributeName`. Android: `SpannableString` with `BackgroundColorSpan`. |
 | **Sync loop** | Timer or display link (~100ms) that reads `currentTime`, finds active segment, updates highlight | See [Algorithm](#algorithm) |
 | **Scroll behavior** | Smooth scroll to the highlighted element. When user scrolls away, show "Jump to audio" link instead of force-scrolling back. | See step 5 in the [Algorithm](#algorithm) |
