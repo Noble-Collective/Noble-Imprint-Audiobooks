@@ -76,9 +76,9 @@ export function preprocessSession(markdown, voiceId) {
         blocks.push(makeBlock(subType,
           `<break time="1.5s"/>${spokenHeading}<break time="1.5s"/>`, voiceId));
       } else {
-        // H3-H6 = subsections — 1s pause before only
+        // H3-H6 = subsections — 1s pause before, 0.5s after
         blocks.push(makeBlock(subType,
-          `<break time="1s"/>${spokenHeading}`, voiceId));
+          `<break time="1s"/>${spokenHeading}<break time="0.5s"/>`, voiceId));
       }
       continue;
     }
