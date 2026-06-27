@@ -16,6 +16,10 @@ on:
         required: false
         default: 'false'
 
+concurrency:
+  group: audiobook-generate
+  cancel-in-progress: false
+
 jobs:
   generate:
     runs-on: ubuntu-latest
