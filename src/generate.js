@@ -242,6 +242,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   // Strip SSML break tags since ElevenLabs alignment data doesn't include them.
   const strippedChunks = chunkTexts.map(t => t.replace(/<break[^>]*\/>/g, ''));
   const flatText = strippedChunks.join('');
+  const flatLower = flatText.toLowerCase();
 
   if (charTimes.length !== flatText.length) {
     console.log(`    Warning: charTimes (${charTimes.length}) != flatText (${flatText.length}) — using proportional fallback for mismatched chars`);
@@ -251,11 +252,25 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   let searchFrom = 0;
 
   for (const sent of sentences) {
-    // Try exact match, then case-insensitive (headings are sentence-cased in TTS)
-    let idx = flatText.indexOf(sent.text, searchFrom);
-    if (idx < 0) {
-      idx = flatText.toLowerCase().indexOf(sent.text.toLowerCase(), searchFrom);
+    // Find the NEAREST match from searchFrom, searching forward first.
+    // Case-insensitive since headings are sentence-cased in TTS.
+    // If forward search jumps too far (duplicate text), also try from searchFrom
+    // and pick the closest match to avoid skipping ahead.
+    const needle = sent.text.toLowerCase();
+    let idx = flatLower.indexOf(needle, searchFrom);
+
+    // If not found forward, try from the beginning
+    if (idx < 0 && searchFrom > 0) {
+      idx = flatLower.indexOf(needle);
     }
+
+    // If found but jumped far ahead, check if there's a closer match
+    // (handles duplicates like "Personal Testimony" appearing multiple times)
+    if (idx > searchFrom + 500) {
+      const earlier = flatLower.indexOf(needle, Math.max(0, searchFrom - 50));
+      if (earlier >= 0 && earlier < idx) idx = earlier;
+    }
+
     if (idx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
