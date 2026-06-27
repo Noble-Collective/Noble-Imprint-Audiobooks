@@ -157,7 +157,7 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   if (!res.ok) {
     const body = await res.text();
     const isQuota = body.includes('quota_exceeded');
-    const err = new Error(`TTS failed (${res.status}): ${body}`);
+    const err = new Error(`TTS failed (status=${res.status}, statusText=${res.statusText}): ${body || '(empty response)'}`);
     err.status = isQuota ? 'quota' : res.status;
     throw err;
   }
@@ -337,9 +337,12 @@ async function gcsRetry(fn, label, retries = 3) {
     try {
       return await fn();
     } catch (err) {
+      const status = err.code || err.response?.status || err.status || 'unknown';
+      const msg = err.message || '';
+      console.error(`    GCS ${label} failed (attempt ${attempt}/${retries}): status=${status} ${msg.slice(0, 200)}`);
       if (attempt === retries) throw err;
       const delay = 2000 * Math.pow(2, attempt - 1);
-      console.warn(`    GCS ${label} failed (attempt ${attempt}/${retries}), retrying in ${delay}ms...`);
+      console.warn(`    Retrying in ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
     }
   }
