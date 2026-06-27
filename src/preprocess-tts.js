@@ -58,19 +58,26 @@ export function preprocessSession(markdown, voiceId) {
       const level = headingMatch[1].length;
       const text = cleanText(headingMatch[2]);
 
-      // H1 = chapter title — extract name, emit as h1 block
+      // H1 = chapter title — extract name, emit with SSML pauses
       if (level === 1) {
         chapterName = text;
-        // Add period if heading doesn't end with punctuation (helps TTS pause)
         const spokenText = /[.!?]$/.test(text) ? text : text + '.';
-        blocks.push(makeBlock('h1', spokenText, voiceId));
+        blocks.push(makeBlock('h1',
+          `<break time="3s"/>${spokenText}<break time="3s"/>`, voiceId));
         continue;
       }
 
-      // H2-H6 = section headings — add period for TTS pause
+      // H2 = major section — longer pause for clear structural transition
+      // H3-H6 = subsections — moderate pause
       const subType = `h${Math.min(level, 3)}`;
       const spokenHeading = /[.!?]$/.test(text) ? text : text + '.';
-      blocks.push(makeBlock(subType, spokenHeading, voiceId));
+      if (level === 2) {
+        blocks.push(makeBlock(subType,
+          `<break time="2s"/>${spokenHeading}<break time="2s"/>`, voiceId));
+      } else {
+        blocks.push(makeBlock(subType,
+          `<break time="1.5s"/>${spokenHeading}<break time="1s"/>`, voiceId));
+      }
       continue;
     }
 
