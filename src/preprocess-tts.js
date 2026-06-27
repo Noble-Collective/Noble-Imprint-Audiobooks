@@ -30,6 +30,8 @@ export function preprocessSession(markdown, voiceId) {
     // so TTS pauses after the number instead of treating it as a list marker
     text = text.replace(/^(\d{1,3}\.)\s+/, '$1\n\n');
     if (text) {
+      // Add period to paragraphs lacking terminal punctuation for a natural TTS pause
+      if (!/[.!?:…—]$/.test(text)) text += '.';
       blocks.push(makeBlock('p', text, voiceId));
     }
     currentParagraph = [];
