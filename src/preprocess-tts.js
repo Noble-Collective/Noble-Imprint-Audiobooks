@@ -59,24 +59,25 @@ export function preprocessSession(markdown, voiceId) {
       const text = cleanText(headingMatch[2]);
 
       // H1 = chapter title — extract name, emit with SSML pauses
+      // Only H1/H2 get break tags; H3+ rely on period + paragraph separation
+      // to avoid overloading ElevenLabs (too many breaks cause speed-up artifacts)
       if (level === 1) {
         chapterName = text;
         const spokenText = /[.!?]$/.test(text) ? text : text + '.';
         blocks.push(makeBlock('h1',
-          `<break time="3s"/>${spokenText}<break time="3s"/>`, voiceId));
+          `<break time="2s"/>${spokenText}<break time="2s"/>`, voiceId));
         continue;
       }
 
-      // H2 = major section — longer pause for clear structural transition
-      // H3-H6 = subsections — moderate pause
       const subType = `h${Math.min(level, 3)}`;
       const spokenHeading = /[.!?]$/.test(text) ? text : text + '.';
       if (level === 2) {
+        // H2 = major section — clear structural transition
         blocks.push(makeBlock(subType,
-          `<break time="2s"/>${spokenHeading}<break time="2s"/>`, voiceId));
+          `<break time="1.5s"/>${spokenHeading}<break time="1.5s"/>`, voiceId));
       } else {
-        blocks.push(makeBlock(subType,
-          `<break time="1.5s"/>${spokenHeading}<break time="1s"/>`, voiceId));
+        // H3-H6 = subsections — period provides natural pause, no break tags
+        blocks.push(makeBlock(subType, spokenHeading, voiceId));
       }
       continue;
     }
