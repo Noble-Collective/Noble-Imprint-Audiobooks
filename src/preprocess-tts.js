@@ -131,6 +131,8 @@ function cleanLine(line) {
   let s = line;
 
   // Strip <Question> tags (keep content)
+  // If the entire Question content is just a heading, skip it — it's a UI label
+  if (/^<Question[^>]*>#{1,6}\s+.+<\/Question>$/.test(s)) return '';
   s = s.replace(/<Question[^>]*>/g, '');
   s = s.replace(/<\/Question>/g, '');
 
