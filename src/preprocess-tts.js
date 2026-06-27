@@ -132,8 +132,9 @@ export function preprocessSession(markdown, voiceId) {
  * letter, or end of string.
  */
 function splitSentences(text) {
-  // Split on sentence-ending punctuation followed by space
-  const parts = text.split(/(?<=[.!?])\s+/);
+  // Split on sentence-ending punctuation followed by space,
+  // but not on ellipsis (... or …) which is a continuation, not a sentence end
+  const parts = text.split(/(?<=[^.]\.(?!\.))\s+|(?<=[!?])\s+/);
   return parts.filter(s => s.trim().length > 0).map(s => s.trim());
 }
 

@@ -238,11 +238,11 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   // joined with \n\n too. We need to find sentence positions in the chunk
   // text and convert to charTimes indices, skipping the \n\n separators.
 
-  // Build a combined text that matches charTimes indexing (no \n\n between chunks)
-  const flatText = chunkTexts.join('');
+  // Build a combined text that matches charTimes indexing (no \n\n between chunks).
+  // Strip SSML break tags since ElevenLabs alignment data doesn't include them.
+  const strippedChunks = chunkTexts.map(t => t.replace(/<break[^>]*\/>/g, ''));
+  const flatText = strippedChunks.join('');
 
-  // Also build a mapping from flatText position to charTimes index
-  // (they should be 1:1, but we validate the lengths match)
   if (charTimes.length !== flatText.length) {
     console.log(`    Warning: charTimes (${charTimes.length}) != flatText (${flatText.length}) — using proportional fallback for mismatched chars`);
   }
@@ -251,7 +251,11 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   let searchFrom = 0;
 
   for (const sent of sentences) {
-    const idx = flatText.indexOf(sent.text, searchFrom);
+    // Try exact match, then case-insensitive (headings are sentence-cased in TTS)
+    let idx = flatText.indexOf(sent.text, searchFrom);
+    if (idx < 0) {
+      idx = flatText.toLowerCase().indexOf(sent.text.toLowerCase(), searchFrom);
+    }
     if (idx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
