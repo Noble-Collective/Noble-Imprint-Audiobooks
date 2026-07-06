@@ -22,9 +22,16 @@ export function preprocessSession(markdown, voiceId) {
   const blocks = [];
   let chapterName = '';
   let currentParagraph = [];
+  let currentParaIsBlockquote = false;
+  let currentParaIsAttribution = false;
+  let lastFlushedWasBlockquote = false;
 
   function flushParagraph() {
-    if (currentParagraph.length === 0) return;
+    if (currentParagraph.length === 0) {
+      currentParaIsBlockquote = false;
+      currentParaIsAttribution = false;
+      return;
+    }
     let text = currentParagraph.join(' ').trim();
     // Add a paragraph break after numbered oration starts (e.g. "103. In the...")
     // so TTS pauses after the number instead of treating it as a list marker
@@ -32,8 +39,18 @@ export function preprocessSession(markdown, voiceId) {
     if (text) {
       // Add period to paragraphs lacking terminal punctuation for a natural TTS pause
       if (!/[.!?:…—]$/.test(text)) text += '.';
+      // Seneca (On the Shortness of Life) uses blockquote summaries before each section's
+      // body text. Without a break, the summary flows directly into the paragraph with no
+      // audible transition. Only triggers when a blockquote is followed by body text — not
+      // when followed by a << attribution (HomeStead scripture quotes) or a heading.
+      if (lastFlushedWasBlockquote && !currentParaIsBlockquote && !currentParaIsAttribution) {
+        text = '<break time="1s"/>' + text;
+      }
       blocks.push(makeBlock('p', text, voiceId));
     }
+    lastFlushedWasBlockquote = currentParaIsBlockquote;
+    currentParaIsBlockquote = false;
+    currentParaIsAttribution = false;
     currentParagraph = [];
   }
 
@@ -53,10 +70,19 @@ export function preprocessSession(markdown, voiceId) {
     // Skip horizontal rules
     if (/^-{3,}$/.test(trimmed)) continue;
 
+    // Track blockquote and attribution lines before cleaning strips their markers
+    if (trimmed.startsWith('> ')) {
+      currentParaIsBlockquote = true;
+    }
+    if (trimmed.startsWith('<< ')) {
+      currentParaIsAttribution = true;
+    }
+
     // Parse headings
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       flushParagraph();
+      lastFlushedWasBlockquote = false; // heading already has its own break tags
       const level = headingMatch[1].length;
       const text = cleanText(headingMatch[2]);
 
@@ -204,7 +230,11 @@ function cleanLine(line) {
   s = s.replace(/\s*\((?:cf\.\s*)?(?:\d+:\d+|[1-3]?\s*[A-Z][a-z]+\s+\d+)[^)]*\)/g, '');
 
   // Strip sub-paragraph numbers at start of line (e.g. "2 Hence arose..." → "Hence arose...")
-  s = s.replace(/^\d{1,2}\s+(?=[A-Z])/, '');
+  // Seneca (On the Shortness of Life) uses **2** before sub-paragraphs. After bold stripping,
+  // the number remains. Most are followed by an uppercase letter, but one instance in Chapter Two
+  // Section 3 starts with a quote: **2** "We perceive that you have arrived..." — so we also
+  // allow quotes and opening parens before the uppercase letter.
+  s = s.replace(/^\d{1,2}\s+(?=["'"'(A-Z])/, '');
 
   // Strip citation markers that weren't caught
   s = s.replace(/^<<\s*/, '');
