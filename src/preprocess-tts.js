@@ -44,7 +44,7 @@ export function preprocessSession(markdown, voiceId) {
       // audible transition. Only triggers when a blockquote is followed by body text — not
       // when followed by a << attribution (HomeStead scripture quotes) or a heading.
       if (lastFlushedWasBlockquote && !currentParaIsBlockquote && !currentParaIsAttribution) {
-        text = '<break time="1s"/>' + text;
+        text = '<break time="2s"/>' + text;
       }
       blocks.push(makeBlock('p', text, voiceId));
     }
