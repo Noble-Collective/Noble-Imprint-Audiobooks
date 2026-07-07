@@ -124,11 +124,29 @@ export function preprocessSession(markdown, voiceId) {
 
   flushParagraph();
 
-  // Deduplicate break tags between consecutive headings. When two headings are
-  // back-to-back (e.g., H1 → H3 → H2 in Seneca/Oration chapter openings), the
-  // trailing break of the first and the leading break of the second create
-  // redundant pauses. Too many break tags in one chunk causes ElevenLabs speed-up
-  // artifacts. For each gap between adjacent headings, keep only the longer break.
+  // Deduplicate break tags between consecutive headings.
+  //
+  // Problem: When headings are back-to-back with no body text between them, each
+  // heading contributes 2 break tags (leading + trailing). Three stacked headings
+  // produce 6 break tags in one ~600-char chunk, which causes ElevenLabs to speed
+  // up and sound unnatural. This pattern occurs in:
+  //   - Seneca/Oration chapter openings: H1 title → H3 subtitle → H2 section
+  //   - L'Appel session openings: H1 → H2 overview → H3 declaration
+  //   - HomeStead session structure: H3 key idea → H3 community study → H3 tuning
+  //
+  // Fix: For each gap between two adjacent headings, the listener hears two pauses
+  // (trailing from the first + leading from the second). We keep only the longer
+  // one. A middle heading can lose both its breaks if surrounding headings have
+  // longer pauses. Example for Seneca Ch3:
+  //
+  //   Before (6 breaks):
+  //     [2s] Chapter three [2s]  [1s] "The lives of busy men..." [1s]  [1.5s] Section 10... [1.5s]
+  //
+  //   After (4 breaks):
+  //     [2s] Chapter three [2s]  "The lives of busy men..."  [1.5s] Section 10... [1.5s]
+  //
+  //   The H3 subtitle loses both breaks: its leading 1s is shorter than H1's
+  //   trailing 2s, and its trailing 1s is shorter than H2's leading 1.5s.
   const HEADING_TYPES = new Set(['h1', 'h2', 'h3']);
   const dropLeading = new Set();
   const dropTrailing = new Set();
