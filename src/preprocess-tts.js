@@ -124,6 +124,34 @@ export function preprocessSession(markdown, voiceId) {
 
   flushParagraph();
 
+  // Deduplicate break tags between consecutive headings. When two headings are
+  // back-to-back (e.g., H1 → H3 → H2 in Seneca/Oration chapter openings), the
+  // trailing break of the first and the leading break of the second create
+  // redundant pauses. Too many break tags in one chunk causes ElevenLabs speed-up
+  // artifacts. For each gap between adjacent headings, keep only the longer break.
+  const HEADING_TYPES = new Set(['h1', 'h2', 'h3']);
+  const dropLeading = new Set();
+  const dropTrailing = new Set();
+  for (let i = 0; i < blocks.length - 1; i++) {
+    if (HEADING_TYPES.has(blocks[i].sub_type) && HEADING_TYPES.has(blocks[i + 1].sub_type)) {
+      const trailMatch = blocks[i].nodes[0].text.match(/<break time="([0-9.]+)s"\/>\s*$/);
+      const leadMatch = blocks[i + 1].nodes[0].text.match(/^<break time="([0-9.]+)s"\/>/);
+      const trailTime = trailMatch ? parseFloat(trailMatch[1]) : 0;
+      const leadTime = leadMatch ? parseFloat(leadMatch[1]) : 0;
+      if (trailTime >= leadTime) {
+        dropLeading.add(i + 1);
+      } else {
+        dropTrailing.add(i);
+      }
+    }
+  }
+  for (const i of dropLeading) {
+    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/^<break[^>]*\/>/, '');
+  }
+  for (const i of dropTrailing) {
+    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/<break[^>]*\/>\s*$/, '');
+  }
+
   // Build plain text for hashing (all block text concatenated)
   const plainText = blocks.map(b => b.nodes[0].text).join('\n\n');
 
