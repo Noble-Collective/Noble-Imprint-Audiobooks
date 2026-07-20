@@ -7,6 +7,7 @@
  */
 
 import { convertBibleRef } from './bible-refs.js';
+import { normalizeSpoken, convertReference } from './languages.js';
 
 // Greek Unicode ranges (Basic Greek + Extended Greek)
 const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
@@ -15,9 +16,15 @@ const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
  * Preprocess a single session markdown file into a Studio chapter object.
  * @param {string} markdown - Raw session markdown content
  * @param {string} voiceId - ElevenLabs voice ID for TTS nodes
+ * @param {string} language - locale for the language layer (used only when enabled)
+ * @param {boolean} languageNormalization - opt-in per-book switch (meta.audiobook.language_normalization).
+ *   When false (default) behavior is IDENTICAL to before: no normalizeSpoken, legacy convertBibleRef.
+ *   When true, scripture refs / numeric ranges are expanded to natural speech per `language`.
  * @returns {{ name: string, blocks: Array, plainText: string }}
  */
-export function preprocessSession(markdown, voiceId) {
+export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false) {
+  // Pass-through when the switch is off \u2014 preserves the exact deployed output.
+  const norm = languageNormalization ? (t) => normalizeSpoken(t, language) : (t) => t;
   const lines = markdown.split('\n');
   const blocks = [];
   let chapterName = '';
@@ -32,7 +39,7 @@ export function preprocessSession(markdown, voiceId) {
       currentParaIsAttribution = false;
       return;
     }
-    let text = currentParagraph.join(' ').trim();
+    let text = norm(currentParagraph.join(' ').trim());
     // Add a paragraph break after numbered oration starts (e.g. "103. In the...")
     // so TTS pauses after the number instead of treating it as a list marker
     text = text.replace(/^(\d{1,3}\.)\s+/, '$1\n\n');
@@ -89,7 +96,7 @@ export function preprocessSession(markdown, voiceId) {
       // Sentence-case headings for natural TTS (preserves proper nouns).
       // SSML break tags handle pauses — no trailing periods needed.
       // Original text is stored as displayText for web reader highlighting.
-      const spoken = sentenceCaseHeading(text);
+      const spoken = sentenceCaseHeading(norm(text));
       if (level === 1) {
         chapterName = text;
         const block = makeBlock('h1',
@@ -116,7 +123,7 @@ export function preprocessSession(markdown, voiceId) {
     }
 
     // Regular text line — clean and accumulate into paragraph
-    const cleaned = cleanLine(trimmed);
+    const cleaned = cleanLine(trimmed, language, languageNormalization);
     if (cleaned) {
       currentParagraph.push(cleaned);
     }
@@ -185,7 +192,13 @@ export function preprocessSession(markdown, voiceId) {
     } else {
       const sents = splitSentences(block.nodes[0].text);
       for (let si = 0; si < sents.length; si++) {
-        sentences.push({ blockIndex: bi, sentenceIndex: si, text: sents[si] });
+        // Strip any SSML break tags from the sentence text. Break tags live in the
+        // TTS/plainText (they create the audio pauses) but must NOT appear in the
+        // sentence list — that text is the needle for timestamp matching and the
+        // web reader's DOM highlighting. A leaked <break .../> makes the sentence
+        // fail to match its audio position, producing out-of-order timestamps.
+        const clean = sents[si].replace(/<break[^>]*\/>/g, '').replace(/\s+/g, ' ').trim();
+        if (clean) sentences.push({ blockIndex: bi, sentenceIndex: si, text: clean });
       }
     }
   }
@@ -213,7 +226,7 @@ function splitSentences(text) {
 /**
  * Clean a single line of markdown, stripping formatting and tags.
  */
-function cleanLine(line) {
+function cleanLine(line, language = 'en', languageNormalization = false) {
   let s = line;
 
   // Strip <Question> tags (keep content)
@@ -256,7 +269,9 @@ function cleanLine(line) {
     s = s.slice(3).trim();
     // Skip art/image citations (contain dimensions or medium)
     if (/\d+\s*[×x]\s*\d+\s*cm|Oil on |Engraving|Woodcut/i.test(s)) return '';
-    s = convertBibleRef(s);
+    // Off (default): legacy English ref conversion, identical to deployed output.
+    // On: multilingual reference conversion per the book's language.
+    s = languageNormalization ? convertReference(s, language) : convertBibleRef(s);
     // Ensure attributions end with sentence punctuation for a natural pause
     if (s && !/[.!?]$/.test(s)) s += '.';
   }
@@ -361,13 +376,13 @@ function makeBlock(subType, text, voiceId) {
  * @param {string} voiceId
  * @returns {{ chapters: Array, hashes: Object<string, string> }}
  */
-export async function preprocessBook(sessions, voiceId) {
+export async function preprocessBook(sessions, voiceId, language = 'en', languageNormalization = false) {
   const { createHash } = await import('node:crypto');
   const chapters = [];
   const hashes = {};
 
   for (const { filename, content } of sessions) {
-    const chapter = preprocessSession(content, voiceId);
+    const chapter = preprocessSession(content, voiceId, language, languageNormalization);
     chapters.push({
       name: chapter.name,
       blocks: chapter.blocks,

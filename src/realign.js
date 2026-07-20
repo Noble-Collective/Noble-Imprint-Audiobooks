@@ -94,7 +94,7 @@ async function main() {
       }
 
       const markdown = readFileSync(mdPath, 'utf-8');
-      const chapter = preprocessSession(markdown, voiceId);
+      const chapter = preprocessSession(markdown, voiceId, meta.language || 'en', meta.audiobook?.language_normalization === true);
 
       console.log(`[realign]   ${ms.sessionFile} — ${chapter.blocks.length} blocks`);
 

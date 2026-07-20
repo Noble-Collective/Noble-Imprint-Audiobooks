@@ -208,7 +208,7 @@ async function main() {
 
       // Preprocess to get sentences
       const markdown = readFileSync(mdPath, 'utf-8');
-      const chapter = preprocessSession(markdown, voiceId);
+      const chapter = preprocessSession(markdown, voiceId, meta.language || 'en', meta.audiobook?.language_normalization === true);
       const sentences = chapter.sentences || [];
       const chunks = chunkText(chapter.plainText);
 

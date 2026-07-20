@@ -271,7 +271,9 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
 
   for (const sent of sentences) {
     // Search in the clean (tag-stripped) text, case-insensitive
-    const needle = sent.text.toLowerCase();
+    // Defense-in-depth: strip any SSML break tags from the needle too, so a leaked
+    // tag can never break matching even if upstream sentence-cleaning regresses.
+    const needle = sent.text.toLowerCase().replace(/<break[^>]*\/>/g, '');
     let cleanIdx = flatCleanLower.indexOf(needle, searchFrom);
 
     // If not found forward, try from the beginning
@@ -318,6 +320,25 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
       sentenceIndex: sent.sentenceIndex,
       text: sent.text,
     });
+  }
+
+  // Validation guard — surface the two failure modes that caused the Seneca/L'Appel
+  // highlighting bug, so they can never ship silently again:
+  //   1. leftover markup in a sentence (should have been stripped upstream)
+  //   2. non-monotonic / overlapping segment start times
+  let validationWarnings = 0;
+  for (let i = 0; i < segments.length; i++) {
+    if (/</.test(segments[i].text || '')) {
+      validationWarnings++;
+      console.warn(`    [validate] markup left in segment ${i}: ${JSON.stringify((segments[i].text || '').slice(0, 60))}`);
+    }
+    if (i > 0 && segments[i].start < segments[i - 1].start - 0.5) {
+      validationWarnings++;
+      console.warn(`    [validate] OUT-OF-ORDER segment ${i}: start ${segments[i].start} < prev start ${segments[i - 1].start} — ${JSON.stringify((segments[i].text || '').slice(0, 50))}`);
+    }
+  }
+  if (validationWarnings > 0) {
+    console.warn(`    [validate] ${validationWarnings} timestamp warning(s) — review before trusting this session's highlighting`);
   }
 
   return { segments };

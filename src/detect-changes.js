@@ -137,7 +137,7 @@ async function main() {
 
     for (const file of sessionFiles) {
       const content = readFileSync(join(sessionsDir, file), 'utf-8');
-      const chapter = preprocessSession(content, voiceId);
+      const chapter = preprocessSession(content, voiceId, meta.language || 'en', meta.audiobook?.language_normalization === true);
       const hash = `sha256:${createHash('sha256').update(chapter.plainText).digest('hex')}`;
 
       if (FORCE || hash !== existingHashes[file]) {
