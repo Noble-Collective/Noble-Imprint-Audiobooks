@@ -28,17 +28,17 @@ jobs:
 
     steps:
       - name: Checkout audiobook tooling
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout resources content
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Noble-Collective/Noble-Imprint-Resources
           token: ${{ secrets.RESOURCES_TOKEN }}
           path: resources
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           # Pinned to 20: node-fetch v2 (used by gaxios 6 / @google-cloud/storage 7)
           # has a broken Gunzip stream on Node 22 + newer ubuntu runner images.
@@ -54,12 +54,12 @@ jobs:
           sudo apt-get install -y ffmpeg
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Detect changes
         id: detect
