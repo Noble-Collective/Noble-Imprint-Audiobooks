@@ -69,6 +69,7 @@ All `meta.json` `audiobook` fields:
 | `skip_sessions` | No | Array of session filenames to exclude (e.g., `["01-FrontMatter.md"]`) |
 | `pronunciation_dictionary_id` | No | ElevenLabs pronunciation dictionary ID |
 | `output_format` | No | Audio format string (default: `mp3_44100_128`) |
+| `language_normalization` | No | When `true`, speak scripture refs/numeric ranges naturally per the book's top-level `language` (`en`/`fr`); default `false` speaks them literally. Toggling it changes the spoken text, so affected sessions regenerate on the next run. |
 | `project_id` | No | Legacy field, unused |
 
 ## Repo structure
@@ -78,15 +79,12 @@ All `meta.json` `audiobook` fields:
   generate.yml         -- main generation workflow (dispatch + manual)
   find-voices.yml      -- utility to search ElevenLabs voice library
   voice-test.yml       -- A/B voice testing (short samples with different voices)
-  retimestamp.yml       -- rebuild timestamps from cached alignments (no re-generation)
-  realign.yml          -- legacy Whisper-based realignment (deprecated)
 src/
-  preprocess-tts.js    -- markdown -> clean spoken text for TTS
+  preprocess-tts.js    -- markdown -> clean spoken text for TTS (+ per-language normalization, gated)
   detect-changes.js    -- chunk-level content hash comparison against GCS manifest
   generate.js          -- ElevenLabs TTS with timestamps + chunk-level caching + GCS upload
-  retimestamp.js       -- rebuild timestamps from cached .align.json (no re-generation)
-  align.js             -- legacy Whisper alignment (deprecated)
-  bible-refs.js        -- scripture reference -> spoken form conversion
+  languages.js         -- per-language spoken-text normalization (scripture refs, numeric ranges)
+  bible-refs.js        -- legacy English scripture-ref -> spoken form (fallback when language_normalization is off)
   preprocess-test.js   -- local testing utility (runs against Resources repo)
   find-voices.js       -- voice search utility
   voice-test.js        -- A/B voice test sample generation
@@ -100,7 +98,10 @@ docs/
 
 Before sending to TTS, markdown is cleaned as follows:
 
-- **Headings** -- stripped of `#` markers (including inside `<Question>` tags), period appended if no terminal punctuation (helps TTS pause)
+- **Headings** -- stripped of `#` markers (including inside `<Question>` tags), sentence-cased (proper nouns preserved), and wrapped in SSML `<break>` tags for pacing (2s for H1/H2, 1s for H3+). Redundant breaks between back-to-back headings are de-duplicated. The original heading text is kept as `displayText` for web-reader highlighting.
+- **`<ChapterNum>` tags** -- section numbers (e.g. `<ChapterNum>10</ChapterNum>`) are stripped entirely (tag + number), not spoken
+- **Blockquote → body** -- a `<break time="2s"/>` is prepended to a body paragraph that follows a blockquote summary (Seneca), for an audible transition. Break tags live only in the spoken/TTS text; they are stripped from the sentence list used for timestamps and highlighting.
+- **Language normalization** (opt-in, `language_normalization: true`) -- scripture references and numeric ranges expanded to natural speech per the book's `language` (e.g. EN "Proverbs 1-9" → "Proverbs, chapters 1 through 9"; FR "Actes 2:1-47" → "Actes, chapitre 2, versets 1 à 47"). When off, text is spoken literally.
 - **Numbered orations** -- lines starting with a number and period (e.g., "103.") have a paragraph break inserted after the number for TTS pacing
 - **Bold/italic** -- `**text**`, `*text*`, `_text_` markers removed, content kept
 - **Links** -- `[text](url)` replaced with just `text`
@@ -122,11 +123,13 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
   02-chapterone.tts.json                       -- preprocessed text (debug)
   02-chapterone.timestamps.json                -- sentence-level timestamps with blockIndex/sentenceIndex for DOM element lookup
   chunks/02-chapterone/
-    000.mp3, 001.mp3, ...                      -- individual TTS chunks (for reuse)
-    000.align.json, 001.align.json, ...        -- cached ElevenLabs character-level alignment per chunk
+    <content-hash>.mp3                         -- individual TTS chunk, named by 16-char content hash (for reuse)
+    <content-hash>.align.json                  -- cached ElevenLabs character-level alignment per chunk
 ```
 
-Chunks are ~4,500 characters each, split at paragraph boundaries. Only chunks whose content hash changes are regenerated; unchanged chunks are downloaded from GCS and reused. Chunks are concatenated directly with no silence gaps — ElevenLabs handles paragraph pacing naturally.
+Chunks target ~800 characters each, produced by a linear block walk that force-splits at H1/H2/H3 headings (250-char minimum guard). Each chunk file is named by a content hash of its text; only chunks whose hash changes are regenerated, and unchanged chunks are downloaded from GCS and reused. Chunks are concatenated directly with no silence gaps — ElevenLabs handles paragraph pacing naturally.
+
+To rebuild only the sentence-level timestamps without spending ElevenLabs credits (e.g. after a timestamp-matching fix), re-run `generate.yml` with `force_regenerate=true`: unchanged chunks are reused from cache (0 credits) and just the `.timestamps.json` files are rebuilt.
 
 ## Troubleshooting
 

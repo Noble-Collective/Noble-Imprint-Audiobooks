@@ -208,9 +208,8 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
   02-chapterone.tts.json              <- preprocessed text sent to ElevenLabs (debug)
   02-chapterone.timestamps.json       <- sentence-level timestamps (from ElevenLabs character alignment)
   chunks/02-chapterone/
-    000.mp3                            <- individual chunk audio (for reuse)
-    000.align.json                     <- cached ElevenLabs character alignment
-    001.mp3
+    <content-hash>.mp3                 <- individual chunk audio, named by 16-char content hash (for reuse)
+    <content-hash>.align.json          <- cached ElevenLabs character alignment
     ...
 ```
 
@@ -335,5 +334,5 @@ Reference data point: first book (Oration II) -- approximately 153K characters, 
 |---|---|
 | **ElevenLabs** | ~7.6% of the 2M monthly Pro quota, or ~25% of the 600K Impact quota. |
 | **GCS storage** | ~180 MB, approximately $0.004/month. |
-| **Retimestamp rebuild** | ~5 minutes CPU time (free tier, no ElevenLabs credits). |
+| **Timestamp-only rebuild** | Re-run generation with `force_regenerate=true`: cached chunks are reused (0 ElevenLabs credits), only `.timestamps.json` is rebuilt. |
 | **Per-edit regeneration** | ~800 characters (1 chunk) = negligible. |
