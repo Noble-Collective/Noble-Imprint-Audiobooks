@@ -130,8 +130,10 @@ Transforms markdown into clean spoken text suitable for TTS:
 | `<Question>` tags | Tags stripped, inner content kept (read aloud). |
 | `<Callout>` tags | Tags stripped, inner content kept. |
 | Blockquote markers (`>`) | Stripped. |
+| Blockquote → following body paragraph | A `<break time="2s"/>` is prepended to the body paragraph for an audible transition (Seneca). The break lives only in the spoken text — it is stripped from the sentence list used for timestamps/highlighting. |
 | Attribution markers (`<<`) | Scripture references converted to spoken form (e.g., "First Peter, chapter 2, verse 24."). |
 | `<sup>` tags | Stripped entirely (including verse number content). |
+| `<ChapterNum>` tags | Stripped entirely (tag + section number); not spoken. |
 | `<br>` tags | Stripped. |
 | Parenthetical verse refs | Stripped (e.g., `(v. 3)`, `(Matt 5:1)`). |
 | Art/image citations | Stripped. |
@@ -139,6 +141,17 @@ Transforms markdown into clean spoken text suitable for TTS:
 | Greek text | Stripped (only appears in skipped front matter). |
 | Tables, links, images | Stripped. |
 | Paragraphs | Grouped into blocks. |
+
+### Language Normalization Layer
+
+**File:** `languages.js` — opt-in per book via `meta.audiobook.language_normalization` (default `false`).
+
+When enabled, scripture references and numeric ranges are expanded to natural speech (per the book's top-level `language` code) before chunking:
+
+- **EN:** "Proverbs 1-9" → "Proverbs, chapters 1 through 9"; "Psalm 78:19-20" → "Psalm, chapter 78, verses 19 through 20".
+- **FR:** "Actes 2:1-47" → "Actes, chapitre 2, versets 1 à 47".
+
+When disabled (the default) text is spoken literally, and attributions fall back to the legacy English converter in `bible-refs.js`. The switch is per-book so the layer can be rolled out one title at a time; because it changes the spoken text, toggling it regenerates the affected chunks on the next run.
 
 ---
 
@@ -188,6 +201,15 @@ Sentence-level timestamps are generated directly by ElevenLabs using the `/text-
 - **Storage:** `.timestamps.json` files in GCS. Per-chunk alignment data cached as `.align.json` in the chunks directory.
 - **Consumer:** The website player uses these timestamps for sentence-level text highlighting.
 - **Accuracy:** Character-level precision from the TTS engine — no transcription or fuzzy matching needed. Zero gaps, ~97% coverage.
+
+### Validation Guard
+
+After building a session's segments, `generate.js` runs a guard that **throws before the timestamps are uploaded** (failing the run via `process.exit(1)`) if it detects either:
+
+- a leftover SSML/custom tag (`break`, `sup`, `br`, `Question`, `Callout`, `ChapterNum`) in a sentence's text, or
+- a non-monotonic / out-of-order segment start time (a >0.5s regression against the previous segment).
+
+This blocks the class of bug where a `<break>` tag leaked into the sentence list and produced overlapping, out-of-order timestamps (which broke web-reader highlighting). A bare `<` that is not one of the above tags — e.g. a literal `<https://…>` URL in front matter — is a non-fatal warning.
 
 ---
 
