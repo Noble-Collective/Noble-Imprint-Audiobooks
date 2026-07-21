@@ -3,7 +3,7 @@
 **Date:** 2026-07-20
 **Author:** Claude (with Steve)
 **Repo:** `Noble-Collective/Noble-Imprint-Audiobooks`
-**Status:** Draft — awaiting approval. No code pushed, no audio regenerated yet.
+**Status:** ✅ EXECUTED 2026-07-21. Merged to `main`; Seneca + L'Appel timestamps rebuilt at 0 credits (25 overlaps resolved, verified). Language layer merged gated (default off); Proverbs left `true` to match its generated audio. Validation guard added as a hard failure; dead tools (retimestamp/realign/align) removed; GH actions bumped to Node 24; docs updated across repos. Notable deviation: an initial blanket `language_normalization:false` push regenerated Proverbs (~6K credits) because it had been generated *with* normalization — corrected by setting Proverbs `true` (~4.5K). Full details/lessons in memory `project_audiobook_timestamp_break_bug`.
 
 ---
 
