@@ -322,23 +322,30 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
     });
   }
 
-  // Validation guard — surface the two failure modes that caused the Seneca/L'Appel
-  // highlighting bug, so they can never ship silently again:
-  //   1. leftover markup in a sentence (should have been stripped upstream)
+  // Validation guard — HARD-FAIL on the failure modes that caused the Seneca/L'Appel
+  // highlighting bug so they can never ship silently again. This throws BEFORE the
+  // caller uploads the timestamps, so corrupt data is never published; the error
+  // propagates to main().catch → process.exit(1), turning the CI run red.
+  //   1. leftover SSML / custom tags in a sentence (must have been stripped upstream)
   //   2. non-monotonic / overlapping segment start times
-  let validationWarnings = 0;
+  // A bare '<' that is NOT one of our tags (e.g. a literal "<https://…>" URL in
+  // front-matter) is a non-fatal warning, not a failure.
+  const LEFTOVER_TAG = /<\s*\/?\s*(break|sup|br|Question|Callout|ChapterNum)\b/i;
+  const fatal = [];
   for (let i = 0; i < segments.length; i++) {
-    if (/</.test(segments[i].text || '')) {
-      validationWarnings++;
-      console.warn(`    [validate] markup left in segment ${i}: ${JSON.stringify((segments[i].text || '').slice(0, 60))}`);
+    const t = segments[i].text || '';
+    if (LEFTOVER_TAG.test(t)) {
+      fatal.push(`segment ${i}: leftover markup ${JSON.stringify(t.slice(0, 60))}`);
+    } else if (/</.test(t)) {
+      console.warn(`    [validate] note: segment ${i} contains '<' (non-tag, allowed): ${JSON.stringify(t.slice(0, 60))}`);
     }
     if (i > 0 && segments[i].start < segments[i - 1].start - 0.5) {
-      validationWarnings++;
-      console.warn(`    [validate] OUT-OF-ORDER segment ${i}: start ${segments[i].start} < prev start ${segments[i - 1].start} — ${JSON.stringify((segments[i].text || '').slice(0, 50))}`);
+      fatal.push(`segment ${i}: OUT-OF-ORDER start ${segments[i].start} < prev ${segments[i - 1].start} — ${JSON.stringify(t.slice(0, 50))}`);
     }
   }
-  if (validationWarnings > 0) {
-    console.warn(`    [validate] ${validationWarnings} timestamp warning(s) — review before trusting this session's highlighting`);
+  if (fatal.length > 0) {
+    for (const f of fatal) console.error(`    [validate] FATAL ${f}`);
+    throw new Error(`Timestamp validation failed: ${fatal.length} issue(s). Aborting before upload so corrupt timestamps are not published.`);
   }
 
   return { segments };
