@@ -50,8 +50,9 @@ const VOICES = [
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
   // Broader Middle East / Hebrew spread (all reading the English text).
   { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
-    query: { gender: 'male', language: 'he' }, searchFallback: 'Hebrew' },
-  { name: 'Amir',           id: null,                   accent: 'Persian',  blurb: 'Persian / Farsi accent, professional' },
+    query: { gender: 'male', language: 'he' }, searchFallback: ['Hebrew', 'Israeli'] },
+  { name: 'Persian (Farsi)', id: null, accent: 'Persian',   blurb: 'Persian / Farsi accent',
+    query: { gender: 'male', language: 'fa' }, searchFallback: ['Persian', 'Farsi', 'Amir'] },
   { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
   { name: 'Mamdoh',         id: null,                   accent: 'Egyptian', blurb: 'Egyptian — deep, clear' },
   { name: 'Fadi',           id: null,                   accent: 'Lebanese', blurb: 'Lebanese / Levantine — natural, close' },
@@ -97,14 +98,19 @@ async function resolveVoice(v) {
     const sr = await el(`/v1/shared-voices?${qs}`);
     if (!sr.ok) throw new Error(`shared-voices query failed for "${v.name}" (${sr.status})`);
     let list = (await sr.json()).voices || [];
-    // Fallback: some accents don't surface via the language filter — retry as a
-    // keyword search.
+    // Fallback: some accents don't surface via the language filter — retry as
+    // keyword search(es), stopping at the first that returns results.
     if (!list.length && v.searchFallback) {
-      const fr = await el(`/v1/shared-voices?page_size=30&search=${encodeURIComponent(v.searchFallback)}`);
-      if (fr.ok) list = (await fr.json()).voices || [];
+      for (const term of [].concat(v.searchFallback)) {
+        const fr = await el(`/v1/shared-voices?page_size=30&gender=male&search=${encodeURIComponent(term)}`);
+        if (fr.ok) list = (await fr.json()).voices || [];
+        if (list.length) break;
+      }
     }
-    // Prefer a narration/storytelling voice when several match.
-    cand = list.find(x => /narrat|story/i.test(JSON.stringify(x.labels || {}))) || list[0];
+    // Prefer a male narration/storytelling voice when several match.
+    cand = list.find(x => /narrat|story/i.test(JSON.stringify(x.labels || {})))
+        || list.find(x => (x.labels || {}).gender === 'male')
+        || list[0];
   } else {
     const sr = await el(`/v1/shared-voices?page_size=20&search=${encodeURIComponent(v.name)}`);
     if (!sr.ok) throw new Error(`shared-voices search failed for "${v.name}" (${sr.status})`);
