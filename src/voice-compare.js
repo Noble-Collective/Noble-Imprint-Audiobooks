@@ -48,6 +48,13 @@ const VOICES = [
   { name: 'Ali',            id: 'MI88rOZjXbH22N8KHXUo', accent: 'Middle Eastern', blurb: 'Calm, deep Arabic (Saudi) narrator' },
   { name: 'Marco Nady',     id: null,                   accent: 'Middle Eastern', blurb: 'Confident, calm, deep, warm' },
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
+  // Broader Middle East / Hebrew spread (all reading the English text).
+  { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
+    query: { gender: 'male', language: 'he' } },
+  { name: 'Amir',           id: null,                   accent: 'Persian',  blurb: 'Persian / Farsi accent, professional' },
+  { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
+  { name: 'Mamdoh',         id: null,                   accent: 'Egyptian', blurb: 'Egyptian — deep, clear' },
+  { name: 'Fadi',           id: null,                   accent: 'Lebanese', blurb: 'Lebanese / Levantine — natural, close' },
 ];
 
 function slugifyVoice(name) {
@@ -62,37 +69,53 @@ async function el(pathAndQuery, opts = {}) {
   return res;
 }
 
-// Resolve a voice name to a usable voice_id, adding it to the workspace if it
-// only exists in the shared library.
+// Workspace name prefix for voices we add, so repeat runs find and reuse them
+// instead of adding duplicates.
+const WS_PREFIX = 'vt:';
+
+async function workspaceVoices() {
+  const r = await el('/v1/voices');
+  return r.ok ? ((await r.json()).voices || []) : [];
+}
+
+// Resolve a voice to a usable voice_id. Order: explicit id → already in
+// workspace → shared library (by name, or by accent/language query), added to
+// the workspace so TTS can address it. Idempotent across runs.
 async function resolveVoice(v) {
   if (v.id) return { ...v, resolvedId: v.id, source: 'premade' };
 
-  // 1) Workspace (already added) — matches premade + previously added library voices.
-  const wsRes = await el('/v1/voices');
-  if (wsRes.ok) {
-    const ws = await wsRes.json();
-    const match = (ws.voices || []).find(x => x.name.toLowerCase() === v.name.toLowerCase())
-      || (ws.voices || []).find(x => x.name.toLowerCase().includes(v.name.toLowerCase()));
-    if (match) return { ...v, resolvedId: match.voice_id, source: 'workspace' };
+  const stableName = `${WS_PREFIX} ${v.name}`;
+  const ws = await workspaceVoices();
+  const existing = ws.find(x => x.name === stableName)                       // added by us before
+    || ws.find(x => x.name.toLowerCase() === v.name.toLowerCase());          // legacy add / premade name
+  if (existing) return { ...v, resolvedId: existing.voice_id, source: 'workspace' };
+
+  // Find a candidate in the shared library.
+  let cand;
+  if (v.query) {
+    const qs = new URLSearchParams({ page_size: '30', ...v.query }).toString();
+    const sr = await el(`/v1/shared-voices?${qs}`);
+    if (!sr.ok) throw new Error(`shared-voices query failed for "${v.name}" (${sr.status})`);
+    const list = (await sr.json()).voices || [];
+    // Prefer a narration/storytelling voice when the filter returns several.
+    cand = list.find(x => /narrat|story/i.test(JSON.stringify(x.labels || {}))) || list[0];
+  } else {
+    const sr = await el(`/v1/shared-voices?page_size=20&search=${encodeURIComponent(v.name)}`);
+    if (!sr.ok) throw new Error(`shared-voices search failed for "${v.name}" (${sr.status})`);
+    const list = (await sr.json()).voices || [];
+    cand = list.find(x => x.name.toLowerCase() === v.name.toLowerCase()) || list[0];
   }
+  if (!cand) throw new Error(`No library voice matched "${v.name}"`);
 
-  // 2) Shared library search.
-  const sr = await el(`/v1/shared-voices?page_size=20&search=${encodeURIComponent(v.name)}`);
-  if (!sr.ok) throw new Error(`shared-voices search failed for "${v.name}" (${sr.status})`);
-  const shared = (await sr.json()).voices || [];
-  const hit = shared.find(x => x.name.toLowerCase() === v.name.toLowerCase()) || shared[0];
-  if (!hit) throw new Error(`Voice not found in library: "${v.name}"`);
-
-  // 3) Add to workspace so TTS can address it.
-  const addRes = await el(`/v1/voices/add/${hit.public_owner_id}/${hit.voice_id}`, {
+  // Add to workspace under our stable name so TTS can address it.
+  const addRes = await el(`/v1/voices/add/${cand.public_owner_id}/${cand.voice_id}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ new_name: hit.name }),
+    body: JSON.stringify({ new_name: stableName }),
   });
-  if (!addRes.ok) throw new Error(`Failed to add "${v.name}" to workspace (${addRes.status}): ${await addRes.text()}`);
+  if (!addRes.ok) throw new Error(`Failed to add "${v.name}" (${addRes.status}): ${await addRes.text()}`);
   const added = await addRes.json();
-  return { ...v, resolvedId: added.voice_id || hit.voice_id, source: 'library-added',
-           accent: v.accent || hit.labels?.accent };
+  return { ...v, resolvedId: added.voice_id || cand.voice_id, source: `added:${cand.name}`, accent: v.accent };
 }
 
 async function generate(text, voiceId) {
