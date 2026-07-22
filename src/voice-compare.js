@@ -50,7 +50,7 @@ const VOICES = [
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
   // Broader Middle East / Hebrew spread (all reading the English text).
   { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
-    query: { gender: 'male', language: 'he' } },
+    query: { gender: 'male', language: 'he' }, searchFallback: 'Hebrew' },
   { name: 'Amir',           id: null,                   accent: 'Persian',  blurb: 'Persian / Farsi accent, professional' },
   { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
   { name: 'Mamdoh',         id: null,                   accent: 'Egyptian', blurb: 'Egyptian — deep, clear' },
@@ -96,8 +96,14 @@ async function resolveVoice(v) {
     const qs = new URLSearchParams({ page_size: '30', ...v.query }).toString();
     const sr = await el(`/v1/shared-voices?${qs}`);
     if (!sr.ok) throw new Error(`shared-voices query failed for "${v.name}" (${sr.status})`);
-    const list = (await sr.json()).voices || [];
-    // Prefer a narration/storytelling voice when the filter returns several.
+    let list = (await sr.json()).voices || [];
+    // Fallback: some accents don't surface via the language filter — retry as a
+    // keyword search.
+    if (!list.length && v.searchFallback) {
+      const fr = await el(`/v1/shared-voices?page_size=30&search=${encodeURIComponent(v.searchFallback)}`);
+      if (fr.ok) list = (await fr.json()).voices || [];
+    }
+    // Prefer a narration/storytelling voice when several match.
     cand = list.find(x => /narrat|story/i.test(JSON.stringify(x.labels || {}))) || list[0];
   } else {
     const sr = await el(`/v1/shared-voices?page_size=20&search=${encodeURIComponent(v.name)}`);
@@ -150,55 +156,66 @@ async function main() {
   const spoken = chapter.plainText;
 
   console.log(`Sample: ${SAMPLE_FILE}  (slug: ${SLUG})`);
-  console.log(`Spoken characters: ${spoken.length}  ×  ${VOICES.length} voices  =  ${spoken.length * VOICES.length} credits`);
-  console.log(`Est. cost: $${((spoken.length * VOICES.length) / 10000 * 1.65).toFixed(2)}\n`);
+  console.log(`Spoken characters: ${spoken.length}\n`);
   console.log('--- Spoken text (SSML break tags create the heading pauses) ---');
   console.log(spoken);
   console.log('---------------------------------------------------------------\n');
-
-  console.log('Resolving voices...');
-  const resolved = [];
-  for (const v of VOICES) {
-    const r = await resolveVoice(v);
-    console.log(`  ${r.name.padEnd(16)} ${r.resolvedId}  (${r.source}, ${r.accent})`);
-    resolved.push(r);
-  }
-
-  if (DRY_RUN) {
-    console.log('\nDRY_RUN — stopping before any TTS generation or upload.');
-    return;
-  }
 
   mkdirSync('voice-compare-output', { recursive: true });
   const storage = new Storage();
   const bucket = storage.bucket(GCS_BUCKET);
   const gcsDir = `voice-test/${SLUG}`;
 
-  const manifestVoices = [];
-  for (const v of resolved) {
-    const fileSlug = slugifyVoice(v.name);
-    const dest = `${gcsDir}/${fileSlug}.mp3`;
-    const manifestEntry = {
-      name: v.name, accent: v.accent, blurb: v.blurb,
-      voiceId: v.resolvedId, file: `${fileSlug}.mp3`,
-    };
+  // Load the existing manifest so already-published voices are reused verbatim —
+  // no re-resolving, no duplicate workspace adds, no re-spend.
+  const existingByFile = {};
+  try {
+    const [buf] = await bucket.file(`${gcsDir}/manifest.json`).download();
+    for (const e of (JSON.parse(buf.toString()).voices || [])) existingByFile[e.file] = e;
+  } catch { /* no manifest yet */ }
 
-    // Skip voices already published (no re-spend) unless FORCE.
-    const [exists] = await bucket.file(dest).exists();
+  // Plan: decide per voice whether to reuse or (re)generate. Only new voices are
+  // resolved/added. A resolve failure skips that voice instead of aborting.
+  console.log('Planning voices...');
+  const plan = [];
+  for (const v of VOICES) {
+    const file = `${slugifyVoice(v.name)}.mp3`;
+    const [exists] = await bucket.file(`${gcsDir}/${file}`).exists();
     if (exists && !FORCE) {
-      console.log(`\n${v.name}: already in GCS, skipping generation.`);
-      manifestVoices.push(manifestEntry);
+      const prior = existingByFile[file] || { name: v.name, accent: v.accent, blurb: v.blurb, file };
+      plan.push({ entry: prior, generate: false });
+      console.log(`  ${v.name.padEnd(18)} reuse (already published)`);
       continue;
     }
+    let r;
+    try { r = await resolveVoice(v); }
+    catch (err) { console.error(`  ${v.name.padEnd(18)} SKIP — ${err.message}`); continue; }
+    console.log(`  ${v.name.padEnd(18)} ${r.resolvedId}  (${r.source}, ${r.accent})`);
+    plan.push({
+      entry: { name: v.name, accent: v.accent, blurb: v.blurb, voiceId: r.resolvedId, file },
+      generate: true, resolvedId: r.resolvedId,
+    });
+  }
 
-    const localPath = `voice-compare-output/${fileSlug}.mp3`;
-    console.log(`\nGenerating ${v.name}...`);
-    const buf = await generate(spoken, v.resolvedId);
+  const nGen = plan.filter(p => p.generate).length;
+  console.log(`\n${nGen} to generate  ≈  ${nGen * spoken.length} credits  ≈  $${(nGen * spoken.length / 10000 * 1.65).toFixed(2)}`);
+
+  if (DRY_RUN) {
+    console.log('\nDRY_RUN — stopping before any TTS generation or upload.');
+    return;
+  }
+
+  const manifestVoices = [];
+  for (const p of plan) {
+    if (!p.generate) { manifestVoices.push(p.entry); continue; }
+    const localPath = `voice-compare-output/${p.entry.file}`;
+    console.log(`\nGenerating ${p.entry.name}...`);
+    const buf = await generate(spoken, p.resolvedId);
     writeFileSync(localPath, buf);
     console.log(`  ${(buf.length / 1024).toFixed(0)} KB`);
-    await bucket.upload(localPath, { destination: dest });
-    console.log(`  Uploaded gs://${GCS_BUCKET}/${dest}`);
-    manifestVoices.push(manifestEntry);
+    await bucket.upload(localPath, { destination: `${gcsDir}/${p.entry.file}` });
+    console.log(`  Uploaded gs://${GCS_BUCKET}/${gcsDir}/${p.entry.file}`);
+    manifestVoices.push(p.entry);
     await new Promise(r => setTimeout(r, 400));
   }
 
