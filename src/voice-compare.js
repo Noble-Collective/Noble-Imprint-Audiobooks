@@ -26,6 +26,9 @@ const SAMPLE_FILE = process.env.SAMPLE_FILE || 'samples/psalm-1-2.md';
 const SLUG = process.env.SLUG || 'psalm-1-2';
 const TITLE = process.env.TITLE || 'Psalm 1 & 2';
 const DRY_RUN = process.env.DRY_RUN === 'true';
+// By default, skip voices whose MP3 already exists in GCS so re-runs only spend
+// on newly-added voices. FORCE=true regenerates every voice in the slate.
+const FORCE = process.env.FORCE === 'true';
 
 // Scripture read profile — a hair slower than prose (0.90 vs 0.92).
 const VOICE_SETTINGS = { stability: 0.71, similarity_boost: 0.5, style: 0.0, speed: 0.90 };
@@ -40,6 +43,11 @@ const VOICES = [
   { name: 'Daniel',         id: 'onwK4e9ZLuTAKqWW03F9', accent: 'British',  blurb: 'Authoritative, broadcast gravitas' },
   { name: 'Bill L. Oxley',  id: null,                   accent: 'American', blurb: 'Mature, sophisticated literary narrator' },
   { name: 'Matthew Schmitz', id: null,                  accent: 'American', blurb: 'Scripture / religious-reading specialist' },
+  // Middle Eastern (Arabic-native) narrators reading the English text — accented
+  // delivery for an authentic setting. Judge English intelligibility too.
+  { name: 'Ali',            id: 'MI88rOZjXbH22N8KHXUo', accent: 'Middle Eastern', blurb: 'Calm, deep Arabic (Saudi) narrator' },
+  { name: 'Marco Nady',     id: null,                   accent: 'Middle Eastern', blurb: 'Confident, calm, deep, warm' },
+  { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
 ];
 
 function slugifyVoice(name) {
@@ -146,17 +154,28 @@ async function main() {
   const manifestVoices = [];
   for (const v of resolved) {
     const fileSlug = slugifyVoice(v.name);
+    const dest = `${gcsDir}/${fileSlug}.mp3`;
+    const manifestEntry = {
+      name: v.name, accent: v.accent, blurb: v.blurb,
+      voiceId: v.resolvedId, file: `${fileSlug}.mp3`,
+    };
+
+    // Skip voices already published (no re-spend) unless FORCE.
+    const [exists] = await bucket.file(dest).exists();
+    if (exists && !FORCE) {
+      console.log(`\n${v.name}: already in GCS, skipping generation.`);
+      manifestVoices.push(manifestEntry);
+      continue;
+    }
+
     const localPath = `voice-compare-output/${fileSlug}.mp3`;
     console.log(`\nGenerating ${v.name}...`);
     const buf = await generate(spoken, v.resolvedId);
     writeFileSync(localPath, buf);
     console.log(`  ${(buf.length / 1024).toFixed(0)} KB`);
-    await bucket.upload(localPath, { destination: `${gcsDir}/${fileSlug}.mp3` });
-    console.log(`  Uploaded gs://${GCS_BUCKET}/${gcsDir}/${fileSlug}.mp3`);
-    manifestVoices.push({
-      name: v.name, accent: v.accent, blurb: v.blurb,
-      voiceId: v.resolvedId, file: `${fileSlug}.mp3`,
-    });
+    await bucket.upload(localPath, { destination: dest });
+    console.log(`  Uploaded gs://${GCS_BUCKET}/${dest}`);
+    manifestVoices.push(manifestEntry);
     await new Promise(r => setTimeout(r, 400));
   }
 

@@ -23,6 +23,10 @@ on:
         description: 'Preprocess + resolve voices only, no TTS spend'
         required: false
         default: 'false'
+      force:
+        description: 'Regenerate every voice (default skips voices already in GCS)'
+        required: false
+        default: 'false'
 
 jobs:
   voice-compare:
@@ -60,6 +64,7 @@ jobs:
           SLUG: ${{ github.event.inputs.slug }}
           TITLE: ${{ github.event.inputs.title }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
+          FORCE: ${{ github.event.inputs.force }}
 
       - name: Refresh website audio cache
         if: ${{ github.event.inputs.dry_run != 'true' }}
