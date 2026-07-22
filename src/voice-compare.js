@@ -50,7 +50,7 @@ const VOICES = [
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
   // Broader Middle East / Hebrew spread (all reading the English text).
   { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
-    query: { gender: 'male', language: 'he' }, searchFallback: ['Hebrew', 'Israeli'] },
+    query: { gender: 'male', language: 'he' }, searchFallback: ['Hebrew', 'Israeli', 'Ivrit'] },
   { name: 'Persian (Farsi)', id: null, accent: 'Persian',   blurb: 'Persian / Farsi accent',
     query: { gender: 'male', language: 'fa' }, searchFallback: ['Persian', 'Farsi', 'Amir'] },
   { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
@@ -102,7 +102,7 @@ async function resolveVoice(v) {
     // keyword search(es), stopping at the first that returns results.
     if (!list.length && v.searchFallback) {
       for (const term of [].concat(v.searchFallback)) {
-        const fr = await el(`/v1/shared-voices?page_size=30&gender=male&search=${encodeURIComponent(term)}`);
+        const fr = await el(`/v1/shared-voices?page_size=30&search=${encodeURIComponent(term)}`);
         if (fr.ok) list = (await fr.json()).voices || [];
         if (list.length) break;
       }
