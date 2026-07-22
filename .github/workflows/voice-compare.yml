@@ -1,0 +1,66 @@
+name: Voice Compare (publish to website)
+
+# Generates one full sample of a passage in several voices and publishes the
+# MP3s + manifest to GCS (voice-test/{slug}/). The resource website serves them
+# for side-by-side comparison at /voice-test.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample_file:
+        description: 'Sample markdown file in this repo'
+        required: false
+        default: 'samples/psalm-1-2.md'
+      slug:
+        description: 'GCS slug (voice-test/{slug}/)'
+        required: false
+        default: 'psalm-1-2'
+      title:
+        description: 'Display title on the page'
+        required: false
+        default: 'Psalm 1 & 2'
+      dry_run:
+        description: 'Preprocess + resolve voices only, no TTS spend'
+        required: false
+        default: 'false'
+
+jobs:
+  voice-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout audiobook tooling
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          # Pinned to 20: @google-cloud/storage 7 / gaxios 6 has a broken Gunzip
+          # stream on Node 22+ runner images (same reason as generate.yml).
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Generate and publish voice samples
+        run: node src/voice-compare.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GCS_BUCKET: noble-imprint-audiobooks
+          SAMPLE_FILE: ${{ github.event.inputs.sample_file }}
+          SLUG: ${{ github.event.inputs.slug }}
+          TITLE: ${{ github.event.inputs.title }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+
+      - name: Refresh website audio cache
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: curl -s -X POST https://resources.noblecollective.org/api/refresh-audio || true
