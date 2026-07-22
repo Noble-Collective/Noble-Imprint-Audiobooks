@@ -155,6 +155,7 @@ The **Resources repo** needs a `repository_dispatch` event configured to notify 
 
 ## Links
 
+- **Voice auditioning**: [docs/VOICE-COMPARE.md](docs/VOICE-COMPARE.md) — compare many voices on one passage, published to the website at `/voice-test`
 - **Resources repo**: [Noble-Collective/Noble-Imprint-Resources](https://github.com/Noble-Collective/Noble-Imprint-Resources)
 - **Website repo**: [Noble-Collective/Noble-Imprint-Resource-Website](https://github.com/Noble-Collective/Noble-Imprint-Resource-Website)
 - **ElevenLabs dashboard**: [elevenlabs.io/app](https://elevenlabs.io/app)
