@@ -49,10 +49,13 @@ const VOICES = [
   { name: 'Marco Nady',     id: null,                   accent: 'Middle Eastern', blurb: 'Confident, calm, deep, warm' },
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
   // Broader Middle East / Hebrew spread (all reading the English text).
-  { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
-    query: { gender: 'male', language: 'he' },
-    queryAlternates: [ { gender: 'male', language: 'iw' }, { language: 'he' }, { language: 'iw' } ],
-    searchFallback: ['Hebrew', 'Israeli', 'Ivrit', 'Jewish', 'Tel Aviv'] },
+  // No Hebrew voice exists in the ElevenLabs shared library (verified: he/iw
+  // queries + name searches all return 0). Closest authentic stand-in is a
+  // Levantine Arabic voice from the Bible's own geography — Palestinian first
+  // (modern Israel/West Bank), then Syrian/Jordanian.
+  { name: 'Palestinian (Levant)', id: null, accent: 'Levantine',
+    blurb: 'Closest to the Psalms’ setting — no Hebrew voice in the library',
+    searchFallback: ['Palestinian', 'Syrian', 'Jordanian', 'Levantine', 'Aramaic'] },
   { name: 'Persian (Farsi)', id: null, accent: 'Persian',   blurb: 'Persian / Farsi accent',
     query: { gender: 'male', language: 'fa' }, searchFallback: ['Persian', 'Farsi', 'Amir'] },
   { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
@@ -95,11 +98,11 @@ async function resolveVoice(v) {
 
   // Find a candidate in the shared library.
   let cand;
-  if (v.query) {
+  if (v.query || v.searchFallback) {
     let list = [];
     // Try the primary query and any alternates (e.g. legacy 'iw' Hebrew code),
     // then keyword search(es). Log each attempt's hit count for diagnosis.
-    const queries = [v.query, ...(v.queryAlternates || [])];
+    const queries = [v.query, ...(v.queryAlternates || [])].filter(Boolean);
     for (const q of queries) {
       const qs = new URLSearchParams({ page_size: '30', ...q }).toString();
       const r = await el(`/v1/shared-voices?${qs}`);
