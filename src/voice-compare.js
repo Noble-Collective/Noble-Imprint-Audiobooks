@@ -50,7 +50,9 @@ const VOICES = [
   { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
   // Broader Middle East / Hebrew spread (all reading the English text).
   { name: 'Hebrew (Israeli)', id: null, accent: 'Hebrew',   blurb: 'Native Israeli / Hebrew accent',
-    query: { gender: 'male', language: 'he' }, searchFallback: ['Hebrew', 'Israeli', 'Ivrit'] },
+    query: { gender: 'male', language: 'he' },
+    queryAlternates: [ { gender: 'male', language: 'iw' }, { language: 'he' }, { language: 'iw' } ],
+    searchFallback: ['Hebrew', 'Israeli', 'Ivrit', 'Jewish', 'Tel Aviv'] },
   { name: 'Persian (Farsi)', id: null, accent: 'Persian',   blurb: 'Persian / Farsi accent',
     query: { gender: 'male', language: 'fa' }, searchFallback: ['Persian', 'Farsi', 'Amir'] },
   { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
@@ -94,17 +96,23 @@ async function resolveVoice(v) {
   // Find a candidate in the shared library.
   let cand;
   if (v.query) {
-    const qs = new URLSearchParams({ page_size: '30', ...v.query }).toString();
-    const sr = await el(`/v1/shared-voices?${qs}`);
-    if (!sr.ok) throw new Error(`shared-voices query failed for "${v.name}" (${sr.status})`);
-    let list = (await sr.json()).voices || [];
-    // Fallback: some accents don't surface via the language filter — retry as
-    // keyword search(es), stopping at the first that returns results.
+    let list = [];
+    // Try the primary query and any alternates (e.g. legacy 'iw' Hebrew code),
+    // then keyword search(es). Log each attempt's hit count for diagnosis.
+    const queries = [v.query, ...(v.queryAlternates || [])];
+    for (const q of queries) {
+      const qs = new URLSearchParams({ page_size: '30', ...q }).toString();
+      const r = await el(`/v1/shared-voices?${qs}`);
+      const got = r.ok ? ((await r.json()).voices || []) : [];
+      console.log(`      [query ${qs}] -> ${r.ok ? got.length : 'HTTP ' + r.status}`);
+      if (got.length) { list = got; break; }
+    }
     if (!list.length && v.searchFallback) {
       for (const term of [].concat(v.searchFallback)) {
-        const fr = await el(`/v1/shared-voices?page_size=30&search=${encodeURIComponent(term)}`);
-        if (fr.ok) list = (await fr.json()).voices || [];
-        if (list.length) break;
+        const r = await el(`/v1/shared-voices?page_size=30&search=${encodeURIComponent(term)}`);
+        const got = r.ok ? ((await r.json()).voices || []) : [];
+        console.log(`      [search "${term}"] -> ${r.ok ? got.length : 'HTTP ' + r.status}`);
+        if (got.length) { list = got; break; }
       }
     }
     // Prefer a male narration/storytelling voice when several match.
