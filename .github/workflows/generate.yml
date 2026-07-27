@@ -1,8 +1,10 @@
 name: Generate Audiobook
 
 on:
-  repository_dispatch:
-    types: [content-updated]
+  # DISABLED 2026-07-27: automatic trigger removed — audiobook generation is now
+  # manual-only (explicit opt-in). To re-enable auto runs on content changes, restore:
+  #   repository_dispatch:
+  #     types: [content-updated]
   workflow_dispatch:
     inputs:
       book_path:
