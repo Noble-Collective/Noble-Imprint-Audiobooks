@@ -17,6 +17,16 @@ on:
         description: 'Force regeneration of all sessions (ignore content hash)'
         required: false
         default: 'false'
+      bible_book:
+        description: 'Bible book code to generate (e.g. PRO, 2TI). Set = BIBLE-ONLY run (series skipped). Requires the book to be enabled in bibles/{tx}/meta.json.'
+        required: false
+      bible_translation:
+        description: 'Bible translation folder (default: bsb)'
+        required: false
+        default: 'bsb'
+      bible_chapters:
+        description: 'Chapter range for the bible book, e.g. 1 or 1-4 (default: all enabled)'
+        required: false
 
 concurrency:
   group: audiobook-generate
@@ -72,6 +82,9 @@ jobs:
           FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
           BOOK_PATH_FILTER: ${{ github.event.inputs.book_path || '' }}
           SESSION_FILTER: ${{ github.event.inputs.session_filter || '' }}
+          BIBLE_BOOK: ${{ github.event.inputs.bible_book || '' }}
+          BIBLE_TRANSLATION: ${{ github.event.inputs.bible_translation || 'bsb' }}
+          BIBLE_CHAPTERS: ${{ github.event.inputs.bible_chapters || '' }}
 
       - name: Generate audio
         if: steps.detect.outputs.has_work == 'true'
