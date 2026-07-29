@@ -202,6 +202,32 @@ whose spoken text changed regenerate (and within those, only changed chunks — 
 
 ---
 
+## 7a. Loudness normalization
+
+Different ElevenLabs voices render at wildly different levels (the "Ali" Bible voice came
+out at **~-37 LUFS** vs the existing library's **~-20 LUFS** — ~16 dB / 3× too soft). The
+pipeline now levels every generated chapter with EBU-R128 `loudnorm`:
+
+- Target **-20 LUFS / -1.5 dBTP** (matches the existing library), in `generate.js`
+  (`normalizeLoudness`, constants `TARGET_LUFS`/`LOUDNESS_TOLERANCE`).
+- **Only files outside ±2 LUFS of target are re-encoded**; in-band audio is left byte-for-byte
+  untouched — so it never needlessly re-encodes the correct library and can't drift a book's
+  level on a partial regen. New voices are auto-corrected only when they're actually off.
+- **Gain-only** (two-pass linear) → duration preserved → sentence timestamps stay valid
+  (they're built from per-chunk alignments, not the final file).
+- Applied to the final concatenated chapter (and single-chunk chapters), after concat,
+  before the duration probe — so no ElevenLabs cost is involved.
+
+**Per new voice:** loudness needs no config (normalization is voice-agnostic). The one thing
+to ear-check is that boosting a very quiet voice (Ali got +17 dB) didn't amplify hiss/room
+noise — a listening check, not a knob.
+
+**Re-leveling already-generated audio (0 credits):** `scripts/relevel-audio.mjs` normalizes
+existing GCS MP3s in place without re-running TTS. `FFMPEG=/path/to/ffmpeg node
+scripts/relevel-audio.mjs bible/bsb/proverbs bible/bsb/2-timothy` (args are GCS book
+prefixes under `audio/`; also works for the whole library). Used once to fix the Bible books
+generated before normalization existed.
+
 ## 8. Known gotchas & lessons (READ before adding Psalms / Song / numbered books)
 
 1. **`\h` vs references.json name mismatch.** A few books' USFM `\h` name differs from the

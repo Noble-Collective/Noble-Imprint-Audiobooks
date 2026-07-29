@@ -14,7 +14,7 @@
  *   WORK_FILE - path to changed_sessions.json from detect-changes.js
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -353,11 +353,62 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
 
 const CHUNK_GAP_SECONDS = 0; // no silence gaps — ElevenLabs handles paragraph pauses naturally
 
+// Loudness normalization (EBU R128). Target matches the existing library (~-20 LUFS), so
+// books line up in volume regardless of how quiet/hot a given voice renders (e.g. the "Ali"
+// Bible voice rendered ~-37 LUFS — far too soft). Only files OUTSIDE the ±tolerance band are
+// re-encoded; in-band audio is left byte-for-byte untouched, so this never needlessly
+// re-encodes the already-correct library and can't drift a book's level on a partial regen.
+const TARGET_LUFS = -20;
+const TARGET_TP = -1.5;
+const TARGET_LRA = 11;
+const LOUDNESS_TOLERANCE = 2; // LUFS
+
 function concatenateChunks(chunkPaths, outputPath, tmpDir) {
   const listPath = outputPath + '.concat.txt';
   const entries = chunkPaths.map(p => `file '${p}'`);
   writeFileSync(listPath, entries.join('\n'));
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
+}
+
+// Measure a file's integrated loudness (LUFS) + true peak via loudnorm's analysis pass.
+function measureLoudness(path) {
+  try {
+    const out = execSync(
+      `ffmpeg -hide_banner -i "${path}" -af loudnorm=I=${TARGET_LUFS}:TP=${TARGET_TP}:LRA=${TARGET_LRA}:print_format=json -f null - 2>&1`,
+      { encoding: 'utf-8', maxBuffer: 32 * 1024 * 1024 }
+    );
+    const j = JSON.parse(out.slice(out.lastIndexOf('{'), out.lastIndexOf('}') + 1));
+    return {
+      input_i: parseFloat(j.input_i), input_tp: parseFloat(j.input_tp),
+      input_lra: parseFloat(j.input_lra), input_thresh: parseFloat(j.input_thresh),
+      target_offset: parseFloat(j.target_offset),
+    };
+  } catch (e) {
+    console.warn(`    [loudness] measurement failed: ${e.message}`);
+    return null;
+  }
+}
+
+// Normalize a chapter MP3 to TARGET_LUFS in place — but ONLY if it's outside the ±tolerance
+// band. Gain-only (two-pass linear loudnorm) so duration is preserved and the sentence
+// timestamps (built from per-chunk alignments, not this file) stay valid.
+function normalizeLoudness(path) {
+  const m = measureLoudness(path);
+  if (!m || !isFinite(m.input_i)) {
+    console.log(`    Loudness: unmeasured — left as-is`);
+    return;
+  }
+  if (Math.abs(m.input_i - TARGET_LUFS) <= LOUDNESS_TOLERANCE) {
+    console.log(`    Loudness: ${m.input_i.toFixed(1)} LUFS (within ±${LOUDNESS_TOLERANCE} of ${TARGET_LUFS}) — no normalization`);
+    return;
+  }
+  const tmp = path + '.norm.mp3';
+  const filter = `loudnorm=I=${TARGET_LUFS}:TP=${TARGET_TP}:LRA=${TARGET_LRA}` +
+    `:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}` +
+    `:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
+  execSync(`ffmpeg -hide_banner -i "${path}" -af "${filter}" -ar 44100 -b:a 128k "${tmp}" -y`, { stdio: 'pipe' });
+  renameSync(tmp, path);
+  console.log(`    Loudness: ${m.input_i.toFixed(1)} → ${TARGET_LUFS} LUFS (normalized)`);
 }
 
 async function gcsRetry(fn, label, retries = 3) {
@@ -575,6 +626,10 @@ async function main() {
         console.log(`    Concatenating ${chunkPaths.length} chunks with ${CHUNK_GAP_SECONDS}s gaps...`);
         concatenateChunks(chunkPaths, outputPath, tmpDir);
       }
+
+      // Level the final MP3 to the library loudness (only if out of band). Gain-only, so
+      // duration + timestamps are unaffected.
+      normalizeLoudness(outputPath);
 
       // Get duration
       let duration = 0;
