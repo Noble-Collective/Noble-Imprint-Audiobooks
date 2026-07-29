@@ -144,3 +144,33 @@ export function normalizeSpoken(text, code = 'en') {
 export function convertReference(text, code = 'en') {
   return normalizeSpoken(text.trim(), code);
 }
+
+const _titleReCache = {};
+function titleRegex(L) {
+  if (_titleReCache[L.code]) return _titleReCache[L.code];
+  // Whole-string chapter title: optional book number + known book + chapter number.
+  const re = new RegExp(`^(?:([1-3])\\s+)?(${buildBookAlternation(L.books)})\\s+(\\d+)$`, 'i');
+  _titleReCache[L.code] = re;
+  return re;
+}
+
+/**
+ * Spoken form of a scripture CHAPTER TITLE heading (e.g. "# 2 Timothy 1").
+ * Literal "2 Timothy 1" is mis-read by TTS ("Timothy chapter one"), so we spell it:
+ *   "2 Timothy 1" → "Second Timothy, Chapter 1"
+ *   "Proverbs 1"  → "Proverbs, Chapter 1"
+ *   "Psalm 23"    → "Psalm 23"   (Psalms are cited by number, not "chapter")
+ * Returns null when the heading isn't a recognizable scripture chapter title, so the
+ * caller falls back to normal heading handling — this is what keeps it from touching
+ * non-scripture headings.
+ */
+export function spokenChapterTitle(text, code = 'en') {
+  const L = getLanguage(code);
+  const m = String(text).trim().match(titleRegex(L));
+  if (!m) return null;
+  const [, ordinal, book, num] = m;
+  const name = spokenBook(L, ordinal, book);
+  if (/^psa/i.test(book)) return `${name} ${num}`; // "Psalm 23", not "Psalm, Chapter 23"
+  const Chapter = L.chapter.charAt(0).toUpperCase() + L.chapter.slice(1);
+  return `${name}, ${Chapter} ${num}`;
+}

@@ -7,7 +7,7 @@
  */
 
 import { convertBibleRef } from './bible-refs.js';
-import { normalizeSpoken, convertReference } from './languages.js';
+import { normalizeSpoken, convertReference, spokenChapterTitle } from './languages.js';
 
 // Greek Unicode ranges (Basic Greek + Extended Greek)
 const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
@@ -96,7 +96,9 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
       // Sentence-case headings for natural TTS (preserves proper nouns).
       // SSML break tags handle pauses — no trailing periods needed.
       // Original text is stored as displayText for web reader highlighting.
-      const spoken = sentenceCaseHeading(norm(text));
+      // Scripture chapter titles ("2 Timothy 1") are spelled out for the narrator
+      // ("Second Timothy, Chapter 1") — displayText stays the original either way.
+      const spoken = spokenChapterTitle(text, language) || sentenceCaseHeading(norm(text));
       if (level === 1) {
         chapterName = text;
         const block = makeBlock('h1',
