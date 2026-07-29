@@ -213,13 +213,36 @@ that chapter.
 - [ ] **Smoke-generate one chapter (needs push + dispatch + ~$0.40 spend + Steve OK)** →
       confirm GCS `audio/bible/bsb/2-timothy/…` manifest + timestamps look right.
 
-### Phase 3 — Website player (website repo)
-- [ ] `audio.js` — `getBibleAudioManifest` / `getBibleAudioChapter` + signed-URL route.
-- [ ] `bible.js` — share converter blocks; expose "chapter has audio" + block render for
-      audio chapters.
-- [ ] `bible-chapter.ejs` — audio-fab + player markup + `audio-player.js`, gated on audio.
-- [ ] Verify highlight sync on a real chapter (`/verify`-style manual pass).
-- [ ] (Later) AJAX next-chapter continuous playback.
+### Phase 3 — Website player (website repo) — ✅ CODE DONE + verified locally 2026-07-29
+- [x] `src/server/usfm-audio.js` — CommonJS port of the converter. **Byte-for-byte parity
+      with the ESM converter across all 35 chapters** (2 Tim + Proverbs) → DOM matches
+      timestamps by construction. Keep in sync with the audiobooks repo copy.
+- [x] `audio.js` — `getBibleAudioManifest(tx, bookName)` + `getBibleAudioChapter(...)`
+      (reads `audio/bible/{tx}/{slug}/manifest.json`). Existing `/api/audio/url/*` route
+      signs bible paths unchanged (prepend `series/` then strip is a no-op + idempotent slug).
+- [x] `bible.js` — `getAudioChapterBlocks(tx, code, chapter)`: resolves USFM filename via a
+      cached content-dir listing (by code from the manifest's bookPath), fetches + parses,
+      returns blocks. **No CACHE_VERSION bump** (avoids a forced GitHub rebuild on deploy).
+- [x] `index.js` — bible chapter route now async; looks up audio session + converter blocks,
+      passes `audioSession`/`audioBlocks`/`audioBookPath`/`audioFormatDuration`. Degrades to
+      text-only on any failure.
+- [x] `bible-chapter.ejs` — audio-fab + sticky player markup + `audio-player.js` (gated on
+      audio); audio chapters render from converter blocks (paragraphs + `<sup>`), else the
+      existing verse-span layout.
+- [x] Verified locally: route 200; graceful text-only fallback when GCS unreachable;
+      `getAudioChapterBlocks('bsb','2TI',1)` → 15 blocks (h2,p,p,p,h2,…) via GitHub;
+      24/24 unit tests pass. GCS manifest read only fails on the local-dev SA (no bucket
+      IAM) — production SA reads the bucket (existing series audio proves this).
+- Known minor limitation: audio chapters lose per-verse `id="vN"` anchors (rendered as
+      paragraphs with inline `<sup>`). Fine for MVP; revisit if verse deep-linking matters.
+- [ ] (Later) AJAX next-chapter continuous playback; optional site-wide paragraph style.
+
+### Phase 4 — Ship (needs Steve OK: deploy + ~$15 spend)
+- [ ] Commit + push website repo → auto-deploys to live (~3 min).
+- [ ] Verify 2 Timothy 1 on the LIVE site (plays + highlight syncs) — proves the GCS
+      render branch on real infra before the full spend.
+- [ ] Generate remaining chapters: 2 Timothy 2-4 (~$1.25) + Proverbs 1-31 (~$13.20).
+- [ ] Final verify on live.
 
 ### Phase 4 — Ship the 2 books
 - [ ] Book 1 & 2: convert → review → enable → generate → verify → set rollout (public/hidden).
