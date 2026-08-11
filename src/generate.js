@@ -59,7 +59,7 @@ async function getCredits() {
  *
  * Uses block sub_type metadata (h1, h2, h3, p) from preprocessing.
  */
-const TARGET_CHUNK_SIZE = 800;
+const TARGET_CHUNK_SIZE = 400; // A/B TEST (was 800) — smaller chunks to reduce within-chunk deceleration; revert if it reads choppier
 const MIN_CHUNK_SIZE = 250;
 const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']);
 
