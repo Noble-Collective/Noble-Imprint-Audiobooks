@@ -571,8 +571,10 @@ async function main() {
         const chunkAlignPath = join(tmpDir, `${slug}_chunk_${hash}.align.json`);
         chunkPaths.push(chunkPath);
 
-        // Check if this chunk's content hash exists in any previous chunk (regardless of index)
-        const existingFile = existingHashMap[hash];
+        // Check if this chunk's content hash exists in any previous chunk (regardless of index).
+        // force_regenerate bypasses chunk-level reuse too, so a forced run truly re-does TTS
+        // even when the chunk text is unchanged (e.g. after a generation-code change).
+        const existingFile = forceRegen ? undefined : existingHashMap[hash];
         if (existingFile) {
           try {
             await downloadFromGCS(`${gcsChunksDir}/${existingFile}.mp3`, chunkPath);
