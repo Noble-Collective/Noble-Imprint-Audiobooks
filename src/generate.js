@@ -360,7 +360,16 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   return { segments };
 }
 
-const CHUNK_GAP_SECONDS = 0; // no silence gaps — ElevenLabs handles paragraph pauses naturally
+// ⚠️ DO NOT set CHUNK_GAP_SECONDS > 0 as a way to add pauses between chunks. It is a TRAP.
+// This constant is only read by the TIMESTAMP math (buildTimestampsFromAlignments adds it to
+// chapterOffset) — it is NEVER used to insert silence into the audio. concatenateChunks()
+// stream-copies chunks back-to-back with `-c copy` and adds no gap. So a non-zero value shifts
+// the timestamps later than the (still gapless) audio, and the web highlight drifts +gap per
+// chunk boundary, cumulatively. This regression has bitten us before; zeroing it fixed it.
+// To add a real seam pause, put the pause INSIDE a chunk's generation instead (a trailing
+// <break> appended to each non-last chunk, below) so it lands in that chunk's own audio +
+// alignment + ffprobe duration — then audio and timestamps stay consistent with gap = 0.
+const CHUNK_GAP_SECONDS = 0; // MUST stay 0 — see warning above.
 
 // Loudness normalization (EBU R128). Target matches the existing library (~-20 LUFS), so
 // books line up in volume regardless of how quiet/hot a given voice renders (e.g. the "Ali"
@@ -548,6 +557,14 @@ async function main() {
 
       // Chunk the plain text using stable heading-based boundaries
       const chunks = chunkText(item.plainText, CHUNK_SIZE, item.ttsBlocks);
+      // Seam pause: append a short break to the END of each non-last chunk so the model
+      // renders the inter-chunk pause INSIDE that chunk's own generation. This keeps the
+      // pause in the chunk's audio + alignment + ffprobe duration, so timestamps stay
+      // consistent with CHUNK_GAP_SECONDS = 0 (do NOT use CHUNK_GAP — see its warning).
+      // Appended before hashing so cache keys reflect the break, and the SAME `chunks`
+      // array is used for generation and buildTimestampsFromAlignments.
+      const SEAM_BREAK = '<break time="0.4s"/>';
+      for (let i = 0; i < chunks.length - 1; i++) chunks[i] = chunks[i] + SEAM_BREAK;
       const chunkHashes = chunks.map(c => hashChunk(c));
 
       // Build hash→file map from existing manifest (supports old and new format)
