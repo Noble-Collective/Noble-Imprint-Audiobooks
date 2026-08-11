@@ -557,14 +557,20 @@ async function main() {
 
       // Chunk the plain text using stable heading-based boundaries
       const chunks = chunkText(item.plainText, CHUNK_SIZE, item.ttsBlocks);
-      // Seam pause: append a short break to the END of each non-last chunk so the model
-      // renders the inter-chunk pause INSIDE that chunk's own generation. This keeps the
-      // pause in the chunk's audio + alignment + ffprobe duration, so timestamps stay
-      // consistent with CHUNK_GAP_SECONDS = 0 (do NOT use CHUNK_GAP — see its warning).
-      // Appended before hashing so cache keys reflect the break, and the SAME `chunks`
-      // array is used for generation and buildTimestampsFromAlignments.
-      const SEAM_BREAK = '<break time="0.4s"/>';
-      for (let i = 0; i < chunks.length - 1; i++) chunks[i] = chunks[i] + SEAM_BREAK;
+      // Seam pause: PREPEND a short break to the START of each non-first chunk so the
+      // model renders the inter-chunk pause INSIDE that chunk's own generation (captured
+      // in its audio + alignment + ffprobe duration → timestamps stay consistent with
+      // CHUNK_GAP_SECONDS = 0; do NOT use CHUNK_GAP — see its warning).
+      // Leading (not trailing): ElevenLabs trims silence at a generation's END, so a
+      // trailing break vanished (seam stayed ~0.05s), but LEADING breaks render — proven
+      // by heading-led chunks whose leading 1.5s break yields ~1.32s at the seam.
+      // Skip chunks that already start with a break (heading-led) to avoid stacking.
+      // Prepended before hashing so cache keys reflect it, and the SAME `chunks` array
+      // feeds generation and buildTimestampsFromAlignments.
+      const SEAM_BREAK = '<break time="0.5s"/>';
+      for (let i = 1; i < chunks.length; i++) {
+        if (!chunks[i].startsWith('<break')) chunks[i] = SEAM_BREAK + chunks[i];
+      }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
       // Build hash→file map from existing manifest (supports old and new format)
