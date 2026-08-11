@@ -602,12 +602,15 @@ async function main() {
 
         // Generate this chunk with timestamps, providing surrounding text for prosody
         // plus request stitching to the prior chunks generated in this run.
+        // Stitching is on by default; set audiobook.request_stitching:false to disable.
+        const stitchEnabled = meta.request_stitching !== false;
+        const prevIds = stitchEnabled ? generatedRequestIds : [];
         const prevText = c > 0 ? chunks[c - 1].slice(-200) : undefined;
         const nextChunkText = c < chunks.length - 1 ? chunks[c + 1].slice(0, 200) : undefined;
-        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${generatedRequestIds.length ? ` — stitched to ${Math.min(3, generatedRequestIds.length)} prior` : ''} — generating...`);
+        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
         const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
-          meta.output_format || 'mp3_44100_128', prevText, nextChunkText, generatedRequestIds
+          meta.output_format || 'mp3_44100_128', prevText, nextChunkText, prevIds
         );
         if (result.requestId) generatedRequestIds.push(result.requestId);
         writeFileSync(chunkPath, result.audio);
