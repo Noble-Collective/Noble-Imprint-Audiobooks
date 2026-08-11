@@ -134,10 +134,12 @@ function hashChunk(text) {
 
 /**
  * Call ElevenLabs TTS with timestamps for a single text chunk.
- * Uses previous_text/next_text for prosody continuity across chunks.
- * Returns { audio: Buffer, alignment: { characters, character_start_times_seconds, character_end_times_seconds } }
+ * Uses previous_text/next_text (text context) AND previous_request_ids (request
+ * stitching — conditions on the actual audio of prior chunks) for prosody/pacing
+ * continuity across chunk boundaries. See ElevenLabs "request stitching" docs.
+ * Returns { audio: Buffer, alignment: {...}, requestId: string|null }
  */
-async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText) {
+async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, previousRequestIds) {
   const body = {
     text,
     model_id: modelId || 'eleven_multilingual_v2',
@@ -145,6 +147,11 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   };
   if (previousText) body.previous_text = previousText;
   if (nextText) body.next_text = nextText;
+  // Request stitching: condition on up to 3 most recent prior-chunk generations
+  // (max allowed by the API) so tempo/prosody carries across the seam.
+  if (previousRequestIds && previousRequestIds.length) {
+    body.previous_request_ids = previousRequestIds.slice(-3);
+  }
 
   const res = await fetch(
     `${API_BASE}/text-to-speech/${voiceId}/with-timestamps?output_format=${outputFormat || 'mp3_44100_128'}`,
@@ -161,18 +168,20 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
     err.status = isQuota ? 'quota' : res.status;
     throw err;
   }
+  const requestId = res.headers.get('request-id') || null;
   const data = await res.json();
   return {
     audio: Buffer.from(data.audio_base64, 'base64'),
     alignment: data.alignment || null,
+    requestId,
   };
 }
 
-async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, retries = 5) {
+async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, previousRequestIds, retries = 5) {
   const RETRYABLE_STATUS = new Set([429, 500, 502, 503]);
   for (let i = 0; i < retries; i++) {
     try {
-      return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText);
+      return await generateChunk(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, previousRequestIds);
     } catch (err) {
       const status = err.status;
       const isRetryable = RETRYABLE_STATUS.has(status) || status === 'quota';
@@ -550,6 +559,10 @@ async function main() {
       const chunkPaths = [];
       const chunkAlignments = [];
       const newHashToFile = {};
+      // Request-stitching chain: request_ids of chunks GENERATED this run, in order.
+      // Reset when a chunk is reused from cache (we have no live request_id for it,
+      // and IDs expire ~2h) so we never stitch across a cached gap.
+      const generatedRequestIds = [];
 
       for (let c = 0; c < chunks.length; c++) {
         const hash = chunkHashes[c];
@@ -578,6 +591,7 @@ async function main() {
             }
             newHashToFile[hash] = gcsName;
             reusedCount++;
+            generatedRequestIds.length = 0; // cached gap breaks the stitch chain
             continue;
           } catch {
             // Chunk file missing in GCS — regenerate
@@ -585,13 +599,15 @@ async function main() {
         }
 
         // Generate this chunk with timestamps, providing surrounding text for prosody
+        // plus request stitching to the prior chunks generated in this run.
         const prevText = c > 0 ? chunks[c - 1].slice(-200) : undefined;
         const nextChunkText = c < chunks.length - 1 ? chunks[c + 1].slice(0, 200) : undefined;
-        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars) — generating...`);
+        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${generatedRequestIds.length ? ` — stitched to ${Math.min(3, generatedRequestIds.length)} prior` : ''} — generating...`);
         const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
-          meta.output_format || 'mp3_44100_128', prevText, nextChunkText
+          meta.output_format || 'mp3_44100_128', prevText, nextChunkText, generatedRequestIds
         );
+        if (result.requestId) generatedRequestIds.push(result.requestId);
         writeFileSync(chunkPath, result.audio);
         chunkAlignments.push(result.alignment);
         regeneratedCount++;
