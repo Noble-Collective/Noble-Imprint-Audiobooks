@@ -59,8 +59,8 @@ async function getCredits() {
  *
  * Uses block sub_type metadata (h1, h2, h3, p) from preprocessing.
  */
-const TARGET_CHUNK_SIZE = 400; // A/B TEST (was 800) — smaller chunks to reduce within-chunk deceleration; revert if it reads choppier
-const MIN_CHUNK_SIZE = 250;
+const TARGET_CHUNK_SIZE = 400; // smaller chunks cap the within-generation deceleration ("robot battery dying")
+const MIN_CHUNK_SIZE = 200;    // lowered so sentence-split pieces of long blocks don't get re-merged
 const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']);
 
 function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
@@ -126,6 +126,36 @@ function splitAtParagraphs(text, maxChars) {
   }
   if (current.trim()) chunks.push(current.trim());
   return chunks;
+}
+
+// Split a paragraph's text into sentences (terminal punctuation + optional closing
+// quote/bracket, followed by space or end). Falls back to the whole text if no match.
+function splitSentences(text) {
+  const parts = text.match(/[^.!?]*[.!?]+["'”’)\]]*(?:\s+|$)/g);
+  return parts ? parts.map(s => s.trim()).filter(Boolean) : [text];
+}
+
+// Prevent any single generation from running long enough to "run out of battery":
+// split content blocks whose text exceeds `target` into sentence-boundary pieces,
+// greedily packed to ~target. Only splits at sentence boundaries (never mid-sentence),
+// so prosody + timestamp/highlight matching stay intact. Headings/short blocks pass through.
+function splitLongBlocks(blocks, target) {
+  const out = [];
+  for (const b of blocks) {
+    const text = b.nodes[0].text;
+    if (b.sub_type !== 'p' || text.length <= target) { out.push(b); continue; }
+    let cur = '';
+    for (const s of splitSentences(text)) {
+      if (cur && cur.length + 1 + s.length > target) {
+        out.push({ ...b, nodes: [{ ...b.nodes[0], text: cur }] });
+        cur = s;
+      } else {
+        cur = cur ? cur + ' ' + s : s;
+      }
+    }
+    if (cur) out.push({ ...b, nodes: [{ ...b.nodes[0], text: cur }] });
+  }
+  return out;
 }
 
 function hashChunk(text) {
@@ -556,7 +586,8 @@ async function main() {
       console.log(`    Voice: ${voiceId}`);
 
       // Chunk the plain text using stable heading-based boundaries
-      const chunks = chunkText(item.plainText, CHUNK_SIZE, item.ttsBlocks);
+      const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
+      const chunks = chunkText(item.plainText, CHUNK_SIZE, splitBlocks);
       // Seam pause: PREPEND a short break to the START of each non-first chunk so the
       // model renders the inter-chunk pause INSIDE that chunk's own generation (captured
       // in its audio + alignment + ffprobe duration → timestamps stay consistent with
