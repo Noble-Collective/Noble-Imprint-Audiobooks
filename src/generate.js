@@ -174,35 +174,37 @@ function splitLongBlocks(blocks, target) {
 // stability. Tunable "pause around headings, at will" knobs.
 const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 
-// Build natural-mode generations + per-boundary silence, mirroring the original heading
-// break logic. Each heading becomes its own generation so it gets silence on BOTH sides
-// (before + after), exactly like the original leading+trailing break. Consecutive
-// non-heading blocks group into one long generation (flat pacing). Between two adjacent
-// headings the gap is max(prev.trailing, curr.leading) — the same dedup the break logic used
-// (listener hears one pause, the longer). gaps[0] = 0 (chapter starts immediately).
+// Build natural-mode generations + per-boundary silence. One generation PER SECTION
+// (heading + its following verses), so the heading is read INLINE at verse pace — do NOT
+// isolate a heading into its own generation: at low stability the model reads a lone
+// short heading slowly/drawn-out (the chapter title came out ~7.7s). Adjacent headings
+// (chapter title + first section heading) stay in the same section. Concat silence BEFORE
+// each section = the section's first-heading type duration (h1=2s, h2=1.5s, h3=1s) — the
+// standard section-break lead-in, delivered reliably; the pause AFTER a heading comes from
+// its period (~0.8s, natural). gaps[0] = 0 (chapter starts immediately).
 function buildNaturalGenerations(blocks) {
-  const gens = []; // { isHeading, level, text }
-  let verses = [];
-  const flushVerses = () => { if (verses.length) { gens.push({ isHeading: false, text: verses.join('\n\n') }); verses = []; } };
+  const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;
+  const sections = [];
+  let cur = [];
+  let lastWasHeading = false;
   for (const b of blocks) {
-    let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
-    if (!t) continue;
-    if (HEADING_GAP[b.sub_type] !== undefined) {
-      flushVerses();
-      if (!/[.!?:…—]$/.test(t)) t += '.'; // period → clean declarative read of the isolated heading
-      gens.push({ isHeading: true, level: b.sub_type, text: t });
-    } else {
-      verses.push(t);
-    }
+    const h = isHeading(b);
+    if (h && cur.length > 0 && !lastWasHeading) { sections.push(cur); cur = []; }
+    cur.push(b);
+    lastWasHeading = h;
   }
-  flushVerses();
-  const gaps = gens.map((g, i) => {
+  if (cur.length) sections.push(cur);
+  const texts = sections.map(sec => sec.map(b => {
+    let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
+    if (t && isHeading(b) && !/[.!?:…—]$/.test(t)) t += '.'; // period → clean read + a natural beat after
+    return t;
+  }).filter(Boolean).join('\n\n')).filter(Boolean);
+  const gaps = sections.map((sec, i) => {
     if (i === 0) return 0;
-    const lead = g.isHeading ? HEADING_GAP[g.level] : 0;
-    const trail = gens[i - 1].isHeading ? HEADING_GAP[gens[i - 1].level] : 0;
-    return Math.max(lead, trail);
+    const firstHeading = sec.find(isHeading);
+    return firstHeading ? HEADING_GAP[firstHeading.sub_type] : 0;
   });
-  return { texts: gens.map(g => g.text), gaps };
+  return { texts, gaps };
 }
 
 function hashChunk(text) {
