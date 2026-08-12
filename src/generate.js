@@ -595,32 +595,40 @@ async function main() {
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
 
-      // Chunk the plain text using stable heading-based boundaries
-      const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
-      // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
-      // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
-      const contTexts = new Set(splitBlocks.filter(b => b._splitCont).map(b => b.nodes[0].text));
-      const chunks = chunkText(item.plainText, CHUNK_SIZE, splitBlocks);
-      // Seam pause: PREPEND a short break to the START of each non-first chunk so the
-      // model renders the inter-chunk pause INSIDE that chunk's own generation (captured
-      // in its audio + alignment + ffprobe duration → timestamps stay consistent with
-      // CHUNK_GAP_SECONDS = 0; do NOT use CHUNK_GAP — see its warning).
-      // Leading (not trailing): ElevenLabs trims silence at a generation's END, so a
-      // trailing break vanished (seam stayed ~0.05s), but LEADING breaks render — proven
-      // by heading-led chunks whose leading 1.5s break yields ~1.32s at the seam.
-      // Skip chunks that already start with a break (heading-led) to avoid stacking.
-      // Prepended before hashing so cache keys reflect it, and the SAME `chunks` array
-      // feeds generation and buildTimestampsFromAlignments.
-      // Differentiated seam pause: 0.5s at genuine paragraph/section boundaries, but a
-      // lighter 0.3s when the chunk STARTS mid-paragraph (a splitLongBlocks continuation)
-      // so a once-continuous paragraph keeps flowing across the split instead of getting a
-      // paragraph-sized break in the middle of a thought.
-      const SEAM_BREAK = '<break time="0.5s"/>';
-      const MID_SEAM_BREAK = '<break time="0.3s"/>';
-      for (let i = 1; i < chunks.length; i++) {
-        if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
-        const firstBlock = chunks[i].split('\n\n')[0];
-        chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
+      // NATURAL MODE (meta.natural_mode): render the whole chapter as ONE generation with
+      // NO inserted <break> tags — let ElevenLabs pace it using only the natural pauses
+      // from punctuation/paragraphs. Tests whether removing our break tags (which render
+      // erratically at low stability) sounds more natural. One generation = no seams, so
+      // no seam breaks needed; headings just get the model's natural paragraph pause.
+      let chunks;
+      if (meta.natural_mode === true) {
+        const plain = item.plainText
+          .replace(/<break[^>]*\/>/g, '')   // strip title/heading/seam breaks
+          .replace(/[ \t]+\n/g, '\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        chunks = [plain];
+        console.log(`    NATURAL MODE: 1 generation, no inserted breaks (${plain.length} chars)`);
+      } else {
+        // Chunk the plain text using stable heading-based boundaries.
+        const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
+        // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
+        // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
+        const contTexts = new Set(splitBlocks.filter(b => b._splitCont).map(b => b.nodes[0].text));
+        chunks = chunkText(item.plainText, CHUNK_SIZE, splitBlocks);
+        // Seam pause: PREPEND a LEADING break to each non-first chunk so the model renders
+        // the pause INSIDE that chunk's generation (captured in its audio + alignment +
+        // ffprobe duration → timestamps stay consistent with CHUNK_GAP_SECONDS = 0; do NOT
+        // use CHUNK_GAP — see its warning). Trailing breaks get trimmed at a generation's
+        // end; leading breaks render. Skip heading-led chunks (already have a break).
+        // Differentiated: 0.5s at real paragraph/section seams, 0.3s at mid-paragraph splits.
+        const SEAM_BREAK = '<break time="0.5s"/>';
+        const MID_SEAM_BREAK = '<break time="0.3s"/>';
+        for (let i = 1; i < chunks.length; i++) {
+          if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
+          const firstBlock = chunks[i].split('\n\n')[0];
+          chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
+        }
       }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
