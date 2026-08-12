@@ -184,6 +184,15 @@ const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 // its period (~0.8s, natural). gaps[0] = 0 (chapter starts immediately).
 function buildNaturalGenerations(blocks) {
   const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;
+  // Group a heading (or a run of adjacent headings) with the verses that follow it into ONE
+  // generation, so headings are read INLINE (natural, never the drawn-out isolated read). The
+  // pause BEFORE a section's first heading is a real concat-silence inserted between generations
+  // (see gaps below + concatenateChunks). The pause AFTER a heading that sits INSIDE a
+  // generation — the chapter title → "Paul's Greeting" → verse-1 run at the very top, which no
+  // between-generation silence can reach — is a <break> tag embedded in the text. Break tags are
+  // sync-safe: ElevenLabs' returned alignment already includes the rendered silence, so the
+  // timestamps (built from that alignment) capture it automatically — unlike the old CHUNK_GAP
+  // trap where a gap lived only in the timestamps. See HEADING_GAP for durations.
   const sections = [];
   let cur = [];
   let lastWasHeading = false;
@@ -194,9 +203,18 @@ function buildNaturalGenerations(blocks) {
     lastWasHeading = h;
   }
   if (cur.length) sections.push(cur);
-  const texts = sections.map(sec => sec.map(b => {
+  const texts = sections.map((sec, i) => sec.map((b, bi) => {
     let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
-    if (t && isHeading(b) && !/[.!?:…—]$/.test(t)) t += '.'; // period → clean read + a natural beat after
+    if (!t) return '';
+    if (isHeading(b)) {
+      if (!/[.!?:…—]$/.test(t)) t += '.';           // period → clean read
+      // Add an AFTER-heading break ONLY where no concat-silence precedes this heading: the
+      // opening section's headings (chapter title → "Paul's Greeting" → verse 1, all inside one
+      // generation), plus any sub-heading buried mid-generation. A later section's FIRST heading
+      // already gets its pause from the concat gap before that generation, so it stays untouched
+      // (keeps the reliable section pauses that already sound right).
+      if (i === 0 || bi > 0) t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;
+    }
     return t;
   }).filter(Boolean).join('\n\n')).filter(Boolean);
   const gaps = sections.map((sec, i) => {
@@ -667,17 +685,15 @@ async function main() {
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
 
-      // NATURAL MODE (meta.natural_mode): render the whole chapter as ONE generation with
-      // NO inserted <break> tags — let ElevenLabs pace it using only the natural pauses
-      // from punctuation/paragraphs. Tests whether removing our break tags (which render
-      // erratically at low stability) sounds more natural. One generation = no seams, so
-      // no seam breaks needed; headings just get the model's natural paragraph pause.
+      // NATURAL MODE (meta.natural_mode): group each heading with the verses that follow it
+      // into ONE generation so headings read INLINE (natural pacing, never the drawn-out
+      // isolated read). Pauses come from two sources: real concat silence BETWEEN generations
+      // (before each section's heading — deterministic, reliable at any stability), and <break>
+      // tags AFTER headings that sit INSIDE a generation (the opening title → greeting → verse-1
+      // run that no between-generation silence can reach). Break tags are sync-safe: ElevenLabs'
+      // alignment includes the rendered silence, so timestamps capture it automatically.
       let chunks, chunkGaps;
       if (meta.natural_mode === true) {
-        // NATURAL MODE: no inserted <break> tags. Each heading is its own generation with
-        // real concat silence on both sides (matching the original h1=2s / h2=1.5s / h3=1s
-        // break durations); verse runs are long single generations (flat pacing). All pauses
-        // are deterministic concat silence — reliable at any stability.
         const gen = buildNaturalGenerations(item.ttsBlocks);
         chunks = gen.texts;
         chunkGaps = gen.gaps;
