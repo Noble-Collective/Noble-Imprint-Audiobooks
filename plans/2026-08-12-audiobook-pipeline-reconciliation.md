@@ -1,0 +1,142 @@
+# Audiobook Pipeline Reconciliation — Chunking + Pauses
+
+**Date:** 2026-08-12
+**Status:** Proposed (not yet implemented)
+**Context:** After the 2 Timothy 1 work landed a new, well-liked chunking + pause
+approach for the Bible, we reviewed how much it diverges from the standard
+(non-Bible) book pipeline and whether the two can be unified.
+
+---
+
+## Background — how we got here
+
+- **`a5311be` (2026-06-27):** standard books designed around **~800-char** linear
+  block chunking, force-split at h1/h2/h3, 250-char min. This is what the existing
+  library was rendered with, and what `docs/ARCHITECTURE.md` still documents (~800).
+- **`5ceba5a` (2026-08-11, this session):** dropped `TARGET_CHUNK_SIZE` to **400** +
+  added `splitLongBlocks()` — a fix for the **Bible's** "robot battery dying"
+  deceleration. Because `TARGET_CHUNK_SIZE` is shared, this silently changed the
+  standard path too. **No regular book has been re-rendered since, so it has shaped
+  zero shipped audio** — the 400 is dormant in the regular path.
+- **`836ae2f` → `f45bd6b` (this session):** added `natural_mode` for the Bible, then
+  switched it to **section-based** generations with real concat-silence at section
+  boundaries. That switch **dropped the size cap** for the Bible (sections are emitted
+  whole; 2 Tim 1's middle generation is 1,353 chars).
+- **`63709ed` (this session):** disabled `previous_text`/`next_text` in natural_mode
+  (they bled a fricative across the deliberate silence gaps).
+
+**Net result today:**
+- Regular books: shipped at ~800 + break-tags-both-sides headings; code now says 400
+  (dormant), docs say 800 (drifted).
+- Bible: uncapped heading-delimited sections + hybrid pauses (concat-silence before
+  section headings, `<break>` after in-generation headings).
+
+---
+
+## Current architecture
+
+### Shared core (both paths, single call sites)
+`generateChunk` (TTS + request stitching) · `concatenateChunks` (filter re-encode) ·
+`buildTimestampsFromAlignments` · loudness normalization · GCS upload · manifest ·
+content-hash caching · `force_regenerate` · sentence splitting · validation guards.
+
+### Divergences
+| dimension | Standard (regular books) | Section (Bible) |
+|---|---|---|
+| chunking | `splitLongBlocks` + `chunkText`, ~400 target | `buildNaturalGenerations`, **uncapped** |
+| generation shape | many small (~200–400) | few large (one per heading-span) |
+| **heading levels that split** | **h1/h2/h3** (`FORCE_SPLIT_TYPES`) | **all h1–h6** (`HEADING_GAP`) |
+| heading pause | `<break>` both sides (preprocess-tts) | concat-silence **before** + `<break>` **after** |
+| seams | leading `<break>` (0.5s / 0.3s mid-para) | none (deliberate silence gaps) |
+| prev/next_text | on | off |
+| stability (voice) | 0.71 | 0.50 |
+
+The pause divergence traces to one fact: `<break>` tags render reliably **inside** a
+generation but are trimmed/unreliable **at a generation edge** (trailing vanish,
+leading render ~85%). The Bible puts headings on generation edges (each section = its
+own generation), so it needs deterministic concat-silence there. Regular books keep
+headings mid-generation and run at 0.71 where edge breaks survive, so break tags work.
+
+---
+
+## Target architecture
+
+Keep **two chunking strategies** (they genuinely serve different content) but make the
+choice explicit, cap the section strategy, align its heading-level rule, and unify the
+pause model so both strategies feed one pause engine.
+
+### 1. Per-book `chunking_strategy` property
+In each book's `meta.json` audiobook block:
+- `"linear"` — regular books: `chunkText` + `splitLongBlocks`, target **800**
+  (restores the validated/documented value; removes the dormant 400 regression).
+- `"section"` — Bible: `buildNaturalGenerations`, **with a cap** (below).
+- Back-compat: map existing `natural_mode: true` → `"section"`.
+- Optional per-book overrides: `chunk_target` (linear) / `max_generation` (section).
+
+### 2. Size cap on the section strategy
+- A "section" = a heading-span (see #3). If its text exceeds `max_generation`, split it
+  at **sentence boundaries** (reuse `splitLongBlocks`) into sub-generations.
+- Default `max_generation` ≈ **2,000–2,500** chars (2 Tim 1's best-sounding generation
+  was 1,353 and paced flat; stay above that, well under the ElevenLabs per-request
+  limit). Protects prose sections **and** the Bible's own long chapters (e.g. a psalm
+  with one title over 100+ verses would otherwise be a single enormous generation).
+
+### 3. Heading-level rule for the section strategy
+- **Boundaries: h1/h2/h3 only** (match `FORCE_SPLIT_TYPES`).
+- **h4/h5/h6: inline sub-headings** — read inside their parent generation with a
+  break-after tag (the section strategy already adds break-after to in-generation
+  headings, so no new mechanism needed).
+- Avoids over-fragmentation on deep hierarchies (without this, every h4–h6 would start
+  a new generation + concat-silence — the choppy isolated-heading failure mode).
+- Zero change to 2 Timothy (no h4–h6 present).
+
+### 4. Unified pause model (one engine, both strategies)
+Given a list of generations + boundary metadata, emit break tags + concat gaps:
+- in-generation heading → `<break>` after (duration by level)
+- generation boundary **at a heading** → concat-silence before (heading duration)
+- generation boundary **mid-paragraph** (a split seam, no heading) → **light**
+  concat-silence (~0.3–0.5s), replacing today's leading-break seam
+- Sync-safe throughout: break silence is captured by ElevenLabs' alignment; concat
+  silence is returned by `concatenateChunks` and fed to `buildTimestampsFromAlignments`
+  (never a timestamp-only gap — see the CHUNK_GAP warning in code).
+
+---
+
+## Sequencing
+
+**Phase A — now (safe, needed; no regular-book behavior change):**
+1. Add `chunking_strategy` property; set regular books `"linear"`/800, Bible `"section"`.
+2. Add `max_generation` cap to `buildNaturalGenerations` (+ sub-generation split + light
+   seam).
+3. Section strategy splits at h1–h3 only; h4–h6 inline.
+4. Dry-run generation sizes on 2 Timothy **and** one prose book (no credits) to sanity
+   the cap number before committing it.
+5. Regenerate 2 Timothy 1 to confirm no regression; validate pauses + timestamp sync.
+
+**Phase B — later (opt-in, validate first):**
+6. Unify the pause model in code so both strategies use concat-silence-at-boundaries +
+   break-after. **Regular books don't need this** (break tags work at 0.71), so it's a
+   robustness/consistency upgrade, not a fix.
+7. Prove on **one** prose book: dry-run sizes → one real re-render → listen. Only then
+   let it govern the library.
+
+---
+
+## Risks & decisions
+
+- **Do not bulk re-render the library.** It sounds good and costs ElevenLabs credits.
+  All changes take effect lazily on the next per-book regen.
+- **Pause unification changes regular-book re-render output** (break-both-sides →
+  concat-before + break-after). Shipped audio is untouched; validate before trusting.
+- **Cap number** (`max_generation`) is a pacing/safety tradeoff — larger keeps the Bible's
+  flat-pacing benefit, smaller is safer for the API limit. Confirm with the dry-run.
+- **Content-specificity:** the "long generation stays flat" result was measured on
+  scripture (short verse sentences). Validate on prose before assuming it holds.
+
+---
+
+## Documentation to update
+- `docs/ARCHITECTURE.md` — currently says ~800 everywhere; document both strategies and
+  the `chunking_strategy` property.
+- `docs/BIBLE-AUDIOBOOKS.md` — document the section strategy, cap, and h1–h3 boundary rule.
+- Note the two-path rationale so the divergence isn't re-litigated next time.
