@@ -777,8 +777,16 @@ async function main() {
         // Stitching is on by default; set audiobook.request_stitching:false to disable.
         const stitchEnabled = meta.request_stitching !== false;
         const prevIds = stitchEnabled ? generatedRequestIds : [];
-        const prevText = c > 0 ? chunks[c - 1].slice(-200) : undefined;
-        const nextChunkText = c < chunks.length - 1 ? chunks[c + 1].slice(0, 200) : undefined;
+        // previous_text/next_text condition a chunk's edges on the neighboring text to smooth a
+        // CONTINUOUS seam. In natural_mode the generations are deliberately separated by real
+        // silence, so next_text made a generation ANTICIPATE the next one's first word — bleeding
+        // a faint fricative onset into its tail (e.g. an "f" from the following "Faithfulness"
+        // heading, just before the pause). Skip both across those intentional gaps; request
+        // stitching (previous_request_ids, audio-based tempo continuity) is kept and doesn't bleed
+        // words. The old chunked path still uses them for its continuous seams.
+        const naturalGaps = meta.natural_mode === true;
+        const prevText = (!naturalGaps && c > 0) ? chunks[c - 1].slice(-200) : undefined;
+        const nextChunkText = (!naturalGaps && c < chunks.length - 1) ? chunks[c + 1].slice(0, 200) : undefined;
         console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
         const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
