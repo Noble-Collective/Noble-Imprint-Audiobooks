@@ -464,14 +464,16 @@ const LOUDNESS_TOLERANCE = 2; // LUFS
 
 // Concatenate chunks, optionally inserting real silence BEFORE a chunk. `gaps[i]` =
 // desired seconds of silence before chunk i (gaps[0] ignored). Silence is a matched-format
-// MP3 interleaved into the SAME `-c copy` byte-concat we already trust, so nothing is
-// re-encoded and joins stay exact. Returns the ACTUAL (probed) silence duration per chunk
-// so the timestamp math uses the identical numbers as the audio — no drift, unlike the old
-// CHUNK_GAP trap where the gap existed only in the timestamps.
+// silence via the concat FILTER (re-encode once) rather than interleaving silence MP3s into a
+// -c copy byte-concat: libmp3lame silence files carry a Xing/LAME info header, and a header
+// frame landing MID-stream makes players mis-read duration and stop early ("only got to verse
+// one, everything fast"). The filter decodes everything → inserts sample-exact silence →
+// encodes ONE clean stream. Returns the (exact) gap per chunk so timestamps use the same
+// numbers as the audio. gaps[i] = seconds of silence before chunk i (gaps[0] ignored).
 function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
   gaps = gaps || chunkPaths.map(() => 0);
-  const actualGaps = chunkPaths.map(() => 0);
-  // Match the chunk audio format so -c copy concat stays clean.
+  if (chunkPaths.length === 1) { copyFileSync(chunkPaths[0], outputPath); return chunkPaths.map(() => 0); }
+  // Match the chunk audio format so the concat filter's silence lines up.
   let sr = 44100, chn = 1;
   try {
     const pr = execSync(`ffprobe -v quiet -select_streams a:0 -show_entries stream=sample_rate,channels -of csv=p=0 "${chunkPaths[0]}"`, { encoding: 'utf-8' }).trim().split(',');
@@ -479,26 +481,22 @@ function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
     if (pr[1]) chn = parseInt(pr[1], 10);
   } catch { /* defaults */ }
   const cl = chn === 1 ? 'mono' : 'stereo';
-  const silenceCache = {};
-  const entries = [];
+  const inputs = [];   // ffmpeg -i args, in order
+  const labels = [];   // [k:a] stream labels, in concat order
+  const actualGaps = chunkPaths.map(() => 0);
+  let idx = 0;
   for (let i = 0; i < chunkPaths.length; i++) {
     const g = i > 0 ? (gaps[i] || 0) : 0;
     if (g > 0) {
-      if (!silenceCache[g]) {
-        const sp = join(tmpDir, `_silence_${String(g).replace('.', '_')}.mp3`);
-        execSync(`ffmpeg -f lavfi -i anullsrc=r=${sr}:cl=${cl} -t ${g} -c:a libmp3lame -b:a 128k "${sp}" -y`, { stdio: 'pipe' });
-        let dur = g;
-        try { dur = parseFloat(execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${sp}"`, { encoding: 'utf-8' }).trim()); } catch { /* keep requested */ }
-        silenceCache[g] = { path: sp, dur };
-      }
-      entries.push(`file '${silenceCache[g].path}'`);
-      actualGaps[i] = silenceCache[g].dur;
+      inputs.push(`-f lavfi -t ${g} -i anullsrc=r=${sr}:cl=${cl}`);
+      labels.push(`[${idx}:a]`); idx++;
+      actualGaps[i] = g; // sample-exact from the filter
     }
-    entries.push(`file '${chunkPaths[i]}'`);
+    inputs.push(`-i "${chunkPaths[i]}"`);
+    labels.push(`[${idx}:a]`); idx++;
   }
-  const listPath = outputPath + '.concat.txt';
-  writeFileSync(listPath, entries.join('\n'));
-  execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
+  const filter = `${labels.join('')}concat=n=${labels.length}:v=0:a=1[out]`;
+  execSync(`ffmpeg ${inputs.join(' ')} -filter_complex "${filter}" -map "[out]" -c:a libmp3lame -b:a 128k "${outputPath}" -y`, { stdio: 'pipe' });
   return actualGaps;
 }
 
