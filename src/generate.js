@@ -602,11 +602,16 @@ async function main() {
       // no seam breaks needed; headings just get the model's natural paragraph pause.
       let chunks;
       if (meta.natural_mode === true) {
-        const plain = item.plainText
-          .replace(/<break[^>]*\/>/g, '')   // strip title/heading/seam breaks
-          .replace(/[ \t]+\n/g, '\n')
-          .replace(/\n{3,}/g, '\n\n')
-          .trim();
+        // Rebuild from blocks, stripping breaks. Headings carry no terminal punctuation
+        // (they normally rely on break tags for their pause), so with breaks gone the model
+        // won't reliably pause after them — add a period to headings so the pause comes from
+        // punctuation, naturally and consistently.
+        const HEADING = new Set(['h1', 'h2', 'h3']);
+        const plain = item.ttsBlocks.map(b => {
+          let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
+          if (t && HEADING.has(b.sub_type) && !/[.!?:…—]$/.test(t)) t += '.';
+          return t;
+        }).filter(Boolean).join('\n\n');
         chunks = [plain];
         console.log(`    NATURAL MODE: 1 generation, no inserted breaks (${plain.length} chars)`);
       } else {
