@@ -168,37 +168,41 @@ function splitLongBlocks(blocks, target) {
   return out;
 }
 
-// natural_mode section pause: real silence (seconds) inserted at each section boundary.
-// Tunable — this is the "pause around headings, at will" knob. Rendered via concat silence
-// (deterministic), NOT <break> tags (which are unreliable at low stability).
-const SECTION_GAP_SECONDS = 0.8;
+// Heading pause durations (seconds), MATCHING the standard pipeline's original break tags
+// (preprocess-tts: h1=2s, h2=1.5s, h3-h6=1s, on each side). In natural_mode these are
+// delivered as real concat silence instead of <break> tags, so they're reliable at any
+// stability. Tunable "pause around headings, at will" knobs.
+const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 
-// Group blocks into sections: a heading starts a new section, but consecutive headings
-// (e.g. chapter title + first \s1) stay together so we don't strand a heading alone.
-function groupIntoSections(blocks) {
-  const HEADING = new Set(['h1', 'h2', 'h3']);
-  const sections = [];
-  let cur = [];
-  let lastWasHeading = false;
+// Build natural-mode generations + per-boundary silence, mirroring the original heading
+// break logic. Each heading becomes its own generation so it gets silence on BOTH sides
+// (before + after), exactly like the original leading+trailing break. Consecutive
+// non-heading blocks group into one long generation (flat pacing). Between two adjacent
+// headings the gap is max(prev.trailing, curr.leading) — the same dedup the break logic used
+// (listener hears one pause, the longer). gaps[0] = 0 (chapter starts immediately).
+function buildNaturalGenerations(blocks) {
+  const gens = []; // { isHeading, level, text }
+  let verses = [];
+  const flushVerses = () => { if (verses.length) { gens.push({ isHeading: false, text: verses.join('\n\n') }); verses = []; } };
   for (const b of blocks) {
-    const isH = HEADING.has(b.sub_type);
-    if (isH && cur.length > 0 && !lastWasHeading) { sections.push(cur); cur = []; }
-    cur.push(b);
-    lastWasHeading = isH;
-  }
-  if (cur.length) sections.push(cur);
-  return sections;
-}
-
-// Build one section's spoken text: strip <break> tags, and give headings a terminal period
-// so the model pauses after them naturally (they otherwise carry no punctuation).
-function buildSectionNaturalText(section) {
-  const HEADING = new Set(['h1', 'h2', 'h3']);
-  return section.map(b => {
     let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
-    if (t && HEADING.has(b.sub_type) && !/[.!?:…—]$/.test(t)) t += '.';
-    return t;
-  }).filter(Boolean).join('\n\n');
+    if (!t) continue;
+    if (HEADING_GAP[b.sub_type] !== undefined) {
+      flushVerses();
+      if (!/[.!?:…—]$/.test(t)) t += '.'; // period → clean declarative read of the isolated heading
+      gens.push({ isHeading: true, level: b.sub_type, text: t });
+    } else {
+      verses.push(t);
+    }
+  }
+  flushVerses();
+  const gaps = gens.map((g, i) => {
+    if (i === 0) return 0;
+    const lead = g.isHeading ? HEADING_GAP[g.level] : 0;
+    const trail = gens[i - 1].isHeading ? HEADING_GAP[gens[i - 1].level] : 0;
+    return Math.max(lead, trail);
+  });
+  return { texts: gens.map(g => g.text), gaps };
 }
 
 function hashChunk(text) {
@@ -670,14 +674,14 @@ async function main() {
       // no seam breaks needed; headings just get the model's natural paragraph pause.
       let chunks, chunkGaps;
       if (meta.natural_mode === true) {
-        // NATURAL MODE: one generation per SECTION (heading + its verses), no inserted
-        // <break> tags. Long generations keep pacing flat (deceleration is a chunking
-        // artifact); section boundaries get a real, deterministic silence (SECTION_GAP)
-        // via concat — a reliable pause around each heading, immune to break-tag erraticness.
-        const sections = groupIntoSections(item.ttsBlocks);
-        chunks = sections.map(buildSectionNaturalText).filter(Boolean);
-        chunkGaps = chunks.map((_, i) => (i === 0 ? 0 : SECTION_GAP_SECONDS));
-        console.log(`    NATURAL MODE: ${chunks.length} section generation(s), ${SECTION_GAP_SECONDS}s silence at section boundaries`);
+        // NATURAL MODE: no inserted <break> tags. Each heading is its own generation with
+        // real concat silence on both sides (matching the original h1=2s / h2=1.5s / h3=1s
+        // break durations); verse runs are long single generations (flat pacing). All pauses
+        // are deterministic concat silence — reliable at any stability.
+        const gen = buildNaturalGenerations(item.ttsBlocks);
+        chunks = gen.texts;
+        chunkGaps = gen.gaps;
+        console.log(`    NATURAL MODE: ${chunks.length} generation(s), heading silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
       } else {
         // Chunk the plain text using stable heading-based boundaries.
         const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
