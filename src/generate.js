@@ -72,6 +72,7 @@ function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
   const chunks = [];
   let currentTexts = [];
   let currentLen = 0;
+  let lastWasHeading = false;
 
   function flush() {
     if (currentTexts.length > 0) {
@@ -85,8 +86,16 @@ function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
     const text = block.nodes[0].text;
     const addedLen = currentLen > 0 ? text.length + 2 : text.length; // +2 for \n\n separator
 
-    // Flush trigger 1: H1/H2/H3 heading (if chunk is large enough)
-    if (FORCE_SPLIT_TYPES.has(block.sub_type) && currentLen >= MIN_CHUNK_SIZE) {
+    const isHeading = FORCE_SPLIT_TYPES.has(block.sub_type);
+
+    // Flush trigger 1: a heading ALWAYS starts a new chunk when the current chunk holds
+    // real (non-heading) content — ignoring MIN. This keeps the heading's trailing break
+    // MID-generation so the after-heading pause renders fully; without it, a short block
+    // before the heading (e.g. 2 Tim 1:12, 185 chars < MIN) would tack the heading on and
+    // push its trailing break to a trimmed generation edge → near-zero pause after it.
+    // `!lastWasHeading` keeps ADJACENT headings together (e.g. chapter title + first
+    // section heading) so we don't strand the title alone and weaken the pause between.
+    if (isHeading && currentLen > 0 && !lastWasHeading) {
       flush();
     }
 
@@ -97,6 +106,7 @@ function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
 
     currentTexts.push(text);
     currentLen += currentLen > 0 ? text.length + 2 : text.length;
+    lastWasHeading = isHeading;
   }
   flush();
 
@@ -145,15 +155,15 @@ function splitLongBlocks(blocks, target) {
     const text = b.nodes[0].text;
     if (b.sub_type !== 'p' || text.length <= target) { out.push(b); continue; }
     let cur = '';
+    let piece = 0;
+    // _splitCont marks the 2nd+ pieces of a split paragraph: a chunk that STARTS on one
+    // was originally mid-paragraph continuous text, so its seam gets a lighter pause.
+    const push = t => { out.push({ ...b, nodes: [{ ...b.nodes[0], text: t }], _splitCont: piece > 0 }); piece++; };
     for (const s of splitSentences(text)) {
-      if (cur && cur.length + 1 + s.length > target) {
-        out.push({ ...b, nodes: [{ ...b.nodes[0], text: cur }] });
-        cur = s;
-      } else {
-        cur = cur ? cur + ' ' + s : s;
-      }
+      if (cur && cur.length + 1 + s.length > target) { push(cur); cur = s; }
+      else { cur = cur ? cur + ' ' + s : s; }
     }
-    if (cur) out.push({ ...b, nodes: [{ ...b.nodes[0], text: cur }] });
+    if (cur) push(cur);
   }
   return out;
 }
@@ -587,6 +597,9 @@ async function main() {
 
       // Chunk the plain text using stable heading-based boundaries
       const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
+      // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
+      // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
+      const contTexts = new Set(splitBlocks.filter(b => b._splitCont).map(b => b.nodes[0].text));
       const chunks = chunkText(item.plainText, CHUNK_SIZE, splitBlocks);
       // Seam pause: PREPEND a short break to the START of each non-first chunk so the
       // model renders the inter-chunk pause INSIDE that chunk's own generation (captured
@@ -598,9 +611,16 @@ async function main() {
       // Skip chunks that already start with a break (heading-led) to avoid stacking.
       // Prepended before hashing so cache keys reflect it, and the SAME `chunks` array
       // feeds generation and buildTimestampsFromAlignments.
+      // Differentiated seam pause: 0.5s at genuine paragraph/section boundaries, but a
+      // lighter 0.3s when the chunk STARTS mid-paragraph (a splitLongBlocks continuation)
+      // so a once-continuous paragraph keeps flowing across the split instead of getting a
+      // paragraph-sized break in the middle of a thought.
       const SEAM_BREAK = '<break time="0.5s"/>';
+      const MID_SEAM_BREAK = '<break time="0.3s"/>';
       for (let i = 1; i < chunks.length; i++) {
-        if (!chunks[i].startsWith('<break')) chunks[i] = SEAM_BREAK + chunks[i];
+        if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
+        const firstBlock = chunks[i].split('\n\n')[0];
+        chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
       }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
