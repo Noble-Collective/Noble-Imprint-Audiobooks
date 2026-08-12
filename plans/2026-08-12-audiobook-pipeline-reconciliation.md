@@ -109,9 +109,12 @@ Given a list of generations + boundary metadata, emit break tags + concat gaps:
 2. Add `max_generation` cap to `buildNaturalGenerations` (+ sub-generation split + light
    seam).
 3. Section strategy splits at h1–h3 only; h4–h6 inline.
-4. Dry-run generation sizes on 2 Timothy **and** one prose book (no credits) to sanity
+4. **Stamp `pipeline_version` into each book's manifest at render time** so staleness is
+   queryable (which books would change on re-render). Informational — see caveat under
+   "Incremental re-render behavior."
+5. Dry-run generation sizes on 2 Timothy **and** one prose book (no credits) to sanity
    the cap number before committing it.
-5. Regenerate 2 Timothy 1 to confirm no regression; validate pauses + timestamp sync.
+6. Regenerate 2 Timothy 1 to confirm no regression; validate pauses + timestamp sync.
 
 **Phase B — later (opt-in, validate first):**
 6. Unify the pause model in code so both strategies use concat-silence-at-boundaries +
@@ -134,6 +137,38 @@ Given a list of generations + boundary metadata, emit break tags + concat gaps:
   scripture (short verse sentences). Validate on prose before assuming it holds.
 
 ---
+
+## Incremental re-render behavior (both strategies)
+
+Generation reuse is keyed on the **exact chunk text**: `hashChunk = sha256(text)[:16]`.
+On a regen, any generation whose text-hash matches the previous manifest is **reused**
+(downloaded, not re-rendered); only changed hashes hit ElevenLabs. So the cost of a text
+edit = how many generations' text changed. The two strategies differ in granularity:
+
+- **Linear (regular books):** a typo/word fix usually changes just the one ~800-char
+  chunk containing it → **1 chunk re-renders**. If the edit shifts a chunk past the size
+  boundary, the split point moves and downstream chunks change too — but the cascade is
+  **bounded by the next h1/h2/h3** (the chunker resets its packing at every force-split).
+- **Section (Bible):** the generation *is* the heading-span, so a one-word fix
+  re-renders that **whole section** (~1,300–2,500 chars). Coarser per edit; cascade
+  bounded by the section.
+
+Counterintuitive upside of the section strategy: it's **more robust to partial
+re-renders**. Reusing a cached generation resets the request-stitch chain
+(`generate.js` — "cached gap breaks the stitch chain"). In the linear path a lone
+re-rendered chunk between two cached ones may not tempo-match at its continuous seam; in
+the section path the deliberate silence between generations hides any mismatch. Section
+pays more per edit but always sounds seamless.
+
+**Caveat for turning auto-regen back on:** the cache is keyed on chunk **text** only.
+- A **text** edit correctly invalidates + re-renders the affected generation(s). ✓
+- A **logic/settings** change that alters audio but not chunk text (voice_settings,
+  concat method, loudness target) does **not** invalidate the cache — those generations
+  keep their old audio unless `force_regenerate`. So after a pipeline change, a normal
+  push-triggered regen refreshes only text-changed parts, leaving the rest on old logic
+  (mixed provenance). To fully realize a logic change, do one deliberate **force**
+  re-render per book. `pipeline_version` makes this visible; it does not by itself force
+  a re-render.
 
 ## Documentation to update
 - `docs/ARCHITECTURE.md` — currently says ~800 everywhere; document both strategies and
