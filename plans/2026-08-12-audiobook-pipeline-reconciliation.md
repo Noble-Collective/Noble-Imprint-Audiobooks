@@ -73,13 +73,30 @@ In each book's `meta.json` audiobook block:
 - Back-compat: map existing `natural_mode: true` → `"section"`.
 - Optional per-book overrides: `chunk_target` (linear) / `max_generation` (section).
 
-### 2. Size cap on the section strategy
-- A "section" = a heading-span (see #3). If its text exceeds `max_generation`, split it
-  at **sentence boundaries** (reuse `splitLongBlocks`) into sub-generations.
-- Default `max_generation` ≈ **2,000–2,500** chars (2 Tim 1's best-sounding generation
-  was 1,353 and paced flat; stay above that, well under the ElevenLabs per-request
-  limit). Protects prose sections **and** the Bible's own long chapters (e.g. a psalm
-  with one title over 100+ verses would otherwise be a single enormous generation).
+### 2. Size cap on the section strategy — `max_generation = 2000` (DECIDED)
+- A "section" = a heading-span (see #3). If its text exceeds `max_generation` (**2,000
+  chars**), pack its blocks into sub-generations of ≤ 2,000 at **verse/sentence
+  boundaries** (whole verses kept together; a single block over 2,000 is sentence-split
+  via `splitLongBlocks`).
+- **Sub-generation seam** (cap-forced, mid-section, no heading): a **light ~0.4s
+  concat-silence** — a breath, not a section pause. Request-stitching stays ON across it
+  (continuous content), and `previous_text`/`next_text` may stay on there too — unlike
+  true section boundaries, which keep them off (the "f"-bleed fix).
+- **Cap chosen from a no-credit dry-run** (2026-08-12) over real `tts.json` blocks:
+
+  | | 2 Timothy (11 sections) | Proverbs (66 sections) |
+  |---|---|---|
+  | median | 958 | 962 |
+  | p90 | 1,353 | 2,837 |
+  | max | 1,693 | 3,329 |
+
+  At **2,000**: 2 Timothy splits **0** sections (renders identically); Proverbs splits
+  **21/66 (31%)**, each at a verse boundary. Every resulting generation stays inside the
+  ~2,200-char range where we've *verified* flat pacing, and nothing approaches the
+  ElevenLabs limit (~10k). Worked case — Prov 30 (3,329) → two sub-gens of 1,934 + 1,393.
+- Higher caps (2,500 → 18% Proverbs split, 3,000 → 1%) were rejected: they'd leave
+  2,500–3,300-char generations whose pacing we haven't confirmed. Revisit only after an
+  empirical long-generation pacing test if the Proverbs seams prove undesirable.
 
 ### 3. Heading-level rule for the section strategy
 - **Boundaries: h1/h2/h3 only** (match `FORCE_SPLIT_TYPES`).
@@ -106,14 +123,15 @@ Given a list of generations + boundary metadata, emit break tags + concat gaps:
 
 **Phase A — now (safe, needed; no regular-book behavior change):**
 1. Add `chunking_strategy` property; set regular books `"linear"`/800, Bible `"section"`.
-2. Add `max_generation` cap to `buildNaturalGenerations` (+ sub-generation split + light
-   seam).
+2. Add `max_generation = 2000` cap to `buildNaturalGenerations` (+ sub-generation split
+   at verse/sentence boundaries + ~0.4s light seam). ✅ cap number decided via dry-run.
 3. Section strategy splits at h1–h3 only; h4–h6 inline.
 4. **Stamp `pipeline_version` into each book's manifest at render time** so staleness is
    queryable (which books would change on re-render). Informational — see caveat under
    "Incremental re-render behavior."
-5. Dry-run generation sizes on 2 Timothy **and** one prose book (no credits) to sanity
-   the cap number before committing it.
+5. ~~Dry-run generation sizes~~ ✅ **Done (2026-08-12)** — `max_generation = 2000` chosen;
+   see the cap table under "Size cap." 2 Timothy unaffected; Proverbs long tail (31%)
+   splits at verse boundaries.
 6. Regenerate 2 Timothy 1 to confirm no regression; validate pauses + timestamp sync.
 
 **Phase B — later (opt-in, validate first):**
