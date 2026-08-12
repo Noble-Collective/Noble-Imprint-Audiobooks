@@ -121,7 +121,13 @@ Given a list of generations + boundary metadata, emit break tags + concat gaps:
 
 ## Sequencing
 
-**Phase A — now (safe, needed; no regular-book behavior change):**
+**Phase A — ✅ DONE (2026-08-12)** — implemented in `generate.js` (commit a6070d7) + Bible
+meta migrated to `chunking_strategy: "section"` (Resources f1da3a9). Verified end-to-end:
+2 Tim 1 force-regen ran the section path, stamped `pipelineVersion: 2026-08-12-section-cap-v1`,
+identical structure (3 gens, 1.5s/1.5s), timestamps in sync. Regular books unchanged (default
+`linear`/800). Stale Bible chapters (2 Tim 2–4, Proverbs) NOT re-rendered — deferred by choice.
+
+Original checklist (safe, needed; no regular-book behavior change):
 1. Add `chunking_strategy` property; set regular books `"linear"`/800, Bible `"section"`.
 2. Add `max_generation = 2000` cap to `buildNaturalGenerations` (+ sub-generation split
    at verse/sentence boundaries + ~0.4s light seam). ✅ cap number decided via dry-run.
