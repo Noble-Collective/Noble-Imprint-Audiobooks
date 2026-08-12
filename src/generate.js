@@ -208,12 +208,12 @@ function buildNaturalGenerations(blocks) {
     if (!t) return '';
     if (isHeading(b)) {
       if (!/[.!?:…—]$/.test(t)) t += '.';           // period → clean read
-      // Add an AFTER-heading break ONLY where no concat-silence precedes this heading: the
-      // opening section's headings (chapter title → "Paul's Greeting" → verse 1, all inside one
-      // generation), plus any sub-heading buried mid-generation. A later section's FIRST heading
-      // already gets its pause from the concat gap before that generation, so it stays untouched
-      // (keeps the reliable section pauses that already sound right).
-      if (i === 0 || bi > 0) t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;
+      // AFTER-heading break on EVERY heading, so each one is set off from the verse that follows
+      // it — consistent across the whole chapter. Section-start headings ALSO get a concat
+      // silence BEFORE them (between generations); opening headings (title → greeting → verse 1,
+      // all inside one generation) get their separation purely from these breaks. Break tags are
+      // sync-safe: ElevenLabs' alignment includes the rendered silence, so timestamps capture it.
+      t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;
     }
     return t;
   }).filter(Boolean).join('\n\n')).filter(Boolean);
