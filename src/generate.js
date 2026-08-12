@@ -59,9 +59,26 @@ async function getCredits() {
  *
  * Uses block sub_type metadata (h1, h2, h3, p) from preprocessing.
  */
-const TARGET_CHUNK_SIZE = 400; // smaller chunks cap the within-generation deceleration ("robot battery dying")
-const MIN_CHUNK_SIZE = 200;    // lowered so sentence-split pieces of long blocks don't get re-merged
-const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']);
+// LINEAR strategy (regular books): the validated ~800 target from the original design
+// (a5311be). This session briefly dropped it to 400 as a Bible deceleration fix (5ceba5a),
+// but the Bible now uses the SECTION strategy + MAX_GENERATION, so the linear path is
+// restored to its shipped-library value.
+const TARGET_CHUNK_SIZE = 800;
+const MIN_CHUNK_SIZE = 250;
+const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']); // structural heading levels — section
+                                                       // BOUNDARIES (both strategies); h4–h6
+                                                       // stay inline within their generation.
+
+// SECTION strategy (Bible): a heading-span is one generation, but capped — a section over
+// MAX_GENERATION is packed into sub-generations at verse/sentence boundaries, separated by a
+// LIGHT seam (a breath, not a section pause). See plans/2026-08-12-audiobook-pipeline-
+// reconciliation.md for the dry-run that fixed 2000 (2 Timothy splits 0; Proverbs tail ~31%).
+const MAX_GENERATION = 2000;
+const LIGHT_SEAM_SECONDS = 0.4;
+
+// Bumped when generation LOGIC changes in a way that would alter re-render output. Stamped
+// into each book's manifest so staleness (shipped audio vs current logic) is queryable.
+const PIPELINE_VERSION = '2026-08-12-section-cap-v1';
 
 function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
   // If no blocks provided, fall back to paragraph splitting
@@ -169,60 +186,81 @@ function splitLongBlocks(blocks, target) {
 }
 
 // Heading pause durations (seconds), MATCHING the standard pipeline's original break tags
-// (preprocess-tts: h1=2s, h2=1.5s, h3-h6=1s, on each side). In natural_mode these are
-// delivered as real concat silence instead of <break> tags, so they're reliable at any
-// stability. Tunable "pause around headings, at will" knobs.
+// (preprocess-tts: h1=2s, h2=1.5s, h3-h6=1s). In the section strategy these are delivered as a
+// mix of real concat silence (before a section) + <break> tags (after an in-generation heading),
+// so they're reliable at any stability. Tunable "pause around headings, at will" knobs.
 const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 
-// Build natural-mode generations + per-boundary silence. One generation PER SECTION
-// (heading + its following verses), so the heading is read INLINE at verse pace — do NOT
-// isolate a heading into its own generation: at low stability the model reads a lone
-// short heading slowly/drawn-out (the chapter title came out ~7.7s). Adjacent headings
-// (chapter title + first section heading) stay in the same section. Concat silence BEFORE
-// each section = the section's first-heading type duration (h1=2s, h2=1.5s, h3=1s) — the
-// standard section-break lead-in, delivered reliably; the pause AFTER a heading comes from
-// its period (~0.8s, natural). gaps[0] = 0 (chapter starts immediately).
-function buildNaturalGenerations(blocks) {
-  const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;
-  // Group a heading (or a run of adjacent headings) with the verses that follow it into ONE
-  // generation, so headings are read INLINE (natural, never the drawn-out isolated read). The
-  // pause BEFORE a section's first heading is a real concat-silence inserted between generations
-  // (see gaps below + concatenateChunks). The pause AFTER a heading that sits INSIDE a
-  // generation — the chapter title → "Paul's Greeting" → verse-1 run at the very top, which no
-  // between-generation silence can reach — is a <break> tag embedded in the text. Break tags are
-  // sync-safe: ElevenLabs' returned alignment already includes the rendered silence, so the
-  // timestamps (built from that alignment) capture it automatically — unlike the old CHUNK_GAP
-  // trap where a gap lived only in the timestamps. See HEADING_GAP for durations.
+// SECTION-strategy generations + per-boundary silence (Bible). A "section" is a heading-SPAN:
+// a boundary heading (h1/h2/h3) + the blocks under it, up to the next boundary heading. Each
+// section is ONE generation so the heading reads INLINE at verse pace (never the drawn-out
+// isolated read). A section longer than `maxGeneration` is packed into sub-generations at
+// verse/sentence boundaries. Pauses:
+//   • before a section's first sub-gen    → concat silence = the section heading's duration
+//   • before a later (cap-forced) sub-gen → a LIGHT seam (mid-section, continuous content)
+//   • after ANY heading (incl. inline h4–h6) → a <break> tag inside the generation
+// Both break and concat silence are sync-safe (alignment + concatenateChunks feed the
+// timestamps; never a timestamp-only gap — see the CHUNK_GAP warning). Returns per generation:
+//   texts[], gaps[] (silence before it), continuations[] (true = mid-section cap split, so it
+//   flows continuously from the previous generation → keep prev/next_text there).
+function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) {
+  const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;   // any heading h1–h6 (break-after)
+  const isBoundary = b => FORCE_SPLIT_TYPES.has(b.sub_type);      // section boundary h1–h3 only
+
+  // Group into sections at BOUNDARY headings (h1–h3). h4–h6 are NOT boundaries: they stay
+  // inline in their section and just get a break-after like any in-generation heading.
   const sections = [];
   let cur = [];
-  let lastWasHeading = false;
+  let lastWasBoundary = false;
   for (const b of blocks) {
-    const h = isHeading(b);
-    if (h && cur.length > 0 && !lastWasHeading) { sections.push(cur); cur = []; }
+    const boundary = isBoundary(b);
+    if (boundary && cur.length > 0 && !lastWasBoundary) { sections.push(cur); cur = []; }
     cur.push(b);
-    lastWasHeading = h;
+    lastWasBoundary = boundary;
   }
   if (cur.length) sections.push(cur);
-  const texts = sections.map((sec, i) => sec.map((b, bi) => {
+
+  const renderBlocks = group => group.map(b => {
     let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
     if (!t) return '';
     if (isHeading(b)) {
-      if (!/[.!?:…—]$/.test(t)) t += '.';           // period → clean read
-      // AFTER-heading break on EVERY heading, so each one is set off from the verse that follows
-      // it — consistent across the whole chapter. Section-start headings ALSO get a concat
-      // silence BEFORE them (between generations); opening headings (title → greeting → verse 1,
-      // all inside one generation) get their separation purely from these breaks. Break tags are
-      // sync-safe: ElevenLabs' alignment includes the rendered silence, so timestamps capture it.
-      t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;
+      if (!/[.!?:…—]$/.test(t)) t += '.';                       // period → clean read
+      t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;       // after-heading pause, in-generation
     }
     return t;
-  }).filter(Boolean).join('\n\n')).filter(Boolean);
-  const gaps = sections.map((sec, i) => {
-    if (i === 0) return 0;
-    const firstHeading = sec.find(isHeading);
-    return firstHeading ? HEADING_GAP[firstHeading.sub_type] : 0;
+  }).filter(Boolean).join('\n\n');
+
+  const texts = [];
+  const gaps = [];
+  const continuations = [];
+  sections.forEach((sec, si) => {
+    const firstBoundary = sec.find(isBoundary);
+    const sectionGap = si === 0 ? 0 : (firstBoundary ? HEADING_GAP[firstBoundary.sub_type] : 0);
+
+    // Cap: sentence-split any single block over the cap, then greedily pack whole blocks
+    // (verses) into sub-generations of ≤ maxGeneration.
+    const secBlocks = splitLongBlocks(sec, maxGeneration);
+    const subs = [];
+    let group = [];
+    let len = 0;
+    for (const b of secBlocks) {
+      const bl = b.nodes[0].text.length;
+      if (group.length && len + bl + 2 > maxGeneration) { subs.push(group); group = []; len = 0; }
+      len += group.length ? bl + 2 : bl;
+      group.push(b);
+    }
+    if (group.length) subs.push(group);
+
+    subs.forEach((sub, subi) => {
+      const txt = renderBlocks(sub);
+      if (!txt) return;
+      texts.push(txt);
+      gaps.push(subi === 0 ? sectionGap : LIGHT_SEAM_SECONDS);
+      continuations.push(subi > 0);   // later sub-gens flow from the previous generation
+    });
   });
-  return { texts, gaps };
+
+  return { texts, gaps, continuations };
 }
 
 function hashChunk(text) {
@@ -685,21 +723,23 @@ async function main() {
       console.log(`\n  Chapter: ${item.chapterName} (${item.sessionFile})`);
       console.log(`    Voice: ${voiceId}`);
 
-      // NATURAL MODE (meta.natural_mode): group each heading with the verses that follow it
-      // into ONE generation so headings read INLINE (natural pacing, never the drawn-out
-      // isolated read). Pauses come from two sources: real concat silence BETWEEN generations
-      // (before each section's heading — deterministic, reliable at any stability), and <break>
-      // tags AFTER headings that sit INSIDE a generation (the opening title → greeting → verse-1
-      // run that no between-generation silence can reach). Break tags are sync-safe: ElevenLabs'
-      // alignment includes the rendered silence, so timestamps capture it automatically.
-      let chunks, chunkGaps;
-      if (meta.natural_mode === true) {
-        const gen = buildNaturalGenerations(item.ttsBlocks);
+      // CHUNKING STRATEGY (meta.chunking_strategy): "section" (Bible) groups each heading-span
+      // into a generation read INLINE, capped at MAX_GENERATION with sub-generations at verse
+      // boundaries; pauses are concat silence before a section + <break> after in-generation
+      // headings + a light seam at cap splits. "linear" (regular books) packs blocks to
+      // ~TARGET_CHUNK_SIZE with heading-led chunks + in-audio leading-break seams. Back-compat:
+      // legacy `natural_mode: true` maps to "section". Both feed the same concat + timestamp core.
+      const strategy = meta.chunking_strategy || (meta.natural_mode === true ? 'section' : 'linear');
+      let chunks, chunkGaps, continuations;
+      if (strategy === 'section') {
+        const gen = buildNaturalGenerations(item.ttsBlocks, meta.max_generation || MAX_GENERATION);
         chunks = gen.texts;
         chunkGaps = gen.gaps;
-        console.log(`    NATURAL MODE: ${chunks.length} generation(s), heading silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
+        continuations = gen.continuations;
+        const capSplits = continuations.filter(Boolean).length;
+        console.log(`    SECTION strategy: ${chunks.length} generation(s)${capSplits ? `, ${capSplits} cap-split` : ''}, silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
       } else {
-        // Chunk the plain text using stable heading-based boundaries.
+        // LINEAR strategy: chunk the plain text using stable heading-based boundaries.
         const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
         // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
         // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
@@ -718,7 +758,8 @@ async function main() {
           const firstBlock = chunks[i].split('\n\n')[0];
           chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
         }
-        chunkGaps = chunks.map(() => 0); // old path uses in-audio leading breaks, no concat silence
+        chunkGaps = chunks.map(() => 0); // linear path uses in-audio leading breaks, no concat silence
+        continuations = chunks.map(() => false);
       }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
@@ -778,15 +819,17 @@ async function main() {
         const stitchEnabled = meta.request_stitching !== false;
         const prevIds = stitchEnabled ? generatedRequestIds : [];
         // previous_text/next_text condition a chunk's edges on the neighboring text to smooth a
-        // CONTINUOUS seam. In natural_mode the generations are deliberately separated by real
-        // silence, so next_text made a generation ANTICIPATE the next one's first word — bleeding
-        // a faint fricative onset into its tail (e.g. an "f" from the following "Faithfulness"
-        // heading, just before the pause). Skip both across those intentional gaps; request
-        // stitching (previous_request_ids, audio-based tempo continuity) is kept and doesn't bleed
-        // words. The old chunked path still uses them for its continuous seams.
-        const naturalGaps = meta.natural_mode === true;
-        const prevText = (!naturalGaps && c > 0) ? chunks[c - 1].slice(-200) : undefined;
-        const nextChunkText = (!naturalGaps && c < chunks.length - 1) ? chunks[c + 1].slice(0, 200) : undefined;
+        // CONTINUOUS seam. Only supply them where the audio actually flows: LINEAR chunks always
+        // flow (leading-break seams); SECTION generations flow ONLY across a cap-forced light seam
+        // (continuations[]), NOT across a deliberate section pause — there, next_text made a
+        // generation ANTICIPATE the next section's first word and bled a fricative onset into its
+        // tail (an "f" from the following "Faithfulness" heading, just before the pause). Request
+        // stitching (previous_request_ids, audio-based tempo continuity) is kept regardless and
+        // doesn't bleed words.
+        const flowsFromPrev = strategy === 'section' ? !!continuations[c] : c > 0;
+        const flowsIntoNext = strategy === 'section' ? !!continuations[c + 1] : c < chunks.length - 1;
+        const prevText = (flowsFromPrev && c > 0) ? chunks[c - 1].slice(-200) : undefined;
+        const nextChunkText = (flowsIntoNext && c < chunks.length - 1) ? chunks[c + 1].slice(0, 200) : undefined;
         console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
         const result = await generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
@@ -899,6 +942,8 @@ async function main() {
         durationSeconds: duration,
         characterCount: item.plainText.length,
         generatedAt: new Date().toISOString(),
+        pipelineVersion: PIPELINE_VERSION,   // which generation LOGIC rendered this session
+        chunkingStrategy: strategy,
       });
     }
 
