@@ -168,6 +168,39 @@ function splitLongBlocks(blocks, target) {
   return out;
 }
 
+// natural_mode section pause: real silence (seconds) inserted at each section boundary.
+// Tunable — this is the "pause around headings, at will" knob. Rendered via concat silence
+// (deterministic), NOT <break> tags (which are unreliable at low stability).
+const SECTION_GAP_SECONDS = 0.8;
+
+// Group blocks into sections: a heading starts a new section, but consecutive headings
+// (e.g. chapter title + first \s1) stay together so we don't strand a heading alone.
+function groupIntoSections(blocks) {
+  const HEADING = new Set(['h1', 'h2', 'h3']);
+  const sections = [];
+  let cur = [];
+  let lastWasHeading = false;
+  for (const b of blocks) {
+    const isH = HEADING.has(b.sub_type);
+    if (isH && cur.length > 0 && !lastWasHeading) { sections.push(cur); cur = []; }
+    cur.push(b);
+    lastWasHeading = isH;
+  }
+  if (cur.length) sections.push(cur);
+  return sections;
+}
+
+// Build one section's spoken text: strip <break> tags, and give headings a terminal period
+// so the model pauses after them naturally (they otherwise carry no punctuation).
+function buildSectionNaturalText(section) {
+  const HEADING = new Set(['h1', 'h2', 'h3']);
+  return section.map(b => {
+    let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
+    if (t && HEADING.has(b.sub_type) && !/[.!?:…—]$/.test(t)) t += '.';
+    return t;
+  }).filter(Boolean).join('\n\n');
+}
+
 function hashChunk(text) {
   return createHash('sha256').update(text).digest('hex').slice(0, 16);
 }
@@ -246,7 +279,10 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
  * Each chunk's alignment has character-level start/end times relative to chunk start.
  * We offset by cumulative chunk durations + silence gaps to get chapter-level times.
  */
-function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gapSeconds) {
+function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gaps) {
+  // `gaps[c]` = seconds of REAL silence inserted before chunk c in the audio (gaps[0]=0).
+  // Must be the ACTUAL durations returned by concatenateChunks so the timeline matches.
+  gaps = gaps || chunkTexts.map(() => 0);
   // Build a chapter-level character timeline: for each character position in the
   // concatenated plain text, what's its absolute time in the chapter?
   const charTimes = []; // [{start, end}] for each character in plain text
@@ -256,6 +292,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   let chapterOffset = 0; // cumulative time offset for current chunk
 
   for (let c = 0; c < chunkAlignments.length; c++) {
+    chapterOffset += gaps[c] || 0; // inter-chunk silence sits BEFORE this chunk's audio
     const alignment = chunkAlignments[c];
     if (!alignment || !alignment.character_start_times_seconds) {
       // No alignment data — estimate proportionally for this chunk
@@ -278,7 +315,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
       }
     }
 
-    chapterOffset += chunkDurations[c] + gapSeconds;
+    chapterOffset += chunkDurations[c];
   }
 
   // Now map sentences to character positions.
@@ -340,7 +377,7 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
     if (cleanIdx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
-      const totalDuration = chapterOffset - CHUNK_GAP_SECONDS;
+      const totalDuration = chapterOffset; // per-chunk gaps already fold into chapterOffset
       segments.push({
         start: Math.round(proportion * totalDuration * 100) / 100,
         end: Math.round(((segments.length + 1) / sentences.length) * totalDuration * 100) / 100,
@@ -400,16 +437,14 @@ function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDuratio
   return { segments };
 }
 
-// ⚠️ DO NOT set CHUNK_GAP_SECONDS > 0 as a way to add pauses between chunks. It is a TRAP.
-// This constant is only read by the TIMESTAMP math (buildTimestampsFromAlignments adds it to
-// chapterOffset) — it is NEVER used to insert silence into the audio. concatenateChunks()
-// stream-copies chunks back-to-back with `-c copy` and adds no gap. So a non-zero value shifts
-// the timestamps later than the (still gapless) audio, and the web highlight drifts +gap per
-// chunk boundary, cumulatively. This regression has bitten us before; zeroing it fixed it.
-// To add a real seam pause, put the pause INSIDE a chunk's generation instead (a trailing
-// <break> appended to each non-last chunk, below) so it lands in that chunk's own audio +
-// alignment + ffprobe duration — then audio and timestamps stay consistent with gap = 0.
-const CHUNK_GAP_SECONDS = 0; // MUST stay 0 — see warning above.
+// Inter-chunk pauses are done via REAL silence: concatenateChunks() interleaves matched
+// silence MP3s into the `-c copy` byte-concat and RETURNS the actual probed durations, which
+// are then handed to buildTimestampsFromAlignments — so the gap lives in BOTH the audio and
+// the timestamps, from the same numbers. ⚠️ HISTORY: an earlier version had a lone
+// CHUNK_GAP_SECONDS constant that ONLY the timestamp math used while concat added no silence
+// — the timestamps drifted +gap per boundary and the web highlight desynced. Never split the
+// two again: whatever silence goes in the audio MUST be the same value the timestamps use
+// (that's why concatenateChunks returns actualGaps).
 
 // Loudness normalization (EBU R128). Target matches the existing library (~-20 LUFS), so
 // books line up in volume regardless of how quiet/hot a given voice renders (e.g. the "Ali"
@@ -421,11 +456,44 @@ const TARGET_TP = -1.5;
 const TARGET_LRA = 11;
 const LOUDNESS_TOLERANCE = 2; // LUFS
 
-function concatenateChunks(chunkPaths, outputPath, tmpDir) {
+// Concatenate chunks, optionally inserting real silence BEFORE a chunk. `gaps[i]` =
+// desired seconds of silence before chunk i (gaps[0] ignored). Silence is a matched-format
+// MP3 interleaved into the SAME `-c copy` byte-concat we already trust, so nothing is
+// re-encoded and joins stay exact. Returns the ACTUAL (probed) silence duration per chunk
+// so the timestamp math uses the identical numbers as the audio — no drift, unlike the old
+// CHUNK_GAP trap where the gap existed only in the timestamps.
+function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
+  gaps = gaps || chunkPaths.map(() => 0);
+  const actualGaps = chunkPaths.map(() => 0);
+  // Match the chunk audio format so -c copy concat stays clean.
+  let sr = 44100, chn = 1;
+  try {
+    const pr = execSync(`ffprobe -v quiet -select_streams a:0 -show_entries stream=sample_rate,channels -of csv=p=0 "${chunkPaths[0]}"`, { encoding: 'utf-8' }).trim().split(',');
+    if (pr[0]) sr = parseInt(pr[0], 10);
+    if (pr[1]) chn = parseInt(pr[1], 10);
+  } catch { /* defaults */ }
+  const cl = chn === 1 ? 'mono' : 'stereo';
+  const silenceCache = {};
+  const entries = [];
+  for (let i = 0; i < chunkPaths.length; i++) {
+    const g = i > 0 ? (gaps[i] || 0) : 0;
+    if (g > 0) {
+      if (!silenceCache[g]) {
+        const sp = join(tmpDir, `_silence_${String(g).replace('.', '_')}.mp3`);
+        execSync(`ffmpeg -f lavfi -i anullsrc=r=${sr}:cl=${cl} -t ${g} -c:a libmp3lame -b:a 128k "${sp}" -y`, { stdio: 'pipe' });
+        let dur = g;
+        try { dur = parseFloat(execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${sp}"`, { encoding: 'utf-8' }).trim()); } catch { /* keep requested */ }
+        silenceCache[g] = { path: sp, dur };
+      }
+      entries.push(`file '${silenceCache[g].path}'`);
+      actualGaps[i] = silenceCache[g].dur;
+    }
+    entries.push(`file '${chunkPaths[i]}'`);
+  }
   const listPath = outputPath + '.concat.txt';
-  const entries = chunkPaths.map(p => `file '${p}'`);
   writeFileSync(listPath, entries.join('\n'));
   execSync(`ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}" -y`, { stdio: 'pipe' });
+  return actualGaps;
 }
 
 // Measure a file's integrated loudness (LUFS) + true peak via loudnorm's analysis pass.
@@ -600,20 +668,16 @@ async function main() {
       // from punctuation/paragraphs. Tests whether removing our break tags (which render
       // erratically at low stability) sounds more natural. One generation = no seams, so
       // no seam breaks needed; headings just get the model's natural paragraph pause.
-      let chunks;
+      let chunks, chunkGaps;
       if (meta.natural_mode === true) {
-        // Rebuild from blocks, stripping breaks. Headings carry no terminal punctuation
-        // (they normally rely on break tags for their pause), so with breaks gone the model
-        // won't reliably pause after them — add a period to headings so the pause comes from
-        // punctuation, naturally and consistently.
-        const HEADING = new Set(['h1', 'h2', 'h3']);
-        const plain = item.ttsBlocks.map(b => {
-          let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
-          if (t && HEADING.has(b.sub_type) && !/[.!?:…—]$/.test(t)) t += '.';
-          return t;
-        }).filter(Boolean).join('\n\n');
-        chunks = [plain];
-        console.log(`    NATURAL MODE: 1 generation, no inserted breaks (${plain.length} chars)`);
+        // NATURAL MODE: one generation per SECTION (heading + its verses), no inserted
+        // <break> tags. Long generations keep pacing flat (deceleration is a chunking
+        // artifact); section boundaries get a real, deterministic silence (SECTION_GAP)
+        // via concat — a reliable pause around each heading, immune to break-tag erraticness.
+        const sections = groupIntoSections(item.ttsBlocks);
+        chunks = sections.map(buildSectionNaturalText).filter(Boolean);
+        chunkGaps = chunks.map((_, i) => (i === 0 ? 0 : SECTION_GAP_SECONDS));
+        console.log(`    NATURAL MODE: ${chunks.length} section generation(s), ${SECTION_GAP_SECONDS}s silence at section boundaries`);
       } else {
         // Chunk the plain text using stable heading-based boundaries.
         const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
@@ -634,6 +698,7 @@ async function main() {
           const firstBlock = chunks[i].split('\n\n')[0];
           chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
         }
+        chunkGaps = chunks.map(() => 0); // old path uses in-audio leading breaks, no concat silence
       }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
@@ -726,13 +791,16 @@ async function main() {
         }
       }
 
-      // Concatenate all chunks into final chapter MP3
+      // Concatenate all chunks into final chapter MP3. actualGaps = real silence (probed)
+      // placed before each chunk — fed to the timestamp builder so audio + timestamps agree.
       const outputPath = join(tmpDir, `${slug}.mp3`);
+      let actualGaps = chunkPaths.map(() => 0);
       if (chunkPaths.length === 1) {
         copyFileSync(chunkPaths[0], outputPath);
       } else {
-        console.log(`    Concatenating ${chunkPaths.length} chunks with ${CHUNK_GAP_SECONDS}s gaps...`);
-        concatenateChunks(chunkPaths, outputPath, tmpDir);
+        const totalGap = chunkGaps.reduce((a, b) => a + b, 0);
+        console.log(`    Concatenating ${chunkPaths.length} chunks (${totalGap.toFixed(1)}s total silence at boundaries)...`);
+        actualGaps = concatenateChunks(chunkPaths, outputPath, tmpDir, chunkGaps);
       }
 
       // Level the final MP3 to the library loudness (only if out of band). Gain-only, so
@@ -772,7 +840,7 @@ async function main() {
         }
 
         const timestamps = buildTimestampsFromAlignments(
-          chunkAlignments, chunks, chunkDurations, sentences, CHUNK_GAP_SECONDS
+          chunkAlignments, chunks, chunkDurations, sentences, actualGaps
         );
         const tsPath = join(tmpDir, `${slug}.timestamps.json`);
         writeFileSync(tsPath, JSON.stringify(timestamps, null, 2));
