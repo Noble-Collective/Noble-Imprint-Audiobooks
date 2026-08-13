@@ -100,7 +100,8 @@ NOT for Psalms/Song (see §8) — reconcile before adding those.
     "voice_id": "MI88rOZjXbH22N8KHXUo",
     "model_id": "eleven_multilingual_v2",
     "quality_preset": "high",
-    "voice_settings": { "stability": 0.71, "similarity_boost": 0.5, "style": 0.0, "speed": 0.90 },
+    "chunking_strategy": "section",
+    "voice_settings": { "stability": 0.50, "similarity_boost": 0.5, "style": 0.0, "speed": 0.90 },
     "books": {
       "PRO": { "enabled": true },
       "2TI": { "enabled": true }
@@ -113,7 +114,12 @@ NOT for Psalms/Song (see §8) — reconcile before adding those.
   `"chapters": "1-4"` to limit range. This is how "one book at a time" is enforced and how
   the website knows a book has audio.
 - `voice_id` — current: **Ali** `MI88rOZjXbH22N8KHXUo` (Saudi-Arabic-accented English narrator,
-  chosen via `/voice-test`). `speed: 0.90` is the scripture read profile.
+  chosen via `/voice-test`). `speed: 0.90` is the scripture read profile. **`stability: 0.50`** —
+  chosen by ear for this voice; note that at 0.50 `<break>` tags at generation edges are unreliable,
+  which is why the Bible uses the **section** chunking strategy (concat silence for edge pauses).
+- `chunking_strategy: "section"` — heading-span generations, capped at 2000, with concat-silence +
+  after-heading `<break>` pauses. **This is the authoritative behavior — see
+  docs/CHUNKING-AND-PAUSES.md.** (Regular books use `"linear"`.)
 - `language_normalization: true` — expands scripture refs / numeric ranges in verse text.
   Harmless for the current books; see §8 for the caveat.
 
@@ -127,8 +133,11 @@ Emits the `samples/psalm-1-2.md` convention: `# {Book} {N}` (H1 chapter title) �
 section headings (from `\s1`/`\s2`) → paragraphs with `<sup>N</sup>` verse numbers.
 
 Behavior worth knowing:
-- **Poetry is flowing** — consecutive `\q1`/`\q2` lines group into ONE stanza paragraph;
-  breaks only at `\b`/prose markers. (Deliberate: no per-line pauses. Steve's call.)
+- **Poetry is flowing (current default)** — consecutive `\q1`/`\q2` lines group into ONE stanza
+  paragraph; breaks only at `\b`/prose markers. ⚠️ **A per-couplet fix is in progress** (env-gated
+  `POETRY_COUPLETS`, uncommitted) to split poetry at each `\q1` so couplets like the 2 Tim 2:11
+  creed get a natural pause instead of running on. It requires a matching parity port in the
+  website's `usfm-audio.js` and per-book gating — see **plans/2026-08-12-poetry-couplet-fix.md**.
 - **Verse numbers** `<sup>N</sup>` are silent in audio (stripped by preprocess), visible on web.
 - **`\d` superscriptions** (Psalms) are kept as spoken paragraphs.
 - **Footnotes/cross-refs/char-styles** (`\f…\f*`, `\x…\x*`, `\add`, `\nd`, `\wj`) are stripped,
@@ -240,12 +249,13 @@ generated before normalization existed.
      alias in `detect-changes.findBibleWorkItems`, or pass an explicit slug), so both sides
      agree. Proverbs/2 Timothy are unaffected (names match).
 
-2. **Heading edits can cascade chunk regeneration.** The chapter title lives in chunk 1.
-   Changing its spoken text usually re-does only chunk 1 (hash reuse). But if the change
-   pushes chunk 1 past the ~800-char boundary, the split point moves and *every* chunk hash
-   in that chapter changes → full-chapter regen. (Seen on 4 Proverbs chapters during the
-   heading fix.) If we expect title tweaks, force the H1 onto its own chunk so edits never
-   cascade — not done yet; a small change in `generate.js` `chunkText`.
+2. **Edits re-render at generation granularity.** The Bible now uses the **section** strategy
+   (one generation per heading-span, capped at 2000 — see CHUNKING-AND-PAUSES.md), NOT the old
+   ~800-char linear walk. A text edit re-renders the whole heading-span generation it sits in.
+   The chapter title + first section heading share the opening generation, so a title tweak
+   re-does that opening generation (bounded — it does not cascade across the chapter, since each
+   section is independent). *(Historical note: the ~800-char cascade was a linear-strategy
+   concern; the section strategy is not subject to it.)*
 
 3. **The Bible disk cache is committed and stale-prone.** `Website/.bible-cache/{tx}-v1.json`
    bakes in `paragraphStart`/`sectionHeading` flags and ships in the Docker image. After any
@@ -294,6 +304,10 @@ credits (~$8.6)**; the heading-pronunciation regen ≈ **18,000 credits (~$3)**.
 ---
 
 ## Related docs
+- **`docs/CHUNKING-AND-PAUSES.md`** — authoritative reference for the section strategy, the cap,
+  and the pause model the Bible depends on.
+- `plans/2026-08-12-audiobook-pipeline-reconciliation.md` — the two-strategy reconciliation + cap decision.
+- `plans/2026-08-12-poetry-couplet-fix.md` — the in-progress per-couplet poetry fix (2 Tim 2:11) + parity port.
 - `plans/2026-07-29-bible-audiobooks.md` — the original plan + build history/decisions.
 - `docs/VOICE-COMPARE.md` — how the Ali voice was chosen (`/voice-test`).
 - `docs/ARCHITECTURE.md` — the overall audiobook system.

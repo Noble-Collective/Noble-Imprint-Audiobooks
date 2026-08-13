@@ -11,6 +11,7 @@ Automated audiobook generation system that converts markdown book content to nar
 - [Cross-Repo Trigger](#cross-repo-trigger)
 - [Configuration](#configuration)
 - [Preprocessing Pipeline](#preprocessing-pipeline)
+- [Chunking Strategies & Pause Model](./CHUNKING-AND-PAUSES.md) — **the authoritative reference** for how a chapter is split into generations and how pauses are produced (two strategies, section cap, the pause model, version stamp, re-render granularity).
 - [Chunk-Level Change Detection](#chunk-level-change-detection)
 - [ElevenLabs Integration](#elevenlabs-integration)
 - [Timestamp Alignment](#timestamp-alignment)
@@ -40,22 +41,26 @@ Content push to Resources repo
   |
   +-> notify-website.yml -> website cache refresh
   |
-  +-> notify-audiobook.yml -> repository_dispatch -> Audiobooks repo
+  +-> notify-audiobook.yml -> (DISABLED 2026-07-27; audiobook generation is manual/opt-in)
+
+Audiobook generation (manual workflow_dispatch; repository_dispatch if re-enabled):
        |
-       +-> detect changed sessions (content hash per chunk)
+       +-> detect changed sessions (source content hash; force_regenerate overrides)
        |
-       +-> preprocess markdown -> strip syntax, sentence-case headings, add SSML <break> pauses
+       +-> preprocess markdown -> strip syntax, sentence-case headings
+       |
+       +-> chunk per the book's chunking_strategy  (see docs/CHUNKING-AND-PAUSES.md)
+       |     linear  -> ~800-char block walk + <break>/leading-break seams
+       |     section -> heading-span generations, cap 2000, concat-silence + <break> pauses
        |
        +-> generate audio via ElevenLabs /v1/text-to-speech/{voice}/with-timestamps
-       |   +-> split into ~800 char chunks via linear block walk (force-split at H1/H2/H3, 250-char min)
-       |   +-> per-chunk hash comparison -- only regenerate changed chunks
-       |   +-> unchanged chunks downloaded from GCS and reused (with cached alignment)
-       |   +-> previous_text / next_text (200 chars) sent for prosody stitching across boundaries
+       |   +-> per-chunk hash comparison -- only regenerate changed chunks, reuse the rest
+       |   +-> previous_text/next_text only across continuous seams; request stitching always
        |   +-> character-level timestamps returned alongside audio per chunk
-       |   +-> all chunks concatenated with ffmpeg into chapter MP3 (no silence between chunks)
-       |   +-> sentence timestamps built from character alignments + chunk offsets
+       |   +-> chunks joined via ffmpeg concat FILTER (re-encode), inserting exact section silence
+       |   +-> sentence timestamps built from character alignments + the same silence gaps
        |
-       +-> upload to GCS: MP3 + .tts.json + .timestamps.json + manifest
+       +-> upload to GCS: MP3 + .tts.json + .timestamps.json + manifest (pipelineVersion stamped)
        |
        +-> notify website to clear audio cache
 ```
@@ -66,8 +71,12 @@ Content push to Resources repo
 
 ### Resources repo: `.github/workflows/notify-audiobook.yml`
 
-- Triggers on push to `main` when `series/**/sessions/*.md` or `series/**/meta.json` changes.
-- Uses `peter-evans/repository-dispatch@v3` to fire a `content-updated` event on the Audiobooks repo.
+- **DISABLED 2026-07-27** — audiobook generation is now explicit opt-in (manual only). The push
+  trigger and the `repository_dispatch` dispatch are commented out; the workflow is
+  `workflow_dispatch` only. To re-enable auto-generation, restore the push block here **and** the
+  `repository_dispatch` trigger in the Audiobooks repo's `generate.yml`.
+- (When enabled) fired a `content-updated` event on the Audiobooks repo via
+  `peter-evans/repository-dispatch@v3` on changes to `series/**/sessions/*.md` or `meta.json`.
 
 ### Audiobooks repo: `.github/workflows/generate.yml`
 
@@ -86,6 +95,7 @@ Audiobook generation is enabled per-book via `meta.json` in the Resources repo:
 {
   "audiobook": {
     "enabled": true,
+    "chunking_strategy": "linear",
     "project_id": null,
     "voice_id": "onwK4e9ZLuTAKqWW03F9",
     "voice_test_map": { "02-ChapterOne.md": "voice_id_1" },
@@ -106,6 +116,7 @@ Audiobook generation is enabled per-book via `meta.json` in the Resources repo:
 | Field | Purpose |
 |---|---|
 | `enabled` | Master switch for the book. |
+| `chunking_strategy` | `"linear"` (regular books, ~800-char walk) or `"section"` (Bible, heading-span generations). Every book declares it explicitly; absent = `"linear"`; legacy `natural_mode:true` = `"section"`. See **docs/CHUNKING-AND-PAUSES.md**. |
 | `project_id` | Reserved (unused). |
 | `voice_id` | Default ElevenLabs voice for all sessions. |
 | `voice_test_map` | Per-session voice overrides for A/B testing. |
@@ -125,7 +136,7 @@ Transforms markdown into clean spoken text suitable for TTS:
 
 | Markdown construct | Transformation |
 |---|---|
-| Headings (`# ...`) | Sentence-cased for TTS (proper noun whitelist). SSML `<break>` tags added (H1: 2s, H2: 1.5s, H3-H6: 1s before/after). Original display text preserved in `block.displayText`. |
+| Headings (`# ...`) | Sentence-cased for TTS (proper noun whitelist). SSML `<break>` tags added (H1: 2s, H2: 1.5s, H3-H6: 1s before/after) — used by the **linear** strategy. The **section** strategy strips these and builds its own pauses (concat silence + after-heading break); see CHUNKING-AND-PAUSES.md. Original display text preserved in `block.displayText`. |
 | Bold/italic markers (`**`, `*`, `_`) | Stripped. |
 | `<Question>` tags | Tags stripped, inner content kept (read aloud). |
 | `<Callout>` tags | Tags stripped, inner content kept. |
@@ -157,18 +168,23 @@ When disabled (the default) text is spoken literally, and attributions fall back
 
 ## Chunk-Level Change Detection
 
-Each chapter is split into chunks of approximately 800 characters using a linear block walk. Chunks force-split at H1/H2/H3 heading boundaries with a 250-character minimum. Each chunk is assigned a SHA-256 hash (first 16 hex characters).
+A chapter is split into generations by the book's **chunking strategy** — `linear` (~800-char block
+walk, force-split at h1/h2/h3, 250-char min) or `section` (one generation per heading-span, capped
+at 2000). See **docs/CHUNKING-AND-PAUSES.md** for the full logic and the pause model. Each generation
+gets a SHA-256 hash of its **text** (first 16 hex chars).
 
 On subsequent runs:
 
 1. Preprocess the markdown.
-2. Split into chunks and hash each chunk.
-3. Compare against `chunkHashes` in the existing GCS manifest.
-4. Only regenerate chunks whose hash has changed.
-5. Download unchanged chunks from GCS.
-6. Re-concatenate all chunks into the chapter MP3 with ffmpeg (no silence gaps between chunks).
+2. Split into generations and hash each.
+3. Compare hashes against the existing GCS manifest's `hashToFile` map.
+4. Only regenerate generations whose hash changed; download and reuse the rest (with cached alignment).
+5. Re-join all generations via the ffmpeg concat filter, inserting the section silence gaps.
 
-**Example:** A typo fix in a 47K-character chapter regenerates only the 1 affected chunk (~800 characters) instead of the full chapter.
+**Re-render granularity differs by strategy** (see CHUNKING-AND-PAUSES.md): a linear typo fix usually
+re-renders one ~800-char chunk (cascade bounded by the next heading); a section fix re-renders the
+whole heading-span generation. **Note:** the cache keys on chunk *text* only — a logic/settings
+change that doesn't alter chunk text needs `force_regenerate` to take effect.
 
 ---
 
@@ -180,7 +196,7 @@ Uses the TTS with timestamps endpoint:
 POST /v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128
 ```
 
-Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level start/end times). Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration. `previous_text` and `next_text` parameters (last/first 200 chars of adjacent chunks) are sent for natural prosody across chunk boundaries.
+Returns JSON with `audio_base64` (the MP3 data) and `alignment` (character-level start/end times). Request body includes `voice_settings` and `model_id` from the book's `meta.json` configuration. `previous_text`/`next_text` (last/first 200 chars of neighbors) are sent **only across continuous seams** — always for linear chunks, but for the section strategy only across a cap-split, never across a deliberate section pause (they bled a fricative across the silence; see docs/CHUNKING-AND-PAUSES.md). `previous_request_ids` (request stitching, up to 3) are sent regardless for tempo continuity.
 
 **Plan:** Pro plan with Impact Program (600K credits/month).
 
@@ -196,7 +212,7 @@ Sentence-level timestamps are generated directly by ElevenLabs using the `/text-
 
 - **Source:** ElevenLabs character-level alignment data, returned with each TTS chunk.
 - **`generate.js`:** Calls the with-timestamps endpoint per chunk, collects character start/end times, then maps them to source sentences using a dual-text approach: full text (with SSML tags) for `charTimes` indexing, stripped text for sentence matching with `cleanToOriginal` position mapping. Case-insensitive matching with proximity check for duplicate sentences.
-- **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations to produce chapter-level timestamps (no silence gaps).
+- **Per-chunk alignment:** Each chunk's character times are offset by cumulative chunk durations **plus the actual silence gaps** returned by `concatenateChunks` (section strategy). The gap must be the same value in both the audio and the timestamps — never a timestamp-only gap (see the CHUNK_GAP warning in CHUNKING-AND-PAUSES.md).
 - **Preprocessor output:** Source sentences with `blockIndex` (which content block in the DOM) and `sentenceIndex` (which sentence within that block).
 - **Storage:** `.timestamps.json` files in GCS. Per-chunk alignment data cached as `.align.json` in the chunks directory.
 - **Consumer:** The website player uses these timestamps for sentence-level text highlighting.
@@ -247,11 +263,13 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
       "ttsFile": "02-chapterone.tts.json",
       "timestampsFile": "02-chapterone.timestamps.json",
       "contentHash": "sha256:...",
-      "chunkHashes": { "0": "abc123", "1": "def456" },
+      "hashToFile": { "abc123": "abc123", "def456": "def456" },
       "chunkCount": 4,
       "durationSeconds": 1158,
       "characterCount": 14824,
-      "generatedAt": "2026-05-17T..."
+      "generatedAt": "2026-05-17T...",
+      "pipelineVersion": "2026-08-12-section-cap-v1",
+      "chunkingStrategy": "section"
     }
   ],
   "totalDurationSeconds": 11358
