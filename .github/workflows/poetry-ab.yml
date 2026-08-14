@@ -1,0 +1,71 @@
+name: Poetry Couplet A/B (publish to website)
+
+# Renders 5 Scripture snippets TWICE with the BSB audiobook voice — A = current
+# shipped rules, B = the poetry-couplet fix — and publishes the MP3s + manifests to
+# GCS (voice-test/poetry-*/). The website serves an A/B comparison at
+# /voice-test/poetry-2tim2, /voice-test/poetry-psalm1, poetry-isa40, poetry-prov3,
+# poetry-prov10. Manual only; DRY_RUN prints the A/B texts without spending credits.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preprocess + print the A/B texts only, no TTS spend'
+        required: false
+        default: 'false'
+      force:
+        description: 'Re-render even if a.mp3/b.mp3 already exist in GCS'
+        required: false
+        default: 'false'
+
+jobs:
+  poetry-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout audiobook tooling
+        uses: actions/checkout@v5
+
+      - name: Checkout resources content
+        uses: actions/checkout@v5
+        with:
+          repository: Noble-Collective/Noble-Imprint-Resources
+          token: ${{ secrets.RESOURCES_TOKEN }}
+          path: resources
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          # Pinned to 20 for the same @google-cloud/storage 7 / gaxios 6 reason as
+          # generate.yml and voice-compare.yml.
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Render and publish A/B samples
+        run: node src/poetry-ab.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GCS_BUCKET: noble-imprint-audiobooks
+          RESOURCES_PATH: resources
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          FORCE: ${{ github.event.inputs.force }}
+
+      - name: Refresh website audio cache
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: curl -s -X POST https://resources.noblecollective.org/api/refresh-audio || true
