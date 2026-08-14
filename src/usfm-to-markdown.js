@@ -76,12 +76,6 @@ function cleanInline(raw) {
 // Lines that begin a new PROSE paragraph (poetry \q* deliberately excluded so stanzas
 // stay grouped; \b is the stanza/paragraph separator inside poetry).
 const NEW_PARA_RE = /^\\(p|pi\d?|pc|pmo|pmc|pmr|pm|m|mi|nb|b)\b/;
-// Break poetry into per-couplet blocks by flushing at each level-1 poetry line
-// (\q1). \q2/\q3 continuation lines stay grouped, so a \q1+\q2 couplet becomes one
-// block and gets a natural pause after it — cadence from structure, not <break>
-// tags. Default off keeps flowing poetry (stanza grouping). Gated per-call via
-// opts.poetryCouplets (falls back to the POETRY_COUPLETS=1 env var for CLI use).
-const Q1_LINE_RE = /^\\q1\b/;
 
 // ---- Parse a whole book into ordered per-chapter blocks -----------------------
 
@@ -91,29 +85,17 @@ const Q1_LINE_RE = /^\\q1\b/;
  * @returns {{ bookName: string, chapters: Array<{num:number, blocks:Array<{type:string,text:string}>}> }}
  */
 export function parseUsfmBook(usfmText, opts = {}) {
-  // Per-couplet poetry blocks: opt-in per call (opts.poetryCouplets), env fallback.
-  const poetryCouplets = opts.poetryCouplets ?? (process.env.POETRY_COUPLETS === '1');
-  // opts.tagPoetry (debug/tooling only, default off): attach `poetry:true` to blocks
-  // built from \q lines, so callers can distinguish poetry from prose. Adds an extra
-  // field only when requested — production callers never pass it, so output is unchanged.
-  const tagPoetry = opts.tagPoetry === true;
   const lines = usfmText.split(/\r?\n/);
   let bookName = '';
   let chapterNum = 0;
   let cur = null;                 // current chapter { num, blocks }
   const chapters = [];
   let para = '';                  // accumulating paragraph string (with inline <sup>)
-  let paraPoetry = false;         // did the current paragraph include any \q line?
 
   function flushPara() {
     const t = para.trim();
-    if (t && cur) {
-      const block = { type: 'p', text: t };
-      if (tagPoetry) block.poetry = paraPoetry;
-      cur.blocks.push(block);
-    }
+    if (t && cur) cur.blocks.push({ type: 'p', text: t });
     para = '';
-    paraPoetry = false;
   }
   // Append text to the current paragraph. `label` (verse number/range) → inline <sup>.
   function append(text, label) {
@@ -175,16 +157,6 @@ export function parseUsfmBook(usfmText, opts = {}) {
 
     // Prose paragraph / stanza boundary.
     if (NEW_PARA_RE.test(line)) flushPara();
-    // Per-couplet poetry blocks — flush at each \q1 line start, but ONLY when the
-    // block so far has closed with punctuation. If it's still "open" (bare line end
-    // = enjambment, sentence continues), keep flowing into the next couplet so a
-    // run-on poetic sentence stays one block. No false full-stops.
-    if (poetryCouplets && Q1_LINE_RE.test(line) && /[.!?;:,—–]["'”’)\]]*\s*$/.test(para)) {
-      flushPara();
-    }
-
-    // A \q* line means the paragraph now being built is poetry (for tagPoetry).
-    if (/^\\q/.test(line)) paraPoetry = true;
 
     // Everything else is content (verses, poetry lines, continuations). cleanInline
     // strips the leading marker (\q1, \m, \p, …) and any inline styles.

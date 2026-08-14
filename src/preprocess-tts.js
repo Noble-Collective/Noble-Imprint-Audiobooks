@@ -22,12 +22,9 @@ const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
  *   When true, scripture refs / numeric ranges are expanded to natural speech per `language`.
  * @returns {{ name: string, blocks: Array, plainText: string }}
  */
-export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false, opts = {}) {
+export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false) {
   // Pass-through when the switch is off \u2014 preserves the exact deployed output.
   const norm = languageNormalization ? (t) => normalizeSpoken(t, language) : (t) => t;
-  // Poetry couplets: treat ; and , as already-punctuated so couplet line-ends keep
-  // their lilt. Opt-in per call (opts.poetryCouplets), env fallback for CLI use.
-  const poetryCouplets = opts.poetryCouplets ?? (process.env.POETRY_COUPLETS === '1');
   const lines = markdown.split('\n');
   const blocks = [];
   let chapterName = '';
@@ -47,15 +44,8 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
     // so TTS pauses after the number instead of treating it as a list marker
     text = text.replace(/^(\d{1,3}\.)\s+/, '$1\n\n');
     if (text) {
-      // Add period to paragraphs lacking terminal punctuation for a natural TTS pause.
-      // With poetryCouplets, treat ; and , as already-punctuated too, so a block that
-      // ends on a semicolon/comma (poetry couplets, mid-sentence continuations) keeps its
-      // soft lilt instead of a false full-stop (";." / ",."). Only bare block-ends still
-      // get a period.
-      const alreadyPunct = poetryCouplets
-        ? /[.!?:;,…—–]$/.test(text)
-        : /[.!?:…—]$/.test(text);
-      if (!alreadyPunct) text += '.';
+      // Add period to paragraphs lacking terminal punctuation for a natural TTS pause
+      if (!/[.!?:…—]$/.test(text)) text += '.';
       // Seneca (On the Shortness of Life) uses blockquote summaries before each section's
       // body text. Without a break, the summary flows directly into the paragraph with no
       // audible transition. Only triggers when a blockquote is followed by body text — not
