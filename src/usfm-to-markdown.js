@@ -93,17 +93,27 @@ const Q1_LINE_RE = /^\\q1\b/;
 export function parseUsfmBook(usfmText, opts = {}) {
   // Per-couplet poetry blocks: opt-in per call (opts.poetryCouplets), env fallback.
   const poetryCouplets = opts.poetryCouplets ?? (process.env.POETRY_COUPLETS === '1');
+  // opts.tagPoetry (debug/tooling only, default off): attach `poetry:true` to blocks
+  // built from \q lines, so callers can distinguish poetry from prose. Adds an extra
+  // field only when requested — production callers never pass it, so output is unchanged.
+  const tagPoetry = opts.tagPoetry === true;
   const lines = usfmText.split(/\r?\n/);
   let bookName = '';
   let chapterNum = 0;
   let cur = null;                 // current chapter { num, blocks }
   const chapters = [];
   let para = '';                  // accumulating paragraph string (with inline <sup>)
+  let paraPoetry = false;         // did the current paragraph include any \q line?
 
   function flushPara() {
     const t = para.trim();
-    if (t && cur) cur.blocks.push({ type: 'p', text: t });
+    if (t && cur) {
+      const block = { type: 'p', text: t };
+      if (tagPoetry) block.poetry = paraPoetry;
+      cur.blocks.push(block);
+    }
     para = '';
+    paraPoetry = false;
   }
   // Append text to the current paragraph. `label` (verse number/range) → inline <sup>.
   function append(text, label) {
@@ -172,6 +182,9 @@ export function parseUsfmBook(usfmText, opts = {}) {
     if (poetryCouplets && Q1_LINE_RE.test(line) && /[.!?;:,—–]["'”’)\]]*\s*$/.test(para)) {
       flushPara();
     }
+
+    // A \q* line means the paragraph now being built is poetry (for tagPoetry).
+    if (/^\\q/.test(line)) paraPoetry = true;
 
     // Everything else is content (verses, poetry lines, continuations). cleanInline
     // strips the leading marker (\q1, \m, \p, …) and any inline styles.

@@ -69,11 +69,26 @@ function chapterMarkdown(usfm, ch, couplets) {
   if (!chap) throw new Error(`chapter ${ch} not found`);
   return { md: chapterToMarkdown(parsed.bookName, chap), blocks: chap.blocks, bookName: parsed.bookName };
 }
-// Display blocks for the page (verse <sup> kept). Map parser types → template types,
-// and prepend the chapter title so the page header matches the audio.
+// Display blocks for the page. Poetry blocks (tagPoetry) get a gold left-accent so the
+// couplet lines — every point where B inserts a pause — stand out; prose stays plain.
+// Verse <sup> kept. The template renders block text raw (<%- %>), so inline HTML is safe.
+const ACCENT = '#c8a04a';
+function poeSpan(t) {
+  return `<span style="display:block;border-left:3px solid ${ACCENT};padding:0.1rem 0 0.1rem 0.8rem;` +
+    `margin:0.15rem 0;background:rgba(200,160,74,0.10);border-radius:0 5px 5px 0;">${t}</span>`;
+}
 function displayBlocks(bookName, ch, blocks) {
   const out = [{ type: 'h1', text: `${bookName} ${ch}` }];
-  for (const b of blocks) out.push({ type: b.type === 'h2' ? 'h2' : b.type === 'h3' ? 'h2' : 'p', text: b.text });
+  out.push({ type: 'p', text:
+    `<span style="display:block;font-size:0.85rem;opacity:0.75;font-family:'DM Sans',sans-serif;` +
+    `padding:0.55rem 0.8rem;background:rgba(200,160,74,0.10);border-left:3px solid ${ACCENT};border-radius:0 5px 5px 0;">` +
+    `Each <b>gold-barred line</b> is couplet poetry — a point where <b>B</b> inserts a pause. Plain lines are prose. ` +
+    `In Isaiah 40 every one of the 31 verses is this style (only the connector “A voice of one calling:” is prose) — ` +
+    `which is exactly why it is the hardest test of the change.</span>` });
+  for (const b of blocks) {
+    if (b.type === 'h2' || b.type === 'h3') { out.push({ type: 'h2', text: b.text }); continue; }
+    out.push({ type: 'p', text: b.poetry ? poeSpan(b.text) : b.text });
+  }
   return out;
 }
 
@@ -243,33 +258,43 @@ async function main() {
     const gcsDir = `voice-test/${s.slug}`;
     console.log(`\n=== ${s.title}  →  /voice-test/${s.slug} ===`);
 
+    // Reuse existing audio unless FORCE — but ALWAYS rebuild the manifest (cheap, no
+    // credits), so display/legend tweaks can be republished without re-rendering TTS.
+    let needAudio = FORCE;
     if (!DRY_RUN && !FORCE) {
       const [aEx] = await bucket.file(`${gcsDir}/a.mp3`).exists();
       const [bEx] = await bucket.file(`${gcsDir}/b.mp3`).exists();
-      if (aEx && bEx) { console.log('  reuse (a.mp3 + b.mp3 already published; FORCE=true to redo)'); continue; }
+      needAudio = !(aEx && bEx);
+      if (!needAudio) console.log('  reusing existing a.mp3 + b.mp3 — rebuilding manifest only (no TTS)');
     }
 
     const usfm = readFileSync(join(RESOURCES_PATH, 'bibles', TX, 'content', s.file), 'utf-8');
     const A = chapterMarkdown(usfm, s.ch, false);
     const B = chapterMarkdown(usfm, s.ch, true);
+    // Tagged parse (poetry flag per block) for the standout display.
+    const dispBlocks = parseUsfmBook(usfm, { poetryCouplets: true, tagPoetry: true }).chapters.find(c => c.num === s.ch).blocks;
     const tmpDir = join('poetry-ab-output', s.slug);
     mkdirSync(tmpDir, { recursive: true });
     const aPath = join(tmpDir, 'a.mp3');
     const bPath = join(tmpDir, 'b.mp3');
 
-    totalChars += await renderMode(A.md, false, ab, aPath, tmpDir, 'A');
-    totalChars += await renderMode(B.md, true, ab, bPath, tmpDir, 'B');
+    if (needAudio || DRY_RUN) {
+      totalChars += await renderMode(A.md, false, ab, aPath, tmpDir, 'A');
+      totalChars += await renderMode(B.md, true, ab, bPath, tmpDir, 'B');
+    }
 
     if (DRY_RUN) continue;
 
-    await bucket.upload(aPath, { destination: `${gcsDir}/a.mp3` });
-    await bucket.upload(bPath, { destination: `${gcsDir}/b.mp3` });
+    if (needAudio) {
+      await bucket.upload(aPath, { destination: `${gcsDir}/a.mp3` });
+      await bucket.upload(bPath, { destination: `${gcsDir}/b.mp3` });
+    }
 
     const manifest = {
       slug: s.slug,
       title: s.title,
       translation: 'Berean Standard Bible',
-      blocks: displayBlocks(B.bookName, s.ch, B.blocks),
+      blocks: displayBlocks(B.bookName, s.ch, dispBlocks),
       voices: [
         { name: 'A — current rules', accent: 'A', blurb: 'poetry grouped into a flowing stanza (as shipped)', file: 'a.mp3' },
         { name: 'B — couplet fix', accent: 'B', blurb: 'one couplet per line, with a natural pause between', file: 'b.mp3' },
