@@ -1,14 +1,17 @@
 /**
  * poetry-ab.js — A/B audio for the poetry-couplet change, published for judgment.
  *
- * Renders a handful of Scripture snippets TWICE with the BSB audiobook voice/settings:
+ * Renders WHOLE CHAPTERS twice with the BSB audiobook voice/settings, using the REAL
+ * production path (parseUsfmBook → chapterToMarkdown WITH the H1 chapter title →
+ * preprocessSession → buildNaturalGenerations → ElevenLabs TTS → concat with real
+ * silence → loudness-normalize). Rendering full chapters (not excerpts) is deliberate:
+ * this voice runs at stability 0.50, where the section strategy packs each heading-span
+ * into a long ~1,000-2,000-char generation; a short isolated generation paces
+ * differently, so only a full-chapter render reflects how a real re-render will sound.
  *   A = current shipped rules  (poetry grouped into a flowing stanza)
  *   B = poetry_couplets on      (one couplet per block → a natural pause per couplet)
- * using the REAL pipeline (parseUsfmBook → preprocessSession → buildNaturalGenerations
- * → ElevenLabs TTS → concat with real silence → loudness-normalize), so the samples
- * match how a full re-render would actually sound.
  *
- * Publishes each snippet to GCS voice-test/{slug}/ as a.mp3 + b.mp3 + a manifest in the
+ * Publishes each chapter to GCS voice-test/{slug}/ as a.mp3 + b.mp3 + a manifest in the
  * voice-compare shape, so the website serves an A/B page at /voice-test/{slug} with NO
  * website changes. A "voice" here is a rule-set (A / B), not a different narrator.
  *
@@ -16,7 +19,7 @@
  *   ELEVENLABS_API_KEY   (required unless DRY_RUN)
  *   GCS_BUCKET           (default: noble-imprint-audiobooks)
  *   RESOURCES_PATH       (default: ../Noble-Imprint-Resources) — checked-out content repo
- *   DRY_RUN=true         preprocess + print the A/B texts, no TTS/upload/spend
+ *   DRY_RUN=true         preprocess + print the A/B stats, no TTS/upload/spend
  *   FORCE=true           re-render even if a.mp3/b.mp3 already exist in GCS
  *
  * The generation/concat/loudness helpers are COPIED VERBATIM from src/generate.js
@@ -27,7 +30,7 @@ import { readFileSync, writeFileSync, mkdirSync, copyFileSync, renameSync, exist
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Storage } from '@google-cloud/storage';
-import { parseUsfmBook } from './usfm-to-markdown.js';
+import { parseUsfmBook, chapterToMarkdown } from './usfm-to-markdown.js';
 import { preprocessSession } from './preprocess-tts.js';
 
 const API_BASE = 'https://api.elevenlabs.io/v1';
@@ -44,47 +47,34 @@ const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']);
 const TARGET_LUFS = -20, TARGET_TP = -1.5, TARGET_LRA = 11, LOUDNESS_TOLERANCE = 2;
 
-// ---- the A/B snippets (couplet poetry across the canon) ----
+// ---- the A/B chapters (whole chapters, rendered exactly as production would) ----
+// Isaiah 40 is the strongest stress test: the couplet change turns 11 blocks into 51
+// (+40 pause points) — the most of any candidate — across a full chapter of sustained
+// Hebrew parallelism.
 const SNIPPETS = [
-  { slug: 'poetry-2tim2', file: '562TIBSB.SFM', book: '2 Timothy', ch: 2, lo: 10, hi: 14,
-    title: '2 Timothy 2:10–14 — the “trustworthy saying” creed' },
-  { slug: 'poetry-psalm1', file: '19PSABSB.SFM', book: 'Psalm', ch: 1, lo: 1, hi: 6,
-    title: 'Psalm 1' },
-  { slug: 'poetry-isa40', file: '23ISABSB.SFM', book: 'Isaiah', ch: 40, lo: 28, hi: 31,
-    title: 'Isaiah 40:28–31 — “wings like eagles”' },
-  { slug: 'poetry-prov3', file: '20PROBSB.SFM', book: 'Proverbs', ch: 3, lo: 1, hi: 6,
-    title: 'Proverbs 3:1–6 — “Trust in the LORD”' },
-  { slug: 'poetry-prov10', file: '20PROBSB.SFM', book: 'Proverbs', ch: 10, lo: 1, hi: 5,
-    title: 'Proverbs 10:1–5 (control — already couplet-split; A and B should match)' },
+  { slug: 'poetry-isa40', file: '23ISABSB.SFM', ch: 40,
+    title: 'Isaiah 40 — full chapter (production-accurate A/B)' },
 ];
 
-// Extract a mini-USFM for a chapter+verse window, keeping structural markers.
-function extractSnippet(s) {
-  const path = join(RESOURCES_PATH, 'bibles', TX, 'content', s.file);
-  const lines = readFileSync(path, 'utf-8').split(/\r?\n/);
-  let inCh = false; const chLines = [];
-  for (const ln of lines) {
-    const t = ln.trim();
-    const mc = t.match(/^\\c\s+(\d+)/);
-    if (mc) { inCh = parseInt(mc[1], 10) === s.ch; continue; }
-    if (inCh) chLines.push(t);
-  }
-  const kept = []; let curV = 0;
-  for (const t of chLines) {
-    if (!t) continue;
-    const mv = t.match(/^\\v\s+(\d+)/);
-    if (mv) curV = parseInt(mv[1], 10);
-    if (curV > s.hi) break;
-    if (curV >= s.lo && curV <= s.hi) kept.push(t);
-  }
-  return [`\\id ${s.book}`, `\\h ${s.book}`, `\\c ${s.ch}`, ...kept].join('\n') + '\n';
+// Stale short-excerpt slugs from the first (invalid) pass — deleted so only the valid
+// full-chapter page remains.
+const STALE_SLUGS = ['poetry-2tim2', 'poetry-psalm1', 'poetry-prov3', 'poetry-prov10'];
+
+// Parse a whole chapter and serialize it to session markdown WITH the H1 chapter title,
+// exactly as the production converter does (chapterToMarkdown) — so the section chunker
+// produces the real generations.
+function chapterMarkdown(usfm, ch, couplets) {
+  const parsed = parseUsfmBook(usfm, { poetryCouplets: couplets });
+  const chap = parsed.chapters.find(c => c.num === ch);
+  if (!chap) throw new Error(`chapter ${ch} not found`);
+  return { md: chapterToMarkdown(parsed.bookName, chap), blocks: chap.blocks, bookName: parsed.bookName };
 }
-function blocksToMarkdown(blocks) {
-  return blocks.map(b => b.type === 'h2' ? `## ${b.text}` : b.type === 'h3' ? `### ${b.text}` : b.text).join('\n\n') + '\n';
-}
-// Display blocks for the page (verse <sup> kept). Map parser types → template types.
-function displayBlocks(blocks) {
-  return blocks.map(b => ({ type: b.type === 'h2' ? 'h1' : b.type === 'h3' ? 'h2' : 'p', text: b.text }));
+// Display blocks for the page (verse <sup> kept). Map parser types → template types,
+// and prepend the chapter title so the page header matches the audio.
+function displayBlocks(bookName, ch, blocks) {
+  const out = [{ type: 'h1', text: `${bookName} ${ch}` }];
+  for (const b of blocks) out.push({ type: b.type === 'h2' ? 'h2' : b.type === 'h3' ? 'h2' : 'p', text: b.text });
+  return out;
 }
 
 // ================= copied verbatim from generate.js =================
@@ -210,9 +200,8 @@ function normalizeLoudness(path) {
 // ====================================================================
 
 // Render one mode (couplets on/off) → a single mp3 at outPath. Returns spoken char count.
-async function renderMode(usfm, couplets, ab, outPath, tmpDir, tag) {
-  const blocks = parseUsfmBook(usfm, { poetryCouplets: couplets }).chapters[0].blocks;
-  const pre = preprocessSession(blocksToMarkdown(blocks), ab.voice_id, 'en', ab.language_normalization === true, { poetryCouplets: couplets });
+async function renderMode(md, couplets, ab, outPath, tmpDir, tag) {
+  const pre = preprocessSession(md, ab.voice_id, 'en', ab.language_normalization === true, { poetryCouplets: couplets });
   const gen = buildNaturalGenerations(pre.blocks, ab.max_generation || MAX_GENERATION);
   const spokenChars = gen.texts.join('').replace(/<break[^>]*\/>/g, '').length;
   console.log(`    [${tag}] generations=${gen.texts.length} gaps=[${gen.gaps.join(',')}] spokenChars=${spokenChars}`);
@@ -241,6 +230,14 @@ async function main() {
   const bucket = DRY_RUN ? null : storage.bucket(GCS_BUCKET);
   mkdirSync('poetry-ab-output', { recursive: true });
 
+  // Remove the stale short-excerpt pages from the first (invalid) pass.
+  if (!DRY_RUN) {
+    for (const slug of STALE_SLUGS) {
+      try { await bucket.deleteFiles({ prefix: `voice-test/${slug}/` }); console.log(`cleaned stale voice-test/${slug}/`); }
+      catch (e) { console.warn(`  (couldn't clean ${slug}: ${e.message})`); }
+    }
+  }
+
   let totalChars = 0;
   for (const s of SNIPPETS) {
     const gcsDir = `voice-test/${s.slug}`;
@@ -252,27 +249,27 @@ async function main() {
       if (aEx && bEx) { console.log('  reuse (a.mp3 + b.mp3 already published; FORCE=true to redo)'); continue; }
     }
 
-    const usfm = extractSnippet(s);
+    const usfm = readFileSync(join(RESOURCES_PATH, 'bibles', TX, 'content', s.file), 'utf-8');
+    const A = chapterMarkdown(usfm, s.ch, false);
+    const B = chapterMarkdown(usfm, s.ch, true);
     const tmpDir = join('poetry-ab-output', s.slug);
     mkdirSync(tmpDir, { recursive: true });
     const aPath = join(tmpDir, 'a.mp3');
     const bPath = join(tmpDir, 'b.mp3');
 
-    totalChars += await renderMode(usfm, false, ab, aPath, tmpDir, 'A');
-    totalChars += await renderMode(usfm, true, ab, bPath, tmpDir, 'B');
+    totalChars += await renderMode(A.md, false, ab, aPath, tmpDir, 'A');
+    totalChars += await renderMode(B.md, true, ab, bPath, tmpDir, 'B');
 
     if (DRY_RUN) continue;
 
     await bucket.upload(aPath, { destination: `${gcsDir}/a.mp3` });
     await bucket.upload(bPath, { destination: `${gcsDir}/b.mp3` });
 
-    // Display text from the couplet (B) parse so the reader sees the line structure.
-    const bBlocks = parseUsfmBook(usfm, { poetryCouplets: true }).chapters[0].blocks;
     const manifest = {
       slug: s.slug,
       title: s.title,
       translation: 'Berean Standard Bible',
-      blocks: displayBlocks(bBlocks),
+      blocks: displayBlocks(B.bookName, s.ch, B.blocks),
       voices: [
         { name: 'A — current rules', accent: 'A', blurb: 'poetry grouped into a flowing stanza (as shipped)', file: 'a.mp3' },
         { name: 'B — couplet fix', accent: 'B', blurb: 'one couplet per line, with a natural pause between', file: 'b.mp3' },
@@ -286,7 +283,7 @@ async function main() {
 
   const cost = (totalChars / 10000 * 1.65).toFixed(2);
   console.log(`\nDone. spokenChars(rendered)=${totalChars}  ≈ ${totalChars} credits  ≈ $${cost}${DRY_RUN ? '  (DRY_RUN — nothing spent)' : ''}`);
-  if (!DRY_RUN) console.log('Listen at https://resources.noblecollective.org/voice-test/<slug> (poetry-2tim2, poetry-psalm1, poetry-isa40, poetry-prov3, poetry-prov10)');
+  if (!DRY_RUN) console.log('Listen at https://resources.noblecollective.org/voice-test/poetry-isa40');
 }
 
 main().catch(err => { console.error('poetry-ab failed:', err); process.exit(1); });
