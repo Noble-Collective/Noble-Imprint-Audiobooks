@@ -133,11 +133,11 @@ Emits the `samples/psalm-1-2.md` convention: `# {Book} {N}` (H1 chapter title) �
 section headings (from `\s1`/`\s2`) → paragraphs with `<sup>N</sup>` verse numbers.
 
 Behavior worth knowing:
-- **Poetry is flowing (current default)** — consecutive `\q1`/`\q2` lines group into ONE stanza
-  paragraph; breaks only at `\b`/prose markers. ⚠️ **A per-couplet fix is in progress** (env-gated
-  `POETRY_COUPLETS`, uncommitted) to split poetry at each `\q1` so couplets like the 2 Tim 2:11
-  creed get a natural pause instead of running on. It requires a matching parity port in the
-  website's `usfm-audio.js` and per-book gating — see **plans/2026-08-12-poetry-couplet-fix.md**.
+- **Poetry is flowing (current default AND final)** — consecutive `\q1`/`\q2` lines group into ONE
+  stanza paragraph; breaks only at `\b`/prose markers. A per-couplet split (a pause at each `\q1`)
+  was built and A/B-tested in 2026-08 but **declined** — we keep the flowing-stanza behavior. The
+  experiment is preserved on the `poetry-couplet-ab` branch; see
+  **plans/2026-08-12-poetry-couplet-fix.md** for the decision record.
 - **Verse numbers** `<sup>N</sup>` are silent in audio (stripped by preprocess), visible on web.
 - **`\d` superscriptions** (Psalms) are kept as spoken paragraphs.
 - **Footnotes/cross-refs/char-styles** (`\f…\f*`, `\x…\x*`, `\add`, `\nd`, `\wj`) are stripped,
@@ -307,7 +307,7 @@ credits (~$8.6)**; the heading-pronunciation regen ≈ **18,000 credits (~$3)**.
 - **`docs/CHUNKING-AND-PAUSES.md`** — authoritative reference for the section strategy, the cap,
   and the pause model the Bible depends on.
 - `plans/2026-08-12-audiobook-pipeline-reconciliation.md` — the two-strategy reconciliation + cap decision.
-- `plans/2026-08-12-poetry-couplet-fix.md` — the in-progress per-couplet poetry fix (2 Tim 2:11) + parity port.
+- `plans/2026-08-12-poetry-couplet-fix.md` — per-couplet poetry fix: **evaluated and declined** (decision record; work on the `poetry-couplet-ab` branch).
 - `plans/2026-07-29-bible-audiobooks.md` — the original plan + build history/decisions.
 - `docs/VOICE-COMPARE.md` — how the Ali voice was chosen (`/voice-test`).
 - `docs/ARCHITECTURE.md` — the overall audiobook system.

@@ -1,9 +1,31 @@
 # Poetry Couplet Fix (2 Tim 2:11 creed) + Website Parity
 
 **Date:** 2026-08-12
-**Status:** Prototyped (uncommitted) + planned; NOT implemented/shipped
+**Status:** ❌ **EVALUATED AND DECLINED (2026-08-14) — not adopting.** Keeping the current
+behavior: **A** (poetry grouped into flowing stanzas). The plan below is preserved as a record.
 **Depends on:** the section chunking strategy (Phase A, done — see
 `plans/2026-08-12-audiobook-pipeline-reconciliation.md`).
+
+---
+
+## Decision (2026-08-14) — DECLINED
+
+We built the change end-to-end and A/B-tested it before deciding. Steve chose **A** (leave poetry
+as flowing stanzas); we are **not** shipping per-couplet splitting.
+
+- **How it was judged:** a production-accurate A/B of **Isaiah 40** (the maximum stress case — the
+  change turns 11 blocks into 51, +40 pause points across a full chapter of sustained parallelism),
+  rendered as whole chapters at the real generation sizes and published to `/voice-test/poetry-isa40`.
+  (An earlier short-excerpt A/B was discarded as invalid: at stability 0.50 short isolated
+  generations pace differently than the ~1,000–2,000-char generations production actually uses.)
+- **Outcome:** A preferred. B's couplet pausing was not an improvement worth adopting.
+- **Where the work lives:** the full experiment (per-call `poetryCouplets` gate on
+  `parseUsfmBook`/`preprocessSession`, an opt-in `tagPoetry` flag, the `src/poetry-ab.js` renderer,
+  and `.github/workflows/poetry-ab.yml`) is preserved on the **`poetry-couplet-ab`** branch. `main`
+  was reverted to the pre-experiment state (commit `8925d56`); production behavior is unchanged.
+- **To revisit later:** cherry-pick from the `poetry-couplet-ab` branch. The remaining steps below
+  (website `usfm-audio.js` parity port, byte-parity test, per-book `poetry_couplets` meta flag,
+  re-render + coordinated deploy) still apply if we ever adopt it.
 
 ---
 
