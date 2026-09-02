@@ -8,7 +8,8 @@
     "detect": "node src/detect-changes.js",
     "generate": "node src/generate.js",
     "align": "node src/align.js",
-    "preprocess-test": "node src/preprocess-test.js"
+    "preprocess-test": "node src/preprocess-test.js",
+    "test": "node --test tests/*.mjs"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.0.0"
