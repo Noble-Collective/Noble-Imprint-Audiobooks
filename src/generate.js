@@ -80,7 +80,7 @@ const LIGHT_SEAM_SECONDS = 0.4;
 // into each book's manifest so staleness (shipped audio vs current logic) is queryable.
 const PIPELINE_VERSION = '2026-08-12-section-cap-v1';
 
-function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
+export function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
   // If no blocks provided, fall back to paragraph splitting
   if (!blocks || blocks.length === 0) {
     return splitAtParagraphs(plainText, maxChars);
@@ -155,18 +155,33 @@ function splitAtParagraphs(text, maxChars) {
   return chunks;
 }
 
-// Split a paragraph's text into sentences (terminal punctuation + optional closing
-// quote/bracket, followed by space or end). Falls back to the whole text if no match.
-function splitSentences(text) {
-  const parts = text.match(/[^.!?]*[.!?]+["'”’)\]]*(?:\s+|$)/g);
-  return parts ? parts.map(s => s.trim()).filter(Boolean) : [text];
+// Split a paragraph's text into sentences at terminal punctuation (+ optional closing
+// quote/bracket) followed by whitespace. NON-LOSSY: slices the input at each boundary so
+// the concatenation of the parts always reconstructs the original text. (The previous
+// `.match`-based version SILENTLY DROPPED any text that didn't fit the pattern — e.g. a
+// decimal like "CC BY-SA 4.0" made it discard the whole sentence before it, which then
+// vanished from the audio AND broke timestamp matching. See tests/split-sentences.test.mjs.)
+export function splitSentences(text) {
+  const parts = [];
+  let last = 0;
+  const boundary = /[.!?]+["'”’)\]]*\s+/g;
+  let m;
+  while ((m = boundary.exec(text)) !== null) {
+    const end = m.index + m[0].length;
+    const piece = text.slice(last, end).trim();
+    if (piece) parts.push(piece);
+    last = end;
+  }
+  const tail = text.slice(last).trim();
+  if (tail) parts.push(tail);
+  return parts.length ? parts : [text];
 }
 
 // Prevent any single generation from running long enough to "run out of battery":
 // split content blocks whose text exceeds `target` into sentence-boundary pieces,
 // greedily packed to ~target. Only splits at sentence boundaries (never mid-sentence),
 // so prosody + timestamp/highlight matching stay intact. Headings/short blocks pass through.
-function splitLongBlocks(blocks, target) {
+export function splitLongBlocks(blocks, target) {
   const out = [];
   for (const b of blocks) {
     const text = b.nodes[0].text;
@@ -341,7 +356,7 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
  * Each chunk's alignment has character-level start/end times relative to chunk start.
  * We offset by cumulative chunk durations + silence gaps to get chapter-level times.
  */
-function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gaps) {
+export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gaps) {
   // `gaps[c]` = seconds of REAL silence inserted before chunk c in the audio (gaps[0]=0).
   // Must be the ACTUAL durations returned by concatenateChunks so the timeline matches.
   gaps = gaps || chunkTexts.map(() => 0);
@@ -983,7 +998,12 @@ async function main() {
   console.log('\nGeneration complete!');
 }
 
-main().catch(err => {
-  console.error('Generation failed:', err);
-  process.exit(1);
-});
+// Only run generation when executed directly (`node src/generate.js`), NOT when
+// imported by a test/repro that just wants the pure helpers below.
+import { pathToFileURL } from 'node:url';
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(err => {
+    console.error('Generation failed:', err);
+    process.exit(1);
+  });
+}
