@@ -30,37 +30,42 @@ const DRY_RUN = process.env.DRY_RUN === 'true';
 // on newly-added voices. FORCE=true regenerates every voice in the slate.
 const FORCE = process.env.FORCE === 'true';
 
-// Scripture read profile — a hair slower than prose (0.90 vs 0.92).
-const VOICE_SETTINGS = { stability: 0.71, similarity_boost: 0.5, style: 0.0, speed: 0.90 };
+// Matches L'Appel du Christ's audiobook profile (stability 0.71, speed 0.92) so the
+// French audition reflects the settings the book would actually be generated with.
+const VOICE_SETTINGS = { stability: 0.71, similarity_boost: 0.5, style: 0.0, speed: 0.92 };
 const MODEL_ID = 'eleven_multilingual_v2';
 
 // The comparison slate. Premade voices carry a known id (always usable). Library
 // voices are resolved by name (workspace first, then shared library, adding to
 // the workspace if needed).
+// French narrator slate for L'Appel du Christ. The current book voice carries an
+// explicit id; the rest are resolved by name from the shared library (searched +
+// added to the workspace by resolveVoice). Dry-run reports each resolvedId so we can
+// confirm the search matched the intended voice before spending.
 const VOICES = [
-  { name: 'George',         id: 'JBFqnCBsd6RMkjVDRZzb', accent: 'British',  blurb: 'Warm, calm, pastoral' },
-  { name: 'Brian',          id: 'nPczCjzI2devNBz1zQrb', accent: 'American', blurb: 'Deep, resonant — classic audio-Bible' },
-  { name: 'Daniel',         id: 'onwK4e9ZLuTAKqWW03F9', accent: 'British',  blurb: 'Authoritative, broadcast gravitas' },
-  { name: 'Bill L. Oxley',  id: null,                   accent: 'American', blurb: 'Mature, sophisticated literary narrator' },
-  { name: 'Matthew Schmitz', id: null,                  accent: 'American', blurb: 'Scripture / religious-reading specialist' },
-  // Middle Eastern (Arabic-native) narrators reading the English text — accented
-  // delivery for an authentic setting. Judge English intelligibility too.
-  { name: 'Ali',            id: 'MI88rOZjXbH22N8KHXUo', accent: 'Middle Eastern', blurb: 'Calm, deep Arabic (Saudi) narrator' },
-  { name: 'Marco Nady',     id: null,                   accent: 'Middle Eastern', blurb: 'Confident, calm, deep, warm' },
-  { name: 'Haytham',        id: null,                   accent: 'Middle Eastern', blurb: 'Warm, expressive Arab male' },
-  // Broader Middle East / Hebrew spread (all reading the English text).
-  // No Hebrew voice exists in the ElevenLabs shared library (verified: he/iw
-  // queries + name searches all return 0). Closest authentic stand-in is a
-  // Levantine Arabic voice from the Bible's own geography — Palestinian first
-  // (modern Israel/West Bank), then Syrian/Jordanian.
-  { name: 'Palestinian (Levant)', id: null, accent: 'Levantine',
-    blurb: 'Closest to the Psalms’ setting — no Hebrew voice in the library',
-    searchFallback: ['Palestinian', 'Syrian', 'Jordanian', 'Levantine', 'Aramaic'] },
-  { name: 'Persian (Farsi)', id: null, accent: 'Persian',   blurb: 'Persian / Farsi accent',
-    query: { gender: 'male', language: 'fa' }, searchFallback: ['Persian', 'Farsi', 'Amir'] },
-  { name: 'Ali Alpagu',     id: null,                   accent: 'Turkish',  blurb: 'Turkish — mature, wise, authoritative' },
-  { name: 'Mamdoh',         id: null,                   accent: 'Egyptian', blurb: 'Egyptian — deep, clear' },
-  { name: 'Fadi',           id: null,                   accent: 'Lebanese', blurb: 'Lebanese / Levantine — natural, close' },
+  { name: 'Nicolas Petit — Narration (current)', id: 'aQROLel5sQbj1vuIVi6B', accent: 'French',
+    blurb: 'L’Appel’s current voice — middle-aged FR narrator, all-purpose' },
+  { name: 'Nicolas Petit — Deep', id: null, accent: 'French',
+    blurb: 'Deeper documentary/investigative narration',
+    searchFallback: ['Nicolas Petit Deep voice narration', 'Nicolas Petit Deep', 'Nicolas Petit'] },
+  { name: 'Martin Dupont — Deep', id: null, accent: 'French',
+    blurb: 'Warm, intimate — “perfect for audiobooks”',
+    searchFallback: ['Martin Dupont Deep', 'Martin Dupont'] },
+  { name: 'Cyril — Audiobook', id: null, accent: 'French',
+    blurb: 'Diction-oriented audiobook read',
+    searchFallback: ['Cyril Audiobook Narration', 'Cyril Audiobook', 'Cyril'] },
+  { name: 'Paul K — Deep French', id: null, accent: 'French',
+    blurb: 'Deep, warm, neutral-professional',
+    searchFallback: ['Paul K Deep French', 'Paul K French', 'Paul K'] },
+  { name: 'Nicolas P — Audiobook', id: null, accent: 'French',
+    blurb: 'Audiobook / audioguide professional',
+    searchFallback: ['Nicolas P Audiobook', 'Nicolas P audiobook audio guide', 'Nicolas P'] },
+  { name: 'Frédéric — Confident', id: null, accent: 'French',
+    blurb: 'Mature man, confident and warm tone',
+    searchFallback: ['Frédéric Confident', 'Frederic Confident', 'Frédéric'] },
+  { name: 'Guillaume — Narration', id: null, accent: 'French',
+    blurb: 'Narration & voiceover',
+    searchFallback: ['Guillaume French Narration Voiceover', 'Guillaume Narration', 'Guillaume French'] },
 ];
 
 function slugifyVoice(name) {
