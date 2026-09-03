@@ -100,5 +100,7 @@ jobs:
 
       - name: Notify website
         if: steps.detect.outputs.has_work == 'true'
+        env:
+          REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
         run: |
-          curl -s -X POST https://resources.noblecollective.org/api/refresh-audio || true
+          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://resources.noblecollective.org/api/refresh-audio || true
