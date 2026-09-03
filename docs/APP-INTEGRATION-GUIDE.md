@@ -21,6 +21,7 @@ This document provides everything needed to implement audiobook playback with se
 - [Reference: Website Implementation](#reference-website-implementation)
 - [Reference: GCS Bucket Details](#reference-gcs-bucket-details)
 - [Reference: API Endpoints on the Website](#reference-api-endpoints-on-the-website)
+- [Recent Additions (Addendum, updated 2026-09-02)](#recent-additions-addendum-updated-2026-09-02)
 
 ---
 
@@ -679,3 +680,51 @@ A Library of Classics/A Pastoral Shelf/Oration II
 ```
 
 URL-encode spaces: `A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20II`
+
+---
+
+## Recent Additions (Addendum, updated 2026-09-02)
+
+Platform changes from roughly the last three months (mid-June → early September 2026) that affect **audio** integration. New items are added here rather than interleaved above, so the original guide stays stable.
+
+> **Content rendering (non-audio) is documented separately.** New custom tags (`<Infographic>`, `<Bibliography>`, `<Accent>`, structural section tags), the `@include` shared-content system, image-format constraints, and how each renders live in the website repo's **`Noble-Imprint-Resource-Website/docs/CONTENT-RENDERING-GUIDE.md`** (source of truth: `src/renderer/parser.js`). This addendum covers only audio and the parts of rendering that affect **text-sync**.
+
+### 1. Text-sync: extra / duplicated DOM the matcher must skip
+
+The text-sync algorithm (see [Implementing Text Sync](#implementing-text-sync)) matches timestamp segments to rendered elements by **text content**, tracking matched elements to avoid duplicates. Content constructs added since this guide was written introduce new element shapes that will otherwise cause mis-matches. (See the content-rendering guide for what each tag is.) Update your block-collection / skip rules:
+
+- **Pullquotes are duplicated text.** A `<Callout>…</Callout>` keeps its text inline in the paragraph **and** the renderer emits a duplicate `<aside class="pullquote">` copy. The TTS reads it **once** (the inline copy). **Exclude `aside.pullquote` from your match candidate set**, or the highlight may jump to the pullquote instead of the paragraph.
+- **`.section-tag` labels are injected, not narrated.** Structural tags (`<ReflectionPrompt>`, etc.) render a literal label like "Reflection Prompt" in a `div.section-tag`. It has no timestamp segment — skip it. The inner content is normal paragraphs/headings and matches fine.
+- **`<figcaption>` is not narrated.** Image captions render as `figure > figcaption` — skip.
+- **Infographic text is outside `<p>`/`<h*>`.** If a book that uses `<Infographic>` is audio-enabled, its label/body text lives in `span.info-label` / `span.info-body` inside `<li>`. Your default block collection (`h1–h6, p`) will miss it, leaving a sync gap. If you need to sync infographic text, add `.info-label`/`.info-body` to the collected blocks — but **verify against that book's timestamps first**, since the audio preprocessor may not narrate infographic content (as of this writing the classics/Vade Mecum audio books do not use infographics; infographics appear mainly in the non-audio Essentials series).
+- **`<ChapterNum>` is not spoken.** Section numbers render as `span.chapter-num` but the audio preprocessor strips them — expect no segment for them.
+
+**`@include` and audio:** the audio pipeline does **not** resolve `@include` shared-content directives, so any *audio-enabled* book keeps its session text self-contained and its timestamps correspond to the literal session file. (The include-using Essentials books are not audio-enabled today.) If a book ever combines both, treat the resolved/rendered text as canonical for sync and confirm it matches the timestamps' `text`. Full `@include` semantics are in the content-rendering guide.
+
+### 2. Sentence-splitting rule was refined (Aug 2026)
+
+The [sentence-splitting](#finding-the-sentence-within-the-element-sentenceindex) rule used to compute `sentenceIndex` changed (fixes text being dropped on decimals/abbreviations). The **current** rule that produces the timestamp segments is in `src/preprocess-tts.js`:
+
+```
+text.split(/(?<=[^.]\.(?!\.))\s+|(?<=[!?])\s+/)
+```
+
+Split on a sentence-ending `.`/`!`/`?` followed by whitespace, but not on ellipsis. This **supersedes** the older regex quoted earlier in this guide (`/(?<=[.!?])(?<!\.\.\.)(?<!\.\.\.\s)\s+/`). Match the current `splitSentences` in `src/preprocess-tts.js` — that file is authoritative; keep the app's splitter in sync with it.
+
+### 3. Audio pipeline: chunking strategy, pauses, version stamp
+
+Transparent to the app for the most part (you still consume final MP3 + contiguous timestamps), but worth knowing:
+
+- **`meta.chunking_strategy`** — `"linear"` (default) or `"section"` (groups each heading-span; used for Bible / natural narration). Affects internal chunk boundaries only.
+- **Heading pauses unchanged:** H1 = 2.0s, H2 = 1.5s, H3–H6 = 1.0s. Now delivered as a mix of real concat silence *before* a section boundary (H1–H3) plus a `<break>` tag *after* an in-generation heading. Practically: there can be a short **silent gap** at section boundaries where no segment is active — your existing "clear the highlight in gaps" behavior already handles this.
+- **Pipeline version stamp** (`PIPELINE_VERSION`, currently `2026-08-12-section-cap-v1`). Audio may be re-rendered when the pipeline version changes even if the source text didn't. Keep detecting updates the documented way — compare manifest `generatedAt` / `contentHash` and invalidate caches on change.
+
+### 4. Bible audiobooks (new audio surface)
+
+Audio now exists for **Bible chapters** (e.g., Proverbs, 2 Timothy), not just books. These use a **separate** serving path:
+
+- GCS: `audio/bible/{translation}/{book-slug}/` (parallel to the `audio/{book-path}/` layout above)
+- Website: `getBibleAudioManifest` / `getBibleAudioChapter` in `src/server/audio.js`
+- Reader: poetry is grouped into stanzas (Psalms/Song paragraph handling)
+
+The player and text-sync approach are the same; only the discovery path and content source differ. Full architecture + runbook: **`Noble-Imprint-Audiobooks/docs/BIBLE-AUDIOBOOKS.md`**. If/when the app renders the Bible, it can reuse the same player against Bible chapter content.
