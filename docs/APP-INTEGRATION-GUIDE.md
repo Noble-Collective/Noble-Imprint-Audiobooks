@@ -728,3 +728,22 @@ Audio now exists for **Bible chapters** (e.g., Proverbs, 2 Timothy), not just bo
 - Reader: poetry is grouped into stanzas (Psalms/Song paragraph handling)
 
 The player and text-sync approach are the same; only the discovery path and content source differ. Full architecture + runbook: **`Noble-Imprint-Audiobooks/docs/BIBLE-AUDIOBOOKS.md`**. If/when the app renders the Bible, it can reuse the same player against Bible chapter content.
+
+### 5. Timestamps fixes + Bible word timings (2026-09-27)
+
+- **Chapter titles are timed from their audio.** A heading read differently from its display
+  text (scripture titles: shown "Genesis 28", read "Genesis, Chapter 28") used to miss the
+  text match and get a proportional guess — `0 → duration / sentenceCount`, 2–10 s, over the
+  first section heading and verses (1,027 of 1,189 Bible chapters). The sentence index now
+  carries `matchText` (the spoken text) for such headings; `segment.text` is still the display
+  text. Segment count, order, `blockIndex` and `sentenceIndex` are unchanged.
+- **`segment.text` no longer carries leftover markdown** (`>` with no space, a closing `###`,
+  a leading list `- `). Only the display text — the TTS text and chunk hashes are unchanged.
+- **Bible segments carry optional `words`**: `[[start, end, "word"], …]`, chapter-relative
+  seconds, the segment's own words in order (contract: Noble-Imprint-App `docs/AUDIOBOOKS.md`
+  §6d). Omitted where a word's time isn't exact (a chunk without alignment) and on headings
+  read differently. Readers that don't know the field ignore it.
+- **File layout**: one segment per line (compact JSON inside). Same JSON.
+- Existing files were rebuilt timestamps-only by `rebuild-timestamps.yml` (no TTS); originals
+  are under `audio/_backup/2026-09-27-timestamps/`.
+

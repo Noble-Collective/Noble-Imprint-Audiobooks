@@ -218,7 +218,7 @@ const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 // timestamps; never a timestamp-only gap — see the CHUNK_GAP warning). Returns per generation:
 //   texts[], gaps[] (silence before it), continuations[] (true = mid-section cap split, so it
 //   flows continuously from the previous generation → keep prev/next_text there).
-function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) {
+export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) {
   const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;   // any heading h1–h6 (break-after)
   const isBoundary = b => FORCE_SPLIT_TYPES.has(b.sub_type);      // section boundary h1–h3 only
 
@@ -278,7 +278,44 @@ function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) {
   return { texts, gaps, continuations };
 }
 
-function hashChunk(text) {
+// The TTS chunks (generations) for a session, exactly as main() sends them to ElevenLabs:
+// texts + real silence before each + which ones continue mid-section. Pure — shared with
+// the timestamps-only rebuild (src/rebuild-timestamps.js), which re-derives the chunks from a
+// stored .tts.json and checks their hashes against the manifest before trusting them.
+export function buildChunks(ttsBlocks, plainText, strategy, maxGeneration = MAX_GENERATION) {
+  let chunks, chunkGaps, continuations;
+  if (strategy === 'section') {
+    const gen = buildNaturalGenerations(ttsBlocks, maxGeneration);
+    chunks = gen.texts;
+    chunkGaps = gen.gaps;
+    continuations = gen.continuations;
+  } else {
+    // LINEAR strategy: chunk the plain text using stable heading-based boundaries.
+    const splitBlocks = splitLongBlocks(ttsBlocks, TARGET_CHUNK_SIZE);
+    // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
+    // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
+    const contTexts = new Set(splitBlocks.filter(b => b._splitCont).map(b => b.nodes[0].text));
+    chunks = chunkText(plainText, CHUNK_SIZE, splitBlocks);
+    // Seam pause: PREPEND a LEADING break to each non-first chunk so the model renders
+    // the pause INSIDE that chunk's generation (captured in its audio + alignment +
+    // ffprobe duration → timestamps stay consistent with CHUNK_GAP_SECONDS = 0; do NOT
+    // use CHUNK_GAP — see its warning). Trailing breaks get trimmed at a generation's
+    // end; leading breaks render. Skip heading-led chunks (already have a break).
+    // Differentiated: 0.5s at real paragraph/section seams, 0.3s at mid-paragraph splits.
+    const SEAM_BREAK = '<break time="0.5s"/>';
+    const MID_SEAM_BREAK = '<break time="0.3s"/>';
+    for (let i = 1; i < chunks.length; i++) {
+      if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
+      const firstBlock = chunks[i].split('\n\n')[0];
+      chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
+    }
+    chunkGaps = chunks.map(() => 0); // linear path uses in-audio leading breaks, no concat silence
+    continuations = chunks.map(() => false);
+  }
+  return { chunks, chunkGaps, continuations };
+}
+
+export function hashChunk(text) {
   return createHash('sha256').update(text).digest('hex').slice(0, 16);
 }
 
@@ -356,19 +393,53 @@ async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFo
  * Each chunk's alignment has character-level start/end times relative to chunk start.
  * We offset by cumulative chunk durations + silence gaps to get chapter-level times.
  */
-export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gaps) {
+// Leftover markdown in a sentence's DISPLAY text (the narrator never said it): a
+// blockquote `>` with no space after it (">Disciples of Christ: >earnestly…"), a closing
+// `###`, a leading list `- `. Only applied to the segment text the readers match against —
+// the TTS text (and so every chunk hash) is untouched. A ` - ` inside a sentence is often
+// real punctuation ("Fondations - L'Appel du Christ"), so only a LEADING marker goes.
+export function cleanSegmentText(text) {
+  const s = text
+    .replace(/^>\s*/, '')
+    .replace(/(\s)>(?=\S)/g, '$1')
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/\s+#{1,6}\s*$/, '')
+    .replace(/^-\s+/, '')
+    .trim();
+  return s || text;
+}
+
+const round2 = t => Math.round(t * 100) / 100;
+
+// One segment per line, compact inside: readable diffs without per-word arrays exploding
+// into thousands of pretty-printed lines. Any JSON reader is indifferent to the layout.
+export function serializeTimestamps(timestamps) {
+  const lines = timestamps.segments.map(s => '  ' + JSON.stringify(s));
+  return '{"segments": [\n' + lines.join(',\n') + '\n]}\n';
+}
+
+// `opts.words` (Bible): also emit per-word times on each segment —
+// `words: [[start, end, "word"], …]`, the app's optional contract (Noble-Imprint-App
+// docs/AUDIOBOOKS.md §6d) that lets its A–B loop start a verse that begins mid-sentence
+// exactly. Only where every character has a REAL alignment time and the spoken words are
+// the segment's own words (not a heading read differently).
+export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunkDurations, sentences, gaps, opts = {}) {
   // `gaps[c]` = seconds of REAL silence inserted before chunk c in the audio (gaps[0]=0).
   // Must be the ACTUAL durations returned by concatenateChunks so the timeline matches.
   gaps = gaps || chunkTexts.map(() => 0);
   // Build a chapter-level character timeline: for each character position in the
   // concatenated plain text, what's its absolute time in the chapter?
   const charTimes = []; // [{start, end}] for each character in plain text
+  const charExact = []; // true = from an ElevenLabs alignment (not a proportional estimate)
+  const charChunk = []; // chunk index of each character (opts.trace only)
 
   // The plain text is blocks joined by \n\n. Chunks are the plain text split at
   // paragraph boundaries. We need to map chunk characters back to plain text positions.
   let chapterOffset = 0; // cumulative time offset for current chunk
 
+  const chunkBase = [];
   for (let c = 0; c < chunkAlignments.length; c++) {
+    chunkBase.push(charTimes.length);
     chapterOffset += gaps[c] || 0; // inter-chunk silence sits BEFORE this chunk's audio
     const alignment = chunkAlignments[c];
     if (!alignment || !alignment.character_start_times_seconds) {
@@ -380,6 +451,8 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
           start: chapterOffset + (i / chunkChars) * duration,
           end: chapterOffset + ((i + 1) / chunkChars) * duration,
         });
+        charExact.push(false);
+        if (opts.trace) charChunk.push(-1);
       }
     } else {
       const starts = alignment.character_start_times_seconds;
@@ -389,6 +462,8 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
           start: chapterOffset + starts[i],
           end: chapterOffset + ends[i],
         });
+        charExact.push(true);
+        if (opts.trace) charChunk.push(c);
       }
     }
 
@@ -425,18 +500,42 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
     origIdx++;
   }
 
-  if (charTimes.length !== flatText.length) {
+  const alignmentConsistent = charTimes.length === flatText.length;
+  if (!alignmentConsistent) {
     console.log(`    Warning: charTimes (${charTimes.length}) != flatText (${flatText.length}) — using proportional fallback for mismatched chars`);
+  }
+
+  // Word times for the clean-text range [from, to): whitespace-separated words, each from
+  // its first character's start to its last character's end. null = not exact enough.
+  function wordsFor(from, to, text) {
+    if (!alignmentConsistent) return null;
+    const words = [];
+    const re = /\S+/g;
+    const slice = flatTextClean.slice(from, to);
+    let m;
+    while ((m = re.exec(slice)) !== null) {
+      const a = cleanToOriginal[from + m.index];
+      const b = cleanToOriginal[from + m.index + m[0].length - 1];
+      if (a === undefined || b === undefined || !charExact[a] || !charExact[b]) return null;
+      words.push([round2(charTimes[a].start), round2(charTimes[b].end), m[0]]);
+    }
+    // Word strings are the segment's own words (the needle matched case-insensitively).
+    const own = text.split(/\s+/).filter(Boolean);
+    if (own.length !== words.length) return null;
+    own.forEach((w, i) => { words[i][2] = w; });
+    return words;
   }
 
   const segments = [];
   let searchFrom = 0;
 
   for (const sent of sentences) {
-    // Search in the clean (tag-stripped) text, case-insensitive
-    // Defense-in-depth: strip any SSML break tags from the needle too, so a leaked
-    // tag can never break matching even if upstream sentence-cleaning regresses.
-    const needle = sent.text.toLowerCase().replace(/<break[^>]*\/>/g, '');
+    // Search in the clean (tag-stripped) text, case-insensitive, for what the narrator
+    // SAID (`matchText` — a heading read differently from its display text), falling back
+    // to the display text. Defense-in-depth: strip any SSML break tags from the needle too,
+    // so a leaked tag can never break matching even if upstream sentence-cleaning regresses.
+    const spokenText = (sent.matchText || sent.text).replace(/<break[^>]*\/>/g, '');
+    const needle = spokenText.toLowerCase();
     let cleanIdx = flatCleanLower.indexOf(needle, searchFrom);
 
     // If not found forward, try from the beginning
@@ -460,29 +559,44 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
         end: Math.round(((segments.length + 1) / sentences.length) * totalDuration * 100) / 100,
         blockIndex: sent.blockIndex,
         sentenceIndex: sent.sentenceIndex,
-        text: sent.text,
+        text: cleanSegmentText(sent.text),
       });
-      searchFrom = cleanIdx >= 0 ? cleanIdx + sent.text.length : searchFrom;
+      searchFrom = cleanIdx >= 0 ? cleanIdx + needle.length : searchFrom;
       continue;
     }
 
     // Map clean text positions back to original positions for charTimes lookup
     const startChar = cleanToOriginal[cleanIdx] || 0;
-    const endCleanIdx = cleanIdx + sent.text.length - 1;
-    const endChar = endCleanIdx < cleanToOriginal.length ? cleanToOriginal[endCleanIdx] : startChar + sent.text.length;
-    searchFrom = cleanIdx + sent.text.length;
+    const endCleanIdx = cleanIdx + needle.length - 1;
+    const endChar = endCleanIdx < cleanToOriginal.length ? cleanToOriginal[endCleanIdx] : startChar + needle.length;
+    searchFrom = cleanIdx + needle.length;
 
     // Look up times from charTimes array
     const startTime = startChar < charTimes.length ? charTimes[startChar].start : 0;
     const endTime = endChar < charTimes.length ? charTimes[endChar].end : startTime + 1;
 
-    segments.push({
-      start: Math.round(startTime * 100) / 100,
-      end: Math.round(endTime * 100) / 100,
+    const text = cleanSegmentText(sent.text);
+    const seg = {
+      start: round2(startTime),
+      end: round2(endTime),
       blockIndex: sent.blockIndex,
       sentenceIndex: sent.sentenceIndex,
-      text: sent.text,
-    });
+      text,
+    };
+    // opts.trace (rebuild calibration): which chunk the segment starts/ends in and its
+    // chunk-relative times, so the rebuild can solve chunk offsets from a published file.
+    if (opts.trace && startChar < charTimes.length && endChar < charTimes.length &&
+        charChunk[startChar] >= 0 && charChunk[startChar] === charChunk[endChar]) {
+      const c = charChunk[startChar];
+      Object.defineProperty(seg, 'trace', { enumerable: false, value: {
+        chunk: c, relStart: chunkAlignments[c].character_start_times_seconds[startChar - chunkBase[c]],
+        relEnd: chunkAlignments[c].character_end_times_seconds[endChar - chunkBase[c]] } });
+    }
+    if (opts.words && needle === sent.text.toLowerCase() && text === sent.text) {
+      const words = wordsFor(cleanIdx, cleanIdx + needle.length, sent.text);
+      if (words) seg.words = words;
+    }
+    segments.push(seg);
   }
 
   // Validation guard — HARD-FAIL on the failure modes that caused the Seneca/L'Appel
@@ -745,36 +859,11 @@ async function main() {
       // ~TARGET_CHUNK_SIZE with heading-led chunks + in-audio leading-break seams. Back-compat:
       // legacy `natural_mode: true` maps to "section". Both feed the same concat + timestamp core.
       const strategy = meta.chunking_strategy || (meta.natural_mode === true ? 'section' : 'linear');
-      let chunks, chunkGaps, continuations;
+      const { chunks, chunkGaps, continuations } = buildChunks(
+        item.ttsBlocks, item.plainText, strategy, meta.max_generation || MAX_GENERATION);
       if (strategy === 'section') {
-        const gen = buildNaturalGenerations(item.ttsBlocks, meta.max_generation || MAX_GENERATION);
-        chunks = gen.texts;
-        chunkGaps = gen.gaps;
-        continuations = gen.continuations;
         const capSplits = continuations.filter(Boolean).length;
         console.log(`    SECTION strategy: ${chunks.length} generation(s)${capSplits ? `, ${capSplits} cap-split` : ''}, silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
-      } else {
-        // LINEAR strategy: chunk the plain text using stable heading-based boundaries.
-        const splitBlocks = splitLongBlocks(item.ttsBlocks, TARGET_CHUNK_SIZE);
-        // Texts of mid-paragraph continuation pieces — a chunk starting on one is an
-        // artificial split inside a once-continuous paragraph, so it gets a lighter seam.
-        const contTexts = new Set(splitBlocks.filter(b => b._splitCont).map(b => b.nodes[0].text));
-        chunks = chunkText(item.plainText, CHUNK_SIZE, splitBlocks);
-        // Seam pause: PREPEND a LEADING break to each non-first chunk so the model renders
-        // the pause INSIDE that chunk's generation (captured in its audio + alignment +
-        // ffprobe duration → timestamps stay consistent with CHUNK_GAP_SECONDS = 0; do NOT
-        // use CHUNK_GAP — see its warning). Trailing breaks get trimmed at a generation's
-        // end; leading breaks render. Skip heading-led chunks (already have a break).
-        // Differentiated: 0.5s at real paragraph/section seams, 0.3s at mid-paragraph splits.
-        const SEAM_BREAK = '<break time="0.5s"/>';
-        const MID_SEAM_BREAK = '<break time="0.3s"/>';
-        for (let i = 1; i < chunks.length; i++) {
-          if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
-          const firstBlock = chunks[i].split('\n\n')[0];
-          chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
-        }
-        chunkGaps = chunks.map(() => 0); // linear path uses in-audio leading breaks, no concat silence
-        continuations = chunks.map(() => false);
       }
       const chunkHashes = chunks.map(c => hashChunk(c));
 
@@ -925,11 +1014,13 @@ async function main() {
           }
         }
 
+        // Bible: per-word times too (the app's A–B loop starts verses that begin mid-sentence).
         const timestamps = buildTimestampsFromAlignments(
-          chunkAlignments, chunks, chunkDurations, sentences, actualGaps
+          chunkAlignments, chunks, chunkDurations, sentences, actualGaps,
+          { words: bookSlugPath.startsWith('bible/') }
         );
         const tsPath = join(tmpDir, `${slug}.timestamps.json`);
-        writeFileSync(tsPath, JSON.stringify(timestamps, null, 2));
+        writeFileSync(tsPath, serializeTimestamps(timestamps));
         await uploadToGCS(tsPath, `audio/${bookSlugPath}/${slug}.timestamps.json`);
         console.log(`    Timestamps: ${timestamps.segments.length} segments (from ElevenLabs alignment)`);
       }

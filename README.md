@@ -129,7 +129,9 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
 
 Chunks target ~800 characters each, produced by a linear block walk that force-splits at H1/H2/H3 headings (250-char minimum guard). Each chunk file is named by a content hash of its text; only chunks whose hash changes are regenerated, and unchanged chunks are downloaded from GCS and reused. Chunks are concatenated directly with no silence gaps — ElevenLabs handles paragraph pacing naturally.
 
-To rebuild only the sentence-level timestamps without spending ElevenLabs credits (e.g. after a timestamp-matching fix), re-run `generate.yml` with `force_regenerate=true`: unchanged chunks are reused from cache (0 credits) and just the `.timestamps.json` files are rebuilt.
+To rebuild only the sentence-level timestamps without spending ElevenLabs credits (e.g. after a timestamp-matching fix), run **`rebuild-timestamps.yml`** (`src/rebuild-timestamps.js`): it re-derives each session's chunks from the stored `.tts.json`, checks them against the manifest's chunk hashes, reuses the cached `.align.json` alignments, and rewrites only `.timestamps.json` — never ElevenLabs, never audio. `mode=dry-run` (default) only reports; `mode=write` backs each original up under `audio/_backup/…` first. A session is rewritten only if the old algorithm reproduces its published file exactly and the new one differs only where intended; anything else is skipped and listed.
+
+⚠️ Do **not** use `generate.yml` with `force_regenerate=true` for this — a forced run bypasses the chunk cache and re-narrates every chunk (full credit cost).
 
 ## Troubleshooting
 

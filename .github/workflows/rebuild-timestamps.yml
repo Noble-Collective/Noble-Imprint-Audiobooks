@@ -1,0 +1,63 @@
+name: Rebuild Timestamps (no TTS)
+
+# Timestamps-ONLY rebuild from the cached ElevenLabs alignments — never calls ElevenLabs,
+# never touches audio or manifests. Dry-run by default (reads only + report). See
+# src/rebuild-timestamps.js and plans/2026-09-27-timestamp-title-fix.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry-run (report only) or write (back up originals, then rewrite timestamps)'
+        required: true
+        default: 'dry-run'
+        type: choice
+        options: [dry-run, write]
+      book_filter:
+        description: 'Only books whose slug path contains this (e.g. bible/bsb/genesis). Empty = all.'
+        required: false
+      session_filter:
+        description: 'Only this session file (e.g. 028.md)'
+        required: false
+
+# Same group as generate.yml: a rebuild and a generation can never run at the same time.
+concurrency:
+  group: audiobook-generate
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'   # see generate.yml (gaxios 6 + Node 22)
+
+      - run: npm ci
+
+      - name: Install ffmpeg (ffprobe)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Rebuild timestamps
+        run: node src/rebuild-timestamps.js
+        env:
+          MODE: ${{ github.event.inputs.mode }}
+          SOURCE: gcs
+          GCS_BUCKET: noble-imprint-audiobooks
+          BOOK_FILTER: ${{ github.event.inputs.book_filter || '' }}
+          SESSION_FILTER: ${{ github.event.inputs.session_filter || '' }}
+          REPORT: rebuild-report.json
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuild-report-${{ github.event.inputs.mode }}
+          path: rebuild-report.json

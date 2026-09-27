@@ -1,0 +1,6175 @@
+{
+ "resourcesHead": "12b9cb469460dcdcf2f3596d0ef401b3c1b06fde",
+ "sessions": {
+  "bible/01GENBSB.SFM/1": {
+   "plainText": "e31ea10ebdac9feee478",
+   "blocks": "2c6cee88071d5664ca5e",
+   "sentences": "e8b6461ca3c93694ce62"
+  },
+  "bible/01GENBSB.SFM/2": {
+   "plainText": "03f82c9d6b876bc57672",
+   "blocks": "1b5dd5dddefc04e1511d",
+   "sentences": "dd9b8ad1eb4c82dfe9dc"
+  },
+  "bible/01GENBSB.SFM/3": {
+   "plainText": "41b5c1b6b5c879a9d50e",
+   "blocks": "5b196dd664f48890a4fc",
+   "sentences": "2b5eb88fae5cf925f237"
+  },
+  "bible/01GENBSB.SFM/4": {
+   "plainText": "1b1fb009e90e321368eb",
+   "blocks": "79ac55f80b6aff461abb",
+   "sentences": "bc62e7262cb6f0ed7fb3"
+  },
+  "bible/01GENBSB.SFM/5": {
+   "plainText": "6db9c50f24f0b1c44d91",
+   "blocks": "d7b89d840ba75b50e306",
+   "sentences": "01c7a661a6090310d4d5"
+  },
+  "bible/01GENBSB.SFM/6": {
+   "plainText": "5ec7ef1f9d13de7587a0",
+   "blocks": "a570913a786ea0cee033",
+   "sentences": "398d1c0956d03595da11"
+  },
+  "bible/01GENBSB.SFM/7": {
+   "plainText": "04d8bd09d502bda2c9c4",
+   "blocks": "c1295f2c8481dd7b736d",
+   "sentences": "b92cd4a466b557b5067b"
+  },
+  "bible/01GENBSB.SFM/8": {
+   "plainText": "0719954287573f950db0",
+   "blocks": "fa5fcd2d2a5a85b0917a",
+   "sentences": "76a7b51e3eaf59c4153d"
+  },
+  "bible/01GENBSB.SFM/9": {
+   "plainText": "3b1f51cd767db0d1e58e",
+   "blocks": "5da4f495629b535af77b",
+   "sentences": "1a1b1c41c0bec6f2d943"
+  },
+  "bible/01GENBSB.SFM/10": {
+   "plainText": "f8423acf394ae6437215",
+   "blocks": "f2a60a1ab3075c0f1cda",
+   "sentences": "ede3c812e1edaca73385"
+  },
+  "bible/01GENBSB.SFM/11": {
+   "plainText": "e90d85c72285cfad366a",
+   "blocks": "c9180c25ffea7bbf5f83",
+   "sentences": "2efbbb52fbd408dd741a"
+  },
+  "bible/01GENBSB.SFM/12": {
+   "plainText": "4d3427afb32e56954440",
+   "blocks": "7bc2b8ba85692d26f997",
+   "sentences": "ef33cb559fd477348bef"
+  },
+  "bible/01GENBSB.SFM/13": {
+   "plainText": "9c40e248d497af86115c",
+   "blocks": "ff139577ed6bd008038f",
+   "sentences": "c544d9dea755ac973546"
+  },
+  "bible/01GENBSB.SFM/14": {
+   "plainText": "2ebd3e1b83b79b07523a",
+   "blocks": "f5fc9cea8518a57f9944",
+   "sentences": "b0e7cff2945205189b00"
+  },
+  "bible/01GENBSB.SFM/15": {
+   "plainText": "f5db8f12d2705582905e",
+   "blocks": "6a270688e9039638d080",
+   "sentences": "ed98433416e704166efa"
+  },
+  "bible/01GENBSB.SFM/16": {
+   "plainText": "41f75ec3c2524f6c2885",
+   "blocks": "3aa52e31e9128a91f72f",
+   "sentences": "de7a8f4c03835dd41e82"
+  },
+  "bible/01GENBSB.SFM/17": {
+   "plainText": "763e81af49a45f323236",
+   "blocks": "b42be5aa0330656bb5e7",
+   "sentences": "58358270c54e77314df9"
+  },
+  "bible/01GENBSB.SFM/18": {
+   "plainText": "ac44ae887a42d995f591",
+   "blocks": "814fd79f682b7b0af710",
+   "sentences": "b1ade2eefbded5d057c4"
+  },
+  "bible/01GENBSB.SFM/19": {
+   "plainText": "687d624eb27ec185611e",
+   "blocks": "0300c76c7cdf4f3118eb",
+   "sentences": "09c0caef299c2438b284"
+  },
+  "bible/01GENBSB.SFM/20": {
+   "plainText": "41a08cbfb05bb77320e0",
+   "blocks": "b86241c2c1e4f0b87a18",
+   "sentences": "dce9e545af383a3c3acc"
+  },
+  "bible/01GENBSB.SFM/21": {
+   "plainText": "2131744c411c76ad0760",
+   "blocks": "1d4df07ccd5ddc67a673",
+   "sentences": "26e3b841207f406fe7d1"
+  },
+  "bible/01GENBSB.SFM/22": {
+   "plainText": "34398aa4f178eb035fc3",
+   "blocks": "19710a1e611128356143",
+   "sentences": "bbf170326a92ced4bf57"
+  },
+  "bible/01GENBSB.SFM/23": {
+   "plainText": "055ff2a43d976a78ce06",
+   "blocks": "cc50ff69c03b3a761806",
+   "sentences": "81ccc1b6d778eca90382"
+  },
+  "bible/01GENBSB.SFM/24": {
+   "plainText": "ae9e307199d2d17943d7",
+   "blocks": "81ce52042255d04b825d",
+   "sentences": "ac540c3ef053630478df"
+  },
+  "bible/01GENBSB.SFM/25": {
+   "plainText": "d8cdbc14e29c1a9cf06e",
+   "blocks": "fa6fd806862be21cad53",
+   "sentences": "420b8049361cca899f97"
+  },
+  "bible/01GENBSB.SFM/26": {
+   "plainText": "70180ec611cc83c6b5e9",
+   "blocks": "abecdd9fd912c17341d1",
+   "sentences": "fb9686c087d0e1364170"
+  },
+  "bible/01GENBSB.SFM/27": {
+   "plainText": "4b6b3355ecffa5a2a972",
+   "blocks": "718f7c6ff0a1bdd1e0dd",
+   "sentences": "54362db4d61f3054468a"
+  },
+  "bible/01GENBSB.SFM/28": {
+   "plainText": "8c3ad1b2f07ba4350362",
+   "blocks": "11466b8a608bfe0dec83",
+   "sentences": "8a2f2dece753cbed3558"
+  },
+  "bible/01GENBSB.SFM/29": {
+   "plainText": "8b11cf6c414dc1f18616",
+   "blocks": "fa7f791a20e25c8fcb04",
+   "sentences": "606c15c23019f7b5ad1d"
+  },
+  "bible/01GENBSB.SFM/30": {
+   "plainText": "18a5d67fc7c7a382c113",
+   "blocks": "4655be0eaec18da4b5aa",
+   "sentences": "67b66f0fff136fd80868"
+  },
+  "bible/01GENBSB.SFM/31": {
+   "plainText": "57df31d2b75c36be6389",
+   "blocks": "85fcb0031abdea22670b",
+   "sentences": "a09a9b503e50fb5e9c13"
+  },
+  "bible/01GENBSB.SFM/32": {
+   "plainText": "002e4adee50f7a895d76",
+   "blocks": "7f6c08156a290fd17696",
+   "sentences": "833172df2a46b67a132b"
+  },
+  "bible/01GENBSB.SFM/33": {
+   "plainText": "232dae06f5e0ed4200e0",
+   "blocks": "42d46ee21b6523e57348",
+   "sentences": "7ed33cff1a5910f70808"
+  },
+  "bible/01GENBSB.SFM/34": {
+   "plainText": "0f9aefac2fac12cfd8f9",
+   "blocks": "cf1814b2d3fc0c050eef",
+   "sentences": "085977b6ba5e1bd176a6"
+  },
+  "bible/01GENBSB.SFM/35": {
+   "plainText": "cf16824d90c3461793bb",
+   "blocks": "b8a5a421e1ebd8ce3a5b",
+   "sentences": "ddf88064cef24e680bf5"
+  },
+  "bible/01GENBSB.SFM/36": {
+   "plainText": "303f1c4795ac2b3b098e",
+   "blocks": "bf488d7e147421f47157",
+   "sentences": "210400695c8e4a89e73b"
+  },
+  "bible/01GENBSB.SFM/37": {
+   "plainText": "2fe875d9737a6d3770cf",
+   "blocks": "9a86415a8359ccb13022",
+   "sentences": "2fa908a0aa4818d7f436"
+  },
+  "bible/01GENBSB.SFM/38": {
+   "plainText": "60e7fc80061af0a82dd0",
+   "blocks": "d311b01dbbaab03fcb24",
+   "sentences": "5a517ee8fde151c1d163"
+  },
+  "bible/01GENBSB.SFM/39": {
+   "plainText": "3e9e12f204647b1ddb11",
+   "blocks": "9e00c0970d2ea43772c1",
+   "sentences": "9b37e404938dba95e212"
+  },
+  "bible/01GENBSB.SFM/40": {
+   "plainText": "a48a3aa9f5ff4c8b768a",
+   "blocks": "5f9b1363dca13463aab4",
+   "sentences": "7a92cd1df0d8214c5bb0"
+  },
+  "bible/01GENBSB.SFM/41": {
+   "plainText": "7c4427d35fb54c8fbae6",
+   "blocks": "228d11a54640cb36d194",
+   "sentences": "956a84487dde523d9907"
+  },
+  "bible/01GENBSB.SFM/42": {
+   "plainText": "6f492508948970dfa2a9",
+   "blocks": "a5017998deecdfb34339",
+   "sentences": "d752230aac86b899d4ee"
+  },
+  "bible/01GENBSB.SFM/43": {
+   "plainText": "f9c05edfc802a43eab6c",
+   "blocks": "07121265a8b5b3feef80",
+   "sentences": "7b082f320b1d5fc4f311"
+  },
+  "bible/01GENBSB.SFM/44": {
+   "plainText": "0340b804f61f44aa1596",
+   "blocks": "90f2b0a3acd853d969fd",
+   "sentences": "092af7a44d658b83f24c"
+  },
+  "bible/01GENBSB.SFM/45": {
+   "plainText": "79af14a4f372416656f7",
+   "blocks": "7bd93bec8b8c69efc244",
+   "sentences": "380b499f70953e92e33c"
+  },
+  "bible/01GENBSB.SFM/46": {
+   "plainText": "65ee1a93b3b246ff271a",
+   "blocks": "85d3091801f186939326",
+   "sentences": "b2c5c38ad5d867b0e60d"
+  },
+  "bible/01GENBSB.SFM/47": {
+   "plainText": "344fbb33c49e28be9df3",
+   "blocks": "58cfd19de7c47e8f4528",
+   "sentences": "a8241514bf663e25b93d"
+  },
+  "bible/01GENBSB.SFM/48": {
+   "plainText": "4e0262f1491e98c4e9f5",
+   "blocks": "0dc039051a09f002f81d",
+   "sentences": "a80d6bdb3e8c059f4f37"
+  },
+  "bible/01GENBSB.SFM/49": {
+   "plainText": "90a3609ce9d7f8d9f398",
+   "blocks": "89cf2a0c3e957770ada6",
+   "sentences": "1ec4389e65976b3ff032"
+  },
+  "bible/01GENBSB.SFM/50": {
+   "plainText": "ca3fa5aa710a5c239b1a",
+   "blocks": "10d8c10545c4f10dc9ea",
+   "sentences": "84db65b9ac42000f8334"
+  },
+  "bible/02EXOBSB.SFM/1": {
+   "plainText": "bf989b798ba5af2f50d4",
+   "blocks": "6e7c8dee63177033201a",
+   "sentences": "295301cf040320a964ba"
+  },
+  "bible/02EXOBSB.SFM/2": {
+   "plainText": "8e01a4b9def90a5752f4",
+   "blocks": "f535b372d604be039f6a",
+   "sentences": "4ba5697bd79ed630b743"
+  },
+  "bible/02EXOBSB.SFM/3": {
+   "plainText": "845d061931869fe2d4b3",
+   "blocks": "ac96e901662b481b9235",
+   "sentences": "2c9f1829b660814f1234"
+  },
+  "bible/02EXOBSB.SFM/4": {
+   "plainText": "d5ba88faaaa5b121f471",
+   "blocks": "d811f92691e7af839e95",
+   "sentences": "3c5b2e81c9b38d78272a"
+  },
+  "bible/02EXOBSB.SFM/5": {
+   "plainText": "3d8bffbc7f42ee58bbb0",
+   "blocks": "277b96df46de791fedf1",
+   "sentences": "e5e06e793e30e41fdcc0"
+  },
+  "bible/02EXOBSB.SFM/6": {
+   "plainText": "2dfe8afe1e79f1b858a4",
+   "blocks": "db937fbac5273dbedccc",
+   "sentences": "212b23d3a56912ce8970"
+  },
+  "bible/02EXOBSB.SFM/7": {
+   "plainText": "5852795d3706fe9f2608",
+   "blocks": "e613754c1e773400051d",
+   "sentences": "8be24eba3c973b32b5e0"
+  },
+  "bible/02EXOBSB.SFM/8": {
+   "plainText": "75a8cd8354f243302bd8",
+   "blocks": "320df2b4f7982462e42d",
+   "sentences": "33fcd95004c0a8889723"
+  },
+  "bible/02EXOBSB.SFM/9": {
+   "plainText": "568c01af15296be826c0",
+   "blocks": "879f384d2fbfcaa8a9a0",
+   "sentences": "1cd300633be6063e6138"
+  },
+  "bible/02EXOBSB.SFM/10": {
+   "plainText": "a802de5abe1c099efb1a",
+   "blocks": "cb08756b2c1265c06873",
+   "sentences": "ad4c052d06010024c73f"
+  },
+  "bible/02EXOBSB.SFM/11": {
+   "plainText": "a7a20959ebf8e830576c",
+   "blocks": "81355430b2635b65e091",
+   "sentences": "a4a621465d8eb1303337"
+  },
+  "bible/02EXOBSB.SFM/12": {
+   "plainText": "df81f58cea346b57d0b4",
+   "blocks": "eecdea275e806f3310bb",
+   "sentences": "dbfb6694525d1ba07418"
+  },
+  "bible/02EXOBSB.SFM/13": {
+   "plainText": "4486dd29f0cadf3303bf",
+   "blocks": "cc80ff8fddd72025f8d6",
+   "sentences": "5255bbdc829cb0decf04"
+  },
+  "bible/02EXOBSB.SFM/14": {
+   "plainText": "a104989571dc0ae9709c",
+   "blocks": "9d362835fca3c143ba64",
+   "sentences": "97b5c05c89c1589b7165"
+  },
+  "bible/02EXOBSB.SFM/15": {
+   "plainText": "6331eb41baf12179e2a4",
+   "blocks": "18fe799d902529310380",
+   "sentences": "021052f0001dc3b090d2"
+  },
+  "bible/02EXOBSB.SFM/16": {
+   "plainText": "c336b8c577391a999a33",
+   "blocks": "6b3342f90e85aecc494e",
+   "sentences": "70c6e1e6510fc18a6389"
+  },
+  "bible/02EXOBSB.SFM/17": {
+   "plainText": "62a78daf6edcaeacfc37",
+   "blocks": "4f73c593d4d40107b72f",
+   "sentences": "5b571df1b717bb79cc3e"
+  },
+  "bible/02EXOBSB.SFM/18": {
+   "plainText": "86ea913da876f3938f46",
+   "blocks": "182e2102de5da7c81615",
+   "sentences": "3fc5a051edbf5150ee9e"
+  },
+  "bible/02EXOBSB.SFM/19": {
+   "plainText": "567b635b40641b93a125",
+   "blocks": "eb32f1f4482722fea10d",
+   "sentences": "9bdf95acdd79bb5e162e"
+  },
+  "bible/02EXOBSB.SFM/20": {
+   "plainText": "0a2787c61b8c2182de5b",
+   "blocks": "505d85e75c27ae2a8fc1",
+   "sentences": "4d890c716ad82484c76f"
+  },
+  "bible/02EXOBSB.SFM/21": {
+   "plainText": "160b85d111ee38a191e2",
+   "blocks": "c2af446e899c8774c6e7",
+   "sentences": "abd2bb740a5e80fd5548"
+  },
+  "bible/02EXOBSB.SFM/22": {
+   "plainText": "720091d689fce4e42a86",
+   "blocks": "c8c04adcdc5f4b829fd2",
+   "sentences": "dfcc3392e730c9ecf8ad"
+  },
+  "bible/02EXOBSB.SFM/23": {
+   "plainText": "40811ba1dfb561df3884",
+   "blocks": "39f5715694a493393026",
+   "sentences": "27c135bb701cbd90b8db"
+  },
+  "bible/02EXOBSB.SFM/24": {
+   "plainText": "6758bc589f7e6fe51bb0",
+   "blocks": "8e2365a09e23ec3ff144",
+   "sentences": "649db8a962101432f1af"
+  },
+  "bible/02EXOBSB.SFM/25": {
+   "plainText": "fdce28df53ce9080ddcf",
+   "blocks": "d5b38b3ddb56b5a4e02a",
+   "sentences": "8f9cb77ecea9cd47aefd"
+  },
+  "bible/02EXOBSB.SFM/26": {
+   "plainText": "54cf0cb6213e559c967e",
+   "blocks": "a7c0224ba3695a91aefd",
+   "sentences": "fdd6fa3b31f4db8c6827"
+  },
+  "bible/02EXOBSB.SFM/27": {
+   "plainText": "bcba09e6e9335056cbcd",
+   "blocks": "0ca92ddb408465b163a0",
+   "sentences": "35804bae560939728f7a"
+  },
+  "bible/02EXOBSB.SFM/28": {
+   "plainText": "0d46c7f1d6fdf69146f8",
+   "blocks": "6697420adcac22e5e31f",
+   "sentences": "3fa7e1333f7dd5780ef2"
+  },
+  "bible/02EXOBSB.SFM/29": {
+   "plainText": "e08d0d90a6aba2fc42ad",
+   "blocks": "2c4e5752599199097c48",
+   "sentences": "c3b4a90f838476a3fe40"
+  },
+  "bible/02EXOBSB.SFM/30": {
+   "plainText": "8da35612e2ce18f2a8e4",
+   "blocks": "1567c085e072c5c25539",
+   "sentences": "ef807b4e0c268ba06a4d"
+  },
+  "bible/02EXOBSB.SFM/31": {
+   "plainText": "a6dcfe5ad85b27f6ffa2",
+   "blocks": "0bcee994b04b5caa190f",
+   "sentences": "3cd64fb463722d9c31be"
+  },
+  "bible/02EXOBSB.SFM/32": {
+   "plainText": "8f4fcae0685709a9152b",
+   "blocks": "fd1d8a4c003ad7a501f3",
+   "sentences": "3b28b87a1c44023804c8"
+  },
+  "bible/02EXOBSB.SFM/33": {
+   "plainText": "b0bd9cdb05007072dd74",
+   "blocks": "1890d04c350286bab1ba",
+   "sentences": "1a3c861abcceaa3ff363"
+  },
+  "bible/02EXOBSB.SFM/34": {
+   "plainText": "b09423f7f6dbb16332fd",
+   "blocks": "b696529bfffbcd82cc6c",
+   "sentences": "5f2ca454f78209fb4acf"
+  },
+  "bible/02EXOBSB.SFM/35": {
+   "plainText": "0d80f6e966d9aa169b29",
+   "blocks": "a41e49bbb5cdabc89e9f",
+   "sentences": "0aacb095baef964538f6"
+  },
+  "bible/02EXOBSB.SFM/36": {
+   "plainText": "6db4d748da1dce1c0463",
+   "blocks": "436cb1c6be401cc2fb77",
+   "sentences": "fa21f4e4b05d27bece0d"
+  },
+  "bible/02EXOBSB.SFM/37": {
+   "plainText": "f71461fc02e14080df6a",
+   "blocks": "c0b47c1636a98007a835",
+   "sentences": "15e1dc4a624765bec077"
+  },
+  "bible/02EXOBSB.SFM/38": {
+   "plainText": "672302d1a14eb9175a0c",
+   "blocks": "c7f5a364b05483ed9645",
+   "sentences": "590cc1e7dcdfd53ebd12"
+  },
+  "bible/02EXOBSB.SFM/39": {
+   "plainText": "94b2cc4d73b8dfceaf64",
+   "blocks": "cceaa84a23dfda5b4136",
+   "sentences": "d41d507668286df5b885"
+  },
+  "bible/02EXOBSB.SFM/40": {
+   "plainText": "3fdffdbc1eb3ef702353",
+   "blocks": "31a2377d6bdbf0c3d207",
+   "sentences": "c0ea84b9a6274779e684"
+  },
+  "bible/03LEVBSB.SFM/1": {
+   "plainText": "68a1fbe63e3c47934d24",
+   "blocks": "91471340633d2646112d",
+   "sentences": "e5a5094ca322e5e08ced"
+  },
+  "bible/03LEVBSB.SFM/2": {
+   "plainText": "b0af7481c2db5308ef1f",
+   "blocks": "359d791064d295780860",
+   "sentences": "da5c333b59c24aecb8f7"
+  },
+  "bible/03LEVBSB.SFM/3": {
+   "plainText": "d068dd081a1a389dd97a",
+   "blocks": "5b3056be68ad0775708c",
+   "sentences": "8f4094654c0829ee8910"
+  },
+  "bible/03LEVBSB.SFM/4": {
+   "plainText": "fa7d13f65e0dff0af05e",
+   "blocks": "b5f51fb02ac21fdf9c96",
+   "sentences": "9d4126b453dde4e3854a"
+  },
+  "bible/03LEVBSB.SFM/5": {
+   "plainText": "1b9d3cb35a92ce92205c",
+   "blocks": "cfdf93c44592d2a80421",
+   "sentences": "c055795714dafb92a5ee"
+  },
+  "bible/03LEVBSB.SFM/6": {
+   "plainText": "8c5c93d81e0ddf9fbb27",
+   "blocks": "11ef2b98ccb198f53d4f",
+   "sentences": "9ecbec55f16727292b15"
+  },
+  "bible/03LEVBSB.SFM/7": {
+   "plainText": "5aeb15ddc088ff217342",
+   "blocks": "f798c21723c4556260a1",
+   "sentences": "4c253cb03ab8f0bfed4f"
+  },
+  "bible/03LEVBSB.SFM/8": {
+   "plainText": "c90df578f8d1e6288950",
+   "blocks": "3e41441668dfdda8ed42",
+   "sentences": "e44f181340baa96c85b9"
+  },
+  "bible/03LEVBSB.SFM/9": {
+   "plainText": "2ec143fb9d03ca021d15",
+   "blocks": "c47b583c87e56f3f1071",
+   "sentences": "5a089b8e9f719e5da277"
+  },
+  "bible/03LEVBSB.SFM/10": {
+   "plainText": "e7ca1612e005fbf8b213",
+   "blocks": "a7ee02cda87f3f892324",
+   "sentences": "8a64c62ba7f5c36e8b45"
+  },
+  "bible/03LEVBSB.SFM/11": {
+   "plainText": "e90baa67749ba5f1107e",
+   "blocks": "4499dc5a14f010ddd5e1",
+   "sentences": "b059c6ca66dc53e7ce9a"
+  },
+  "bible/03LEVBSB.SFM/12": {
+   "plainText": "444e995d3c36a9c0219b",
+   "blocks": "4dc0b2c3df23b2ab0d45",
+   "sentences": "3b0330d4fb5c165f3a81"
+  },
+  "bible/03LEVBSB.SFM/13": {
+   "plainText": "3cc9521d7f776fa8591e",
+   "blocks": "12d3c62968fb433430cd",
+   "sentences": "900c5a220dbee021c408"
+  },
+  "bible/03LEVBSB.SFM/14": {
+   "plainText": "8d0f48ef0908552cf5c1",
+   "blocks": "3ee424f8d3df6e901b1e",
+   "sentences": "4732813793e777dfd2f3"
+  },
+  "bible/03LEVBSB.SFM/15": {
+   "plainText": "470a98fbdbe458049ad4",
+   "blocks": "d633db61d2f076c434f0",
+   "sentences": "abfdf7ceec11c36e7ade"
+  },
+  "bible/03LEVBSB.SFM/16": {
+   "plainText": "e5c464b85aa1a9d24fe7",
+   "blocks": "fe7fbb21b6638ff35525",
+   "sentences": "d6327cf5873db042058d"
+  },
+  "bible/03LEVBSB.SFM/17": {
+   "plainText": "8ecfbe9057a58945d572",
+   "blocks": "c27414609dd2292d6825",
+   "sentences": "37b044231cab3001e9b4"
+  },
+  "bible/03LEVBSB.SFM/18": {
+   "plainText": "e13b5fe4bcc6016a9c2e",
+   "blocks": "deee46367b03cf1f8f8f",
+   "sentences": "953a1da13b12758f8427"
+  },
+  "bible/03LEVBSB.SFM/19": {
+   "plainText": "430a4f225e4137028c1a",
+   "blocks": "541fac646dcd69fa85fd",
+   "sentences": "f8d2925510107e14e9e1"
+  },
+  "bible/03LEVBSB.SFM/20": {
+   "plainText": "60fd6f5815b49305d01c",
+   "blocks": "f59e468cff79e8aa60a0",
+   "sentences": "e424fa50d3c19880001e"
+  },
+  "bible/03LEVBSB.SFM/21": {
+   "plainText": "91cdfd14826d7c454f2f",
+   "blocks": "e8fad92a12b021007cb8",
+   "sentences": "1ef001b4988d7983ad31"
+  },
+  "bible/03LEVBSB.SFM/22": {
+   "plainText": "d0ad8b899770b1273072",
+   "blocks": "21101903a14079402b63",
+   "sentences": "b2871705c984dd962863"
+  },
+  "bible/03LEVBSB.SFM/23": {
+   "plainText": "cfe62449174582c9b113",
+   "blocks": "96f3eae603aff1ea853a",
+   "sentences": "c95683208595b2e192b5"
+  },
+  "bible/03LEVBSB.SFM/24": {
+   "plainText": "1c621812dffb02bdb603",
+   "blocks": "0815afa6bc186f11cfbb",
+   "sentences": "3e5ddb1b5fcf6e4aa9bd"
+  },
+  "bible/03LEVBSB.SFM/25": {
+   "plainText": "9e6eeff199a404d798f5",
+   "blocks": "81e55847df38c1428a7f",
+   "sentences": "cb71e2c4fc271bf61019"
+  },
+  "bible/03LEVBSB.SFM/26": {
+   "plainText": "59a2968f7929d0ac2dd7",
+   "blocks": "f367d73adb78613fb8c0",
+   "sentences": "a1e14782c7f080c9e983"
+  },
+  "bible/03LEVBSB.SFM/27": {
+   "plainText": "a8e14965c269566c130a",
+   "blocks": "c72bce1d08bcf5a98cd5",
+   "sentences": "24b7fde15282ca3af62a"
+  },
+  "bible/04NUMBSB.SFM/1": {
+   "plainText": "310cd89c7ed8d27ff87b",
+   "blocks": "e27c1a494e638455a25e",
+   "sentences": "978f588fa5d9cf861cc2"
+  },
+  "bible/04NUMBSB.SFM/2": {
+   "plainText": "7934f1ab1525df048958",
+   "blocks": "d0f60f21895522779bf1",
+   "sentences": "7ec27718abc3b23ae9b5"
+  },
+  "bible/04NUMBSB.SFM/3": {
+   "plainText": "792d7afbe59552179bc6",
+   "blocks": "86df6a4bcd03dd607eb3",
+   "sentences": "08dc7110a976f3d1a765"
+  },
+  "bible/04NUMBSB.SFM/4": {
+   "plainText": "dd61005ba2173f7a6787",
+   "blocks": "954a6429086c40cb0582",
+   "sentences": "6e3aa8a9d674c6c201f1"
+  },
+  "bible/04NUMBSB.SFM/5": {
+   "plainText": "242b857c40beadbd5fc8",
+   "blocks": "6d4be3ac93b4b390214f",
+   "sentences": "df8b4b21e6bffb1bf02f"
+  },
+  "bible/04NUMBSB.SFM/6": {
+   "plainText": "e6c0ddcdb76856fa9354",
+   "blocks": "9a76147116c323d220de",
+   "sentences": "52ead004f23234d60028"
+  },
+  "bible/04NUMBSB.SFM/7": {
+   "plainText": "9dc6dda3ae2340aaf320",
+   "blocks": "1d1bdcebd1b41fe83b59",
+   "sentences": "dac6264d0406cb0e974c"
+  },
+  "bible/04NUMBSB.SFM/8": {
+   "plainText": "6746322ef52379336063",
+   "blocks": "577e4730eeac506295d6",
+   "sentences": "48264bff7b64802e539f"
+  },
+  "bible/04NUMBSB.SFM/9": {
+   "plainText": "b1c8719738b0d916cdd7",
+   "blocks": "b08f83a8a3a56dc589dd",
+   "sentences": "4baeb288cedb83f43ee7"
+  },
+  "bible/04NUMBSB.SFM/10": {
+   "plainText": "9228b8f8a376394e00a0",
+   "blocks": "78230e26fbb7fca3b42d",
+   "sentences": "4b060741bd869ed6f02e"
+  },
+  "bible/04NUMBSB.SFM/11": {
+   "plainText": "af6f67fc70811ac4abab",
+   "blocks": "a2fdbb460031e7a0a93d",
+   "sentences": "88e1a31d573e8dfa0ade"
+  },
+  "bible/04NUMBSB.SFM/12": {
+   "plainText": "e8163f16fb9802d8b0c3",
+   "blocks": "b00d3f8f7bdc29bd47c3",
+   "sentences": "75259cfa3f841a09b193"
+  },
+  "bible/04NUMBSB.SFM/13": {
+   "plainText": "e0129f39afe9bb62f0ed",
+   "blocks": "a0867dc3cb0f99297148",
+   "sentences": "3eb40f132798aa6da8a8"
+  },
+  "bible/04NUMBSB.SFM/14": {
+   "plainText": "9d81c7c61f16d9cf5ad2",
+   "blocks": "0be2b879dc778c468fa1",
+   "sentences": "7fec00e8d1338693d220"
+  },
+  "bible/04NUMBSB.SFM/15": {
+   "plainText": "8b05d82d50a541840859",
+   "blocks": "62d03c6bb0480ca66104",
+   "sentences": "a09319cab47331ce9954"
+  },
+  "bible/04NUMBSB.SFM/16": {
+   "plainText": "f343453bfa15c3ffaa12",
+   "blocks": "d2ee4d5ed7e1631d6a02",
+   "sentences": "3f2ecf91539c761d8516"
+  },
+  "bible/04NUMBSB.SFM/17": {
+   "plainText": "7b1198651d630b55bd56",
+   "blocks": "e27384d5e8fbaa1bb616",
+   "sentences": "ac6c9104541fb4e684d3"
+  },
+  "bible/04NUMBSB.SFM/18": {
+   "plainText": "c52d29e9ef3c6e11a958",
+   "blocks": "2778b2545111e8b60e7f",
+   "sentences": "f828c55f5054ade440a1"
+  },
+  "bible/04NUMBSB.SFM/19": {
+   "plainText": "c6cae388bcf266a6b7a7",
+   "blocks": "64864b9821bb6b02eeca",
+   "sentences": "c3f7c1ea61b22963a9bf"
+  },
+  "bible/04NUMBSB.SFM/20": {
+   "plainText": "b4b6ed73ef645fbab5d9",
+   "blocks": "40d06d83b6f9bfc3cb28",
+   "sentences": "4cec11d2ba0c66b56ace"
+  },
+  "bible/04NUMBSB.SFM/21": {
+   "plainText": "4b0d4621357cb6dd4152",
+   "blocks": "189c1164fc8e964d483c",
+   "sentences": "3bd07fa1d9e2723d3bd3"
+  },
+  "bible/04NUMBSB.SFM/22": {
+   "plainText": "ddf98d1931cdc95cd5bf",
+   "blocks": "26105d3210ee1a7375d7",
+   "sentences": "3c954156ffea8e6c49f2"
+  },
+  "bible/04NUMBSB.SFM/23": {
+   "plainText": "7f0ce1f3b22a298f25db",
+   "blocks": "32fc7ad4a8f5ae905320",
+   "sentences": "b2754a74a1981f0af485"
+  },
+  "bible/04NUMBSB.SFM/24": {
+   "plainText": "c8ab5130dbab6ebfc214",
+   "blocks": "f5bb8f8c96bbd5dae561",
+   "sentences": "a99f683bbed3e27c1fbf"
+  },
+  "bible/04NUMBSB.SFM/25": {
+   "plainText": "84a77e2ed324afabd8b2",
+   "blocks": "2274ae7dddf5901288b0",
+   "sentences": "b739f8ff3c6d0866b51d"
+  },
+  "bible/04NUMBSB.SFM/26": {
+   "plainText": "83d991b3da2c570b2b1f",
+   "blocks": "3b12ebb688f8defa40ff",
+   "sentences": "eac7865760a51dab1a2f"
+  },
+  "bible/04NUMBSB.SFM/27": {
+   "plainText": "c59745a289d13a6ec6f6",
+   "blocks": "23c53e39f62c47bd936e",
+   "sentences": "987fa695849b96b8d7c8"
+  },
+  "bible/04NUMBSB.SFM/28": {
+   "plainText": "e5cf2c45855d8ad9d043",
+   "blocks": "22ee6b35bb0d4002b7b7",
+   "sentences": "83868288bb5a87dff9fc"
+  },
+  "bible/04NUMBSB.SFM/29": {
+   "plainText": "08ad7384692f92cb387b",
+   "blocks": "5195d7b1ee1a7a1777b4",
+   "sentences": "71067a3c835830268690"
+  },
+  "bible/04NUMBSB.SFM/30": {
+   "plainText": "6ee211aaec3423afecbb",
+   "blocks": "7e2c4224e58361911235",
+   "sentences": "9ec2e65fc615e7c600c4"
+  },
+  "bible/04NUMBSB.SFM/31": {
+   "plainText": "a0ab8180b4ddf1a9e266",
+   "blocks": "6f2dec7585c2d5aefcb8",
+   "sentences": "5b9504461f5a45d86f9f"
+  },
+  "bible/04NUMBSB.SFM/32": {
+   "plainText": "b602da9d0a67460ff7c8",
+   "blocks": "d828f6e0cafcde4e3031",
+   "sentences": "198ec2697f8c4f48f867"
+  },
+  "bible/04NUMBSB.SFM/33": {
+   "plainText": "da583e6f9842950a21b1",
+   "blocks": "fb597cdfc5b4be6e5ba1",
+   "sentences": "9ddfc61f10e92d61f033"
+  },
+  "bible/04NUMBSB.SFM/34": {
+   "plainText": "c52c55fb9e89d3753db2",
+   "blocks": "11ef96268e9647fd2768",
+   "sentences": "e9b79a6c90a45d781a61"
+  },
+  "bible/04NUMBSB.SFM/35": {
+   "plainText": "d386b15614fd74f09851",
+   "blocks": "5a3029e358f22128dbfb",
+   "sentences": "8b55a02de1229e9374c2"
+  },
+  "bible/04NUMBSB.SFM/36": {
+   "plainText": "af854753bec527d56119",
+   "blocks": "78a7a7660ec0c25170d1",
+   "sentences": "120df001b512ac6529b9"
+  },
+  "bible/05DEUBSB.SFM/1": {
+   "plainText": "82b37b0873354423d08b",
+   "blocks": "b4cc2346a6ec6e5225d7",
+   "sentences": "ba01095e92496c2e8b13"
+  },
+  "bible/05DEUBSB.SFM/2": {
+   "plainText": "a89214a11d8d0c9a99b3",
+   "blocks": "62e08eb75eca506f34ad",
+   "sentences": "0b7eab1291359c82d48d"
+  },
+  "bible/05DEUBSB.SFM/3": {
+   "plainText": "703ed98b26df101f3d9c",
+   "blocks": "a23d96d01d6c5d4a5535",
+   "sentences": "d5b805998dc4a19d91dc"
+  },
+  "bible/05DEUBSB.SFM/4": {
+   "plainText": "bdef4f2a5cea27bdf507",
+   "blocks": "772db05dec7179351cb9",
+   "sentences": "94b6a775e2468b436ba8"
+  },
+  "bible/05DEUBSB.SFM/5": {
+   "plainText": "efbdef03511ae6b9059a",
+   "blocks": "f540c61fa8483177c01d",
+   "sentences": "086d2f1112a6815c9546"
+  },
+  "bible/05DEUBSB.SFM/6": {
+   "plainText": "808bc39d07aec85da999",
+   "blocks": "dd8a1a02a6b238c92817",
+   "sentences": "63ca52d4214d1d91536d"
+  },
+  "bible/05DEUBSB.SFM/7": {
+   "plainText": "72b2491a74a97d9e7d57",
+   "blocks": "d9a72d0a042888a288f3",
+   "sentences": "4d250e9bcd4fe21797ae"
+  },
+  "bible/05DEUBSB.SFM/8": {
+   "plainText": "584771ace6e7de1ce81c",
+   "blocks": "877d08541502ed43b62f",
+   "sentences": "54dba1942c3131ab2ac5"
+  },
+  "bible/05DEUBSB.SFM/9": {
+   "plainText": "0dd87a1b2d8aceaba6d7",
+   "blocks": "13b40ee3cfb660d1eebb",
+   "sentences": "d890daae415922abfed0"
+  },
+  "bible/05DEUBSB.SFM/10": {
+   "plainText": "268722717749e2e318b2",
+   "blocks": "1f879ac8a26fc99ff291",
+   "sentences": "6a98da7943ba278935f4"
+  },
+  "bible/05DEUBSB.SFM/11": {
+   "plainText": "19441134415be46ecb88",
+   "blocks": "a6caf0a977943d29fd4d",
+   "sentences": "4ef5de532d2b7b3fc8e6"
+  },
+  "bible/05DEUBSB.SFM/12": {
+   "plainText": "4eb0c70ab77cac8525b4",
+   "blocks": "39298ce87872e5e72883",
+   "sentences": "28d987e6e03dd2f182a1"
+  },
+  "bible/05DEUBSB.SFM/13": {
+   "plainText": "4f24b7b81b0c9a99906d",
+   "blocks": "5980e8a2aceaa31d9b79",
+   "sentences": "79c3ee5dda7d441ff033"
+  },
+  "bible/05DEUBSB.SFM/14": {
+   "plainText": "4bf3ccd8c409ff8b550c",
+   "blocks": "11b0213ca8d5e230096e",
+   "sentences": "321b2283c12a38037569"
+  },
+  "bible/05DEUBSB.SFM/15": {
+   "plainText": "5585b2e5691a23a6c4c1",
+   "blocks": "bb2a4f28423f3ba1f85f",
+   "sentences": "82b02480adf99b04fbc3"
+  },
+  "bible/05DEUBSB.SFM/16": {
+   "plainText": "19cbe6a9bcdf913a89cd",
+   "blocks": "e138dd8608b50320dede",
+   "sentences": "de66f7f8445e281653e2"
+  },
+  "bible/05DEUBSB.SFM/17": {
+   "plainText": "60e4cdcafafb392a8ca2",
+   "blocks": "4ea900a8229faf813dc3",
+   "sentences": "d252c01cd8dce2a27b8b"
+  },
+  "bible/05DEUBSB.SFM/18": {
+   "plainText": "f207f20c79db3948c855",
+   "blocks": "fd2518dd28e672f7df88",
+   "sentences": "28e628870fb33b8488ef"
+  },
+  "bible/05DEUBSB.SFM/19": {
+   "plainText": "9383cc2e7312769eec22",
+   "blocks": "d3412e123c36f003bc59",
+   "sentences": "eb59761c9f2f293feba2"
+  },
+  "bible/05DEUBSB.SFM/20": {
+   "plainText": "f4580ea58d415b74c142",
+   "blocks": "cc6ff8c67b07e0736964",
+   "sentences": "91592273f697a3cb3020"
+  },
+  "bible/05DEUBSB.SFM/21": {
+   "plainText": "1894b704897b06f3600c",
+   "blocks": "6de8dbae716c95864264",
+   "sentences": "ce9caca79f6957eada98"
+  },
+  "bible/05DEUBSB.SFM/22": {
+   "plainText": "74161e3610ae55cd6a5e",
+   "blocks": "330084ca5f8ef787a598",
+   "sentences": "ce27e744020777a17e5e"
+  },
+  "bible/05DEUBSB.SFM/23": {
+   "plainText": "ed84dac2306820b62045",
+   "blocks": "79cdfcf214e4e3dbf8d7",
+   "sentences": "6a6d0a1850a0219fadf2"
+  },
+  "bible/05DEUBSB.SFM/24": {
+   "plainText": "2d39f1b782d2d77ff17f",
+   "blocks": "d4edbb58802fc230ab5b",
+   "sentences": "f6b9a359135296e54aa4"
+  },
+  "bible/05DEUBSB.SFM/25": {
+   "plainText": "d338d5d7788a74f9eba6",
+   "blocks": "059c00dc8761092505bf",
+   "sentences": "ea59f86e1b2e02d1e9bb"
+  },
+  "bible/05DEUBSB.SFM/26": {
+   "plainText": "016e64ef5606df15d4bf",
+   "blocks": "2ae18c6da300c24f3c57",
+   "sentences": "f4dc9e4554f4f9956b6c"
+  },
+  "bible/05DEUBSB.SFM/27": {
+   "plainText": "53ee067bb2e6b3b39c99",
+   "blocks": "2ba8b897faca3c356d8a",
+   "sentences": "9517c01247790e8c5261"
+  },
+  "bible/05DEUBSB.SFM/28": {
+   "plainText": "3a7ae9b035ff2ac2adc0",
+   "blocks": "bec78c48d0584d580e75",
+   "sentences": "27859825a733bf517b2b"
+  },
+  "bible/05DEUBSB.SFM/29": {
+   "plainText": "e36800c783d46baed567",
+   "blocks": "b39b1aca19f7dc5a945c",
+   "sentences": "8e70762a36800022b7d3"
+  },
+  "bible/05DEUBSB.SFM/30": {
+   "plainText": "1038faa6e7ef843bf2d1",
+   "blocks": "f6dfee9d15a97ed18d6c",
+   "sentences": "10060c0b9b9c28706542"
+  },
+  "bible/05DEUBSB.SFM/31": {
+   "plainText": "b07e21bb261c7d34dcc5",
+   "blocks": "b960d40b3574a4f53c44",
+   "sentences": "eb64e352cc7ee622f1cd"
+  },
+  "bible/05DEUBSB.SFM/32": {
+   "plainText": "f2129d25088346ad31e9",
+   "blocks": "0833cfbe923a5bc0f71d",
+   "sentences": "2f99e1fb64a2337d0e8a"
+  },
+  "bible/05DEUBSB.SFM/33": {
+   "plainText": "3c255a477ac19eab2669",
+   "blocks": "1d1e859633aed94c5f6f",
+   "sentences": "73c4ed1f9e1844ba79bc"
+  },
+  "bible/05DEUBSB.SFM/34": {
+   "plainText": "1a4f3e346e65d78252eb",
+   "blocks": "19cfad6c2414a1d2f9a0",
+   "sentences": "7cc39383a4ee8be4d611"
+  },
+  "bible/06JOSBSB.SFM/1": {
+   "plainText": "737e516943ebff03a55a",
+   "blocks": "5a034e0e16a5f9a7031e",
+   "sentences": "98f996dc9b2d00ee0b82"
+  },
+  "bible/06JOSBSB.SFM/2": {
+   "plainText": "4cf2f8efd928ae1b4709",
+   "blocks": "10e7becff24778f87082",
+   "sentences": "5afc79314e5c46db4c6c"
+  },
+  "bible/06JOSBSB.SFM/3": {
+   "plainText": "11feb6ca34f9e8b680cd",
+   "blocks": "16729299147af1282b53",
+   "sentences": "f1bdb3c8cfe46c19f348"
+  },
+  "bible/06JOSBSB.SFM/4": {
+   "plainText": "1ca4969310c6132dd92b",
+   "blocks": "3d202d073f81d2ac2a38",
+   "sentences": "4d0bb63bb8bced5dbba7"
+  },
+  "bible/06JOSBSB.SFM/5": {
+   "plainText": "300c0894345cc896861d",
+   "blocks": "73648fee7e82589b3be1",
+   "sentences": "ec9718e390cffa7c17dc"
+  },
+  "bible/06JOSBSB.SFM/6": {
+   "plainText": "93f01015a39f37264721",
+   "blocks": "90c22bff453380cbbc6e",
+   "sentences": "6a526405a7a549783e04"
+  },
+  "bible/06JOSBSB.SFM/7": {
+   "plainText": "fa98151f5d35acc124ea",
+   "blocks": "6bce9a4129f36aa0b53a",
+   "sentences": "24275c570d12e8e6b74b"
+  },
+  "bible/06JOSBSB.SFM/8": {
+   "plainText": "51d6c20cd28f3013fdd9",
+   "blocks": "ba8ce89252c725eaf08f",
+   "sentences": "5e9bb3af7a4795094cd0"
+  },
+  "bible/06JOSBSB.SFM/9": {
+   "plainText": "d834162fd079aa22c66d",
+   "blocks": "3ecafa6eba9d01371add",
+   "sentences": "d85b80b3240a7b4d9029"
+  },
+  "bible/06JOSBSB.SFM/10": {
+   "plainText": "e1e7da56534553d10a53",
+   "blocks": "909577eef0e26a1a8490",
+   "sentences": "29517f58b0181081c914"
+  },
+  "bible/06JOSBSB.SFM/11": {
+   "plainText": "0b8bb47077f8e5864a69",
+   "blocks": "ac1f9c31d65632c4667e",
+   "sentences": "c425e0873a2147738c7e"
+  },
+  "bible/06JOSBSB.SFM/12": {
+   "plainText": "36a966da440ef58cbc08",
+   "blocks": "3203dd4ff71e4eb45be8",
+   "sentences": "22fbec85445a9acf3457"
+  },
+  "bible/06JOSBSB.SFM/13": {
+   "plainText": "48a25025ae206e01bae5",
+   "blocks": "5163cbd79e616fbad46b",
+   "sentences": "4c972abe8d9984f06c54"
+  },
+  "bible/06JOSBSB.SFM/14": {
+   "plainText": "eb8a692bbe2078c0beaa",
+   "blocks": "89ccbed1d5f171a35115",
+   "sentences": "74de62884267935e2e5d"
+  },
+  "bible/06JOSBSB.SFM/15": {
+   "plainText": "d6382704ca5562574403",
+   "blocks": "51320fe432d0b8861423",
+   "sentences": "ebfa7db28ecfb7a3540c"
+  },
+  "bible/06JOSBSB.SFM/16": {
+   "plainText": "905b9568b2c4a1e384d6",
+   "blocks": "b13a92a5971b5684a384",
+   "sentences": "9d55a688d32eda0f5ebd"
+  },
+  "bible/06JOSBSB.SFM/17": {
+   "plainText": "2dd0fede47c1986f86ac",
+   "blocks": "feb35832912a5e33458e",
+   "sentences": "a7012e8a17ee0c436bbd"
+  },
+  "bible/06JOSBSB.SFM/18": {
+   "plainText": "91de213a1216c29396ab",
+   "blocks": "a553609b5963bcc987a7",
+   "sentences": "e6177754da96fd3673bd"
+  },
+  "bible/06JOSBSB.SFM/19": {
+   "plainText": "63a801f9edcba943900b",
+   "blocks": "ca8f74f24e433bec1654",
+   "sentences": "46d041ac18380818270d"
+  },
+  "bible/06JOSBSB.SFM/20": {
+   "plainText": "ea4addbce06d23ed2be3",
+   "blocks": "998b6f76afb960c95886",
+   "sentences": "74e7990c8277a3c96579"
+  },
+  "bible/06JOSBSB.SFM/21": {
+   "plainText": "b5cbf4b804cea48e9175",
+   "blocks": "e61b377e831aee2bf660",
+   "sentences": "3dc229f1638f2fded3c6"
+  },
+  "bible/06JOSBSB.SFM/22": {
+   "plainText": "c9b6517c7242d53b0c53",
+   "blocks": "7c009373df9ceef610d5",
+   "sentences": "c0b5d28486c4aa584503"
+  },
+  "bible/06JOSBSB.SFM/23": {
+   "plainText": "4e98db0c98dfabe86607",
+   "blocks": "a47bddbd739fd4a8205f",
+   "sentences": "9cb6eeeab799af2c0eaa"
+  },
+  "bible/06JOSBSB.SFM/24": {
+   "plainText": "ed59c20cbc301e20f9b5",
+   "blocks": "2bb3cd7823b9e20ad71f",
+   "sentences": "b8254762d9fb68ef3820"
+  },
+  "bible/07JDGBSB.SFM/1": {
+   "plainText": "bc500081326343ba0474",
+   "blocks": "5be6e05d5f377ec45d7b",
+   "sentences": "2841917228bf2a350494"
+  },
+  "bible/07JDGBSB.SFM/2": {
+   "plainText": "8aa95e69d52742456fb8",
+   "blocks": "4d1e7856ef507e86498e",
+   "sentences": "c4323e3c32638e9d284d"
+  },
+  "bible/07JDGBSB.SFM/3": {
+   "plainText": "714e03cbab2be1ab0da4",
+   "blocks": "93ab8fac29c66d8a4465",
+   "sentences": "4aaadbba80f75210b02c"
+  },
+  "bible/07JDGBSB.SFM/4": {
+   "plainText": "c54669faee811a09cd7f",
+   "blocks": "2b6786a9f3ec3920ba06",
+   "sentences": "d912c76598e7e770c528"
+  },
+  "bible/07JDGBSB.SFM/5": {
+   "plainText": "e1728fe002b61fc04fb5",
+   "blocks": "ed0d2266cb946d76d82e",
+   "sentences": "fa8a59e68288a924eeed"
+  },
+  "bible/07JDGBSB.SFM/6": {
+   "plainText": "50e74b20810ba401cee4",
+   "blocks": "841ca752496ec31f3d83",
+   "sentences": "e91b06ccc1105afedcff"
+  },
+  "bible/07JDGBSB.SFM/7": {
+   "plainText": "7f85deb3f8383a2694ef",
+   "blocks": "563f8fabb33d607e0686",
+   "sentences": "eff68b86f965cfc98349"
+  },
+  "bible/07JDGBSB.SFM/8": {
+   "plainText": "41e8f1146571299413aa",
+   "blocks": "5cb3c64dd2a877a9a407",
+   "sentences": "db5ac10bf2510cb9a44d"
+  },
+  "bible/07JDGBSB.SFM/9": {
+   "plainText": "d8c58f5c7da38bc182f2",
+   "blocks": "315290c053e0eadcf5d9",
+   "sentences": "d9e666e17fb73160c174"
+  },
+  "bible/07JDGBSB.SFM/10": {
+   "plainText": "ddf0e6f5ceccc22e2fa9",
+   "blocks": "932741c9ee90d266cb96",
+   "sentences": "8239750985c9989249c8"
+  },
+  "bible/07JDGBSB.SFM/11": {
+   "plainText": "a3a2414e75c791f3f860",
+   "blocks": "838e9b0cdafac5469e90",
+   "sentences": "fac0027523fd1b36622b"
+  },
+  "bible/07JDGBSB.SFM/12": {
+   "plainText": "d66797e9717bdebf3689",
+   "blocks": "b12c7b8ee1504c4c8bbc",
+   "sentences": "6c302a524ba21f471899"
+  },
+  "bible/07JDGBSB.SFM/13": {
+   "plainText": "5ae66c6cfb9cdc8ce503",
+   "blocks": "83d5b91e98bf78e2f5e8",
+   "sentences": "a379fb7bf98d25aa0ec5"
+  },
+  "bible/07JDGBSB.SFM/14": {
+   "plainText": "12b6685127fd242ac914",
+   "blocks": "e527e3cbac3ba6bef188",
+   "sentences": "36cc551526da15edb97c"
+  },
+  "bible/07JDGBSB.SFM/15": {
+   "plainText": "2f323cb6f48f1f71d113",
+   "blocks": "15876a49af58daad0876",
+   "sentences": "b34ed113d2c1c3ec39f7"
+  },
+  "bible/07JDGBSB.SFM/16": {
+   "plainText": "93d1fc2fcbc7b07fa7f5",
+   "blocks": "94a465b8ba3469041762",
+   "sentences": "6eb3410a55ea0f677e5f"
+  },
+  "bible/07JDGBSB.SFM/17": {
+   "plainText": "edcb02f7b5fe5f76f462",
+   "blocks": "1c0618edb4ea80453918",
+   "sentences": "7fc7e7771c11df36d953"
+  },
+  "bible/07JDGBSB.SFM/18": {
+   "plainText": "9fcb2c4fcb3ca12563ee",
+   "blocks": "8889f7cad9536c43ccde",
+   "sentences": "000ed4dd7e6855ad8478"
+  },
+  "bible/07JDGBSB.SFM/19": {
+   "plainText": "0fd7d44414ad45ca126f",
+   "blocks": "de8eb010fb17bb8a368a",
+   "sentences": "28334cec3f35be3c8046"
+  },
+  "bible/07JDGBSB.SFM/20": {
+   "plainText": "b3f5baa37349a13f52e6",
+   "blocks": "78b52750efefc5a3741e",
+   "sentences": "c14c986727ca0c7de49c"
+  },
+  "bible/07JDGBSB.SFM/21": {
+   "plainText": "347d628039b539df1094",
+   "blocks": "be59179e7daab5e211c3",
+   "sentences": "e76d651960a43f95f36d"
+  },
+  "bible/08RUTBSB.SFM/1": {
+   "plainText": "2196ef6a4c27140bcbd7",
+   "blocks": "642affde05015c17e51f",
+   "sentences": "215b411b036793a65532"
+  },
+  "bible/08RUTBSB.SFM/2": {
+   "plainText": "2baa2fcc4b12f1611796",
+   "blocks": "b438c943e66b727abba8",
+   "sentences": "6dd570ae9977e6989131"
+  },
+  "bible/08RUTBSB.SFM/3": {
+   "plainText": "601490a89ff6a8e0f830",
+   "blocks": "c00020d924e2dd078a64",
+   "sentences": "cfdb3d7bfdfde47c5594"
+  },
+  "bible/08RUTBSB.SFM/4": {
+   "plainText": "9be062cc102f65570755",
+   "blocks": "f73693c864ab01cda2c3",
+   "sentences": "ac65206208fe5dbc185f"
+  },
+  "bible/091SABSB.SFM/1": {
+   "plainText": "7941842086dd24457a85",
+   "blocks": "ed1feea476004ab1b762",
+   "sentences": "94aa1a18d3abe04a8f7f"
+  },
+  "bible/091SABSB.SFM/2": {
+   "plainText": "d49959f3ffa4b24644da",
+   "blocks": "f05e243edd68f899f40c",
+   "sentences": "0c934a5d968ff9a39631"
+  },
+  "bible/091SABSB.SFM/3": {
+   "plainText": "3268c5502b71d20640c1",
+   "blocks": "ba19c6a1880f02e6c86b",
+   "sentences": "12fce9c63667c53c29b9"
+  },
+  "bible/091SABSB.SFM/4": {
+   "plainText": "1264fe9c084f6e3333db",
+   "blocks": "68a8a95ee6d275a3adcc",
+   "sentences": "e75f179165477191372b"
+  },
+  "bible/091SABSB.SFM/5": {
+   "plainText": "c263897b61d6035827ea",
+   "blocks": "7c290ce6bc3aefd4d71f",
+   "sentences": "4b498465b4d6d324effe"
+  },
+  "bible/091SABSB.SFM/6": {
+   "plainText": "6af85e704dee822a6196",
+   "blocks": "da452893cc93dbcba4df",
+   "sentences": "a058b5edc0f0fe29a7ff"
+  },
+  "bible/091SABSB.SFM/7": {
+   "plainText": "4e2f9423900e27f76f83",
+   "blocks": "186449a72640ea4f9ba0",
+   "sentences": "d870a32be364f84be3a2"
+  },
+  "bible/091SABSB.SFM/8": {
+   "plainText": "06632475b7992fb473a3",
+   "blocks": "1c613e05f9c1cb00a299",
+   "sentences": "04ea20442bc1c9d2afd1"
+  },
+  "bible/091SABSB.SFM/9": {
+   "plainText": "0f362444a793068cb549",
+   "blocks": "5e1a2148d6a315e7c744",
+   "sentences": "0a278d7290fb2d3a83bc"
+  },
+  "bible/091SABSB.SFM/10": {
+   "plainText": "4e484cdd1d7f13c84c78",
+   "blocks": "8e2e96aaac1156d05b60",
+   "sentences": "87fcfedb67b2ac005f86"
+  },
+  "bible/091SABSB.SFM/11": {
+   "plainText": "7fc95513d2b25b8f3cf1",
+   "blocks": "7461fa1d34b3c3aecfe7",
+   "sentences": "1957030ce5ce2b35b3ba"
+  },
+  "bible/091SABSB.SFM/12": {
+   "plainText": "f92b7ede9071590a67cf",
+   "blocks": "cb53b78af9b22bdde4b9",
+   "sentences": "a02335e0cb5f7b9b5ad5"
+  },
+  "bible/091SABSB.SFM/13": {
+   "plainText": "7548854d7bae14668141",
+   "blocks": "e5a63a5c9d6e62589a03",
+   "sentences": "f45776efc75939c5e857"
+  },
+  "bible/091SABSB.SFM/14": {
+   "plainText": "70709afd23c61a362edd",
+   "blocks": "5bf625540c09b50b30eb",
+   "sentences": "1e74fbe3e6f9d557baa0"
+  },
+  "bible/091SABSB.SFM/15": {
+   "plainText": "5c058009950292229769",
+   "blocks": "5b47075354259af99029",
+   "sentences": "f21469912b497b48c2b0"
+  },
+  "bible/091SABSB.SFM/16": {
+   "plainText": "21a4a74dbf2c1109d22d",
+   "blocks": "a0674667f82232924ae1",
+   "sentences": "701e21f7469cd278f7e1"
+  },
+  "bible/091SABSB.SFM/17": {
+   "plainText": "0dae6eec609041c8e4da",
+   "blocks": "eedfce13e60bacb7fe76",
+   "sentences": "146bcb50dc773d0476af"
+  },
+  "bible/091SABSB.SFM/18": {
+   "plainText": "4e33af978cdd7413dfa5",
+   "blocks": "931ba4f308a5cb5399f2",
+   "sentences": "1d9d1dfa2ef0be190541"
+  },
+  "bible/091SABSB.SFM/19": {
+   "plainText": "b5f2141bac0bd6fd8290",
+   "blocks": "01c6525895faeda8663b",
+   "sentences": "2de20a131b19089d413d"
+  },
+  "bible/091SABSB.SFM/20": {
+   "plainText": "851f92f4b76a83fbfcff",
+   "blocks": "109794221bce9adce341",
+   "sentences": "a7314c0b4f03379b3611"
+  },
+  "bible/091SABSB.SFM/21": {
+   "plainText": "29a97b4b90c977dc63fe",
+   "blocks": "fe97ad24206f82401a78",
+   "sentences": "cd812b484a78f1b7a437"
+  },
+  "bible/091SABSB.SFM/22": {
+   "plainText": "d6ffe70939727ec374be",
+   "blocks": "e2c2270e2a9b852f0b4c",
+   "sentences": "033a2496a2bb9e37462a"
+  },
+  "bible/091SABSB.SFM/23": {
+   "plainText": "6f51d663038065ac12a8",
+   "blocks": "aac706b443fc8d62fed7",
+   "sentences": "06e4bf98c5304c0c0b20"
+  },
+  "bible/091SABSB.SFM/24": {
+   "plainText": "7ff5c07f49e87f929442",
+   "blocks": "3204c7b1a81f3bd85dfb",
+   "sentences": "952f9d46beab6fb0f125"
+  },
+  "bible/091SABSB.SFM/25": {
+   "plainText": "75ee6a07a824143e27ac",
+   "blocks": "fb5de3b2aaad38ea9d03",
+   "sentences": "c87b5e30eb08e194f1fc"
+  },
+  "bible/091SABSB.SFM/26": {
+   "plainText": "31913d1f2d69c1a0e1a8",
+   "blocks": "5437189e4628694fb389",
+   "sentences": "c7eca4315b4c52d2d72b"
+  },
+  "bible/091SABSB.SFM/27": {
+   "plainText": "11e081b67864f29eaaee",
+   "blocks": "dde17dcb51a49d2da8e8",
+   "sentences": "d430b13d9bb95dfb4211"
+  },
+  "bible/091SABSB.SFM/28": {
+   "plainText": "45620c5e8a2cdf1a8cd1",
+   "blocks": "c77258bade4e7d999264",
+   "sentences": "dd623b1edcfd936631a9"
+  },
+  "bible/091SABSB.SFM/29": {
+   "plainText": "e4275c3aa24e167f37c5",
+   "blocks": "0121084b25d509b36f6c",
+   "sentences": "6e91924b416e54f4c6c5"
+  },
+  "bible/091SABSB.SFM/30": {
+   "plainText": "ee671d27326dce1a9713",
+   "blocks": "62d471cbb91d8b9b4164",
+   "sentences": "0ad3fc3132cc937325b3"
+  },
+  "bible/091SABSB.SFM/31": {
+   "plainText": "1374434f013af47dbc63",
+   "blocks": "eb9a7d38019c9a86b3e4",
+   "sentences": "b758ecad5df366935f61"
+  },
+  "bible/102SABSB.SFM/1": {
+   "plainText": "76e2f028fd529257ae33",
+   "blocks": "6f440a096f1b1a89a686",
+   "sentences": "811bede07125a3279c59"
+  },
+  "bible/102SABSB.SFM/2": {
+   "plainText": "1b077d82c79680254d3a",
+   "blocks": "1ff12b389b14f8f631d6",
+   "sentences": "b2c8f8a06965ce9ed618"
+  },
+  "bible/102SABSB.SFM/3": {
+   "plainText": "c9b3a1c84a4d27f0d252",
+   "blocks": "20e84396edc2b405cb7a",
+   "sentences": "25952793e5457bb31a0f"
+  },
+  "bible/102SABSB.SFM/4": {
+   "plainText": "abb2ba0fcbb29d21a3fb",
+   "blocks": "9b5cdd5022a457faf186",
+   "sentences": "eb520336dd2b3b5672da"
+  },
+  "bible/102SABSB.SFM/5": {
+   "plainText": "18f80b2ca452cb4a30ef",
+   "blocks": "9e79eca79dcd92b0ae97",
+   "sentences": "d7f083911b353e57cf5a"
+  },
+  "bible/102SABSB.SFM/6": {
+   "plainText": "ce2f5c3dd5c24c60024a",
+   "blocks": "a4f40a1def8a957dd50c",
+   "sentences": "f7e06539a8a32428caad"
+  },
+  "bible/102SABSB.SFM/7": {
+   "plainText": "acb1984cb8154e6a68e0",
+   "blocks": "c939a3c13799222347b8",
+   "sentences": "e0095061003ffdedbb2b"
+  },
+  "bible/102SABSB.SFM/8": {
+   "plainText": "322d3d8f46b119ffa8f0",
+   "blocks": "e3c1acab27063786a57b",
+   "sentences": "a58bc92eb983dec2106a"
+  },
+  "bible/102SABSB.SFM/9": {
+   "plainText": "2ff097f1f0b5f461d282",
+   "blocks": "190597d709429650406e",
+   "sentences": "d7cb6ab2d92e66d147da"
+  },
+  "bible/102SABSB.SFM/10": {
+   "plainText": "9308529eee1cdda67bc7",
+   "blocks": "eb5cc51421a23e086962",
+   "sentences": "f6e4e9fc449dbcb3a80a"
+  },
+  "bible/102SABSB.SFM/11": {
+   "plainText": "7096cf1493b2b5196301",
+   "blocks": "14b4543c63be4bacb6e1",
+   "sentences": "9b2e3b86373bf00a4a82"
+  },
+  "bible/102SABSB.SFM/12": {
+   "plainText": "eceb6e73505e0b480363",
+   "blocks": "6330431681a709d1c6a7",
+   "sentences": "95d8e79f9fb67e9d2712"
+  },
+  "bible/102SABSB.SFM/13": {
+   "plainText": "2fe29f08128c4f863515",
+   "blocks": "d0a1d6ed68cfc58cfc96",
+   "sentences": "80322eceb9b30b5b31cd"
+  },
+  "bible/102SABSB.SFM/14": {
+   "plainText": "c82da0ca6888163ac34c",
+   "blocks": "a99fe7f58ea2c4823f13",
+   "sentences": "6d19a03e3e14a7618865"
+  },
+  "bible/102SABSB.SFM/15": {
+   "plainText": "ffc2011dbc688e56233a",
+   "blocks": "82fec8d8465428229f09",
+   "sentences": "cb11530ae281f7150af5"
+  },
+  "bible/102SABSB.SFM/16": {
+   "plainText": "ec7c49066c8b949da16d",
+   "blocks": "b93b628387154b99748c",
+   "sentences": "630df04c6d75a9c33e5a"
+  },
+  "bible/102SABSB.SFM/17": {
+   "plainText": "d3d08aa6515f983929bb",
+   "blocks": "9732c8a24f7983f7c66f",
+   "sentences": "2affcb8de86b093e6e7b"
+  },
+  "bible/102SABSB.SFM/18": {
+   "plainText": "dfc71412e66f3ace2fdf",
+   "blocks": "b940232524f41c6b9a16",
+   "sentences": "0b416a2d5fb09c7365bd"
+  },
+  "bible/102SABSB.SFM/19": {
+   "plainText": "1f7c299b1bb73b40a235",
+   "blocks": "2837fa90fc0c53f5cdfa",
+   "sentences": "b68b96af1ea197717bd1"
+  },
+  "bible/102SABSB.SFM/20": {
+   "plainText": "bafde856d69f786b73b8",
+   "blocks": "231ab912d0861e5839cf",
+   "sentences": "0f26c1bcf1619c9933f7"
+  },
+  "bible/102SABSB.SFM/21": {
+   "plainText": "44af7d31859f41ad78b6",
+   "blocks": "27bf0344690440867d1b",
+   "sentences": "6c5c025424cb8881498e"
+  },
+  "bible/102SABSB.SFM/22": {
+   "plainText": "c709218aada3ee27d26d",
+   "blocks": "43c386859516be142933",
+   "sentences": "8649b0d82cb9c4884f0a"
+  },
+  "bible/102SABSB.SFM/23": {
+   "plainText": "ffa138dc9b4733f4fa5e",
+   "blocks": "973eb64b5527bbdf6fa8",
+   "sentences": "6ee323f6038bb5667f3b"
+  },
+  "bible/102SABSB.SFM/24": {
+   "plainText": "3732734dee762857c233",
+   "blocks": "ff1c436b009cb11f1ef7",
+   "sentences": "8ea191d8b07b237fd834"
+  },
+  "bible/111KIBSB.SFM/1": {
+   "plainText": "3a995ecd2d207938b494",
+   "blocks": "fa6d11aa911603939b7d",
+   "sentences": "04473f0bd2d5d283db35"
+  },
+  "bible/111KIBSB.SFM/2": {
+   "plainText": "f3b6cdc5ef8fe3d0f18d",
+   "blocks": "8d37c8f1a815712d5043",
+   "sentences": "a3c3a7ffc132c9cbb5e9"
+  },
+  "bible/111KIBSB.SFM/3": {
+   "plainText": "608f2c34fb9d2faa15a1",
+   "blocks": "8a9f5f69ecdc1ff348fc",
+   "sentences": "544afd3305c2bd55d6ca"
+  },
+  "bible/111KIBSB.SFM/4": {
+   "plainText": "1ac3f8a48fcb9d6dd868",
+   "blocks": "64a8a45d59853c0a1859",
+   "sentences": "af76b58536a5d4ccaebd"
+  },
+  "bible/111KIBSB.SFM/5": {
+   "plainText": "0f44bfebdbbc783dc60d",
+   "blocks": "333e22f2477dc32ba9e9",
+   "sentences": "346f58271fe85d6f150b"
+  },
+  "bible/111KIBSB.SFM/6": {
+   "plainText": "dbc573a021a8a945f8dd",
+   "blocks": "4ad63d44e06ff800da74",
+   "sentences": "bf4a83d0b67a20d93b4d"
+  },
+  "bible/111KIBSB.SFM/7": {
+   "plainText": "e705f7319c676f98ba85",
+   "blocks": "5458de2ad184b2a19653",
+   "sentences": "574b2d6c573849cfd691"
+  },
+  "bible/111KIBSB.SFM/8": {
+   "plainText": "0c860fd527f9cc3aca09",
+   "blocks": "5adf4ed21ecceae3f0f5",
+   "sentences": "9c1fe3ba3baa31bc431b"
+  },
+  "bible/111KIBSB.SFM/9": {
+   "plainText": "1de68069b5e3a5f51308",
+   "blocks": "d2cf4f0b1e1c9b8a1e2e",
+   "sentences": "8b36d614c5cc9b93accd"
+  },
+  "bible/111KIBSB.SFM/10": {
+   "plainText": "b348f039443778f8e4e7",
+   "blocks": "e35ce272feda1f55544e",
+   "sentences": "f3d28408c47181ddeccf"
+  },
+  "bible/111KIBSB.SFM/11": {
+   "plainText": "d0f6e10434ef24228c2a",
+   "blocks": "2845758092e538a9489b",
+   "sentences": "25dd1db95492fcd2ea9a"
+  },
+  "bible/111KIBSB.SFM/12": {
+   "plainText": "f9bc44acd91d702e1e36",
+   "blocks": "187e367b61c169d8f2b0",
+   "sentences": "073c12eae0d75c7675e0"
+  },
+  "bible/111KIBSB.SFM/13": {
+   "plainText": "1fc979cce93a291a7682",
+   "blocks": "594c8084a88d9fd6ca61",
+   "sentences": "e4a09e43528e7859394d"
+  },
+  "bible/111KIBSB.SFM/14": {
+   "plainText": "3e3f9d3c56af3f6cebfd",
+   "blocks": "61a4c87306aaea2392a6",
+   "sentences": "e950baa6d3a5337b1a61"
+  },
+  "bible/111KIBSB.SFM/15": {
+   "plainText": "8043351aa6972b3aafe3",
+   "blocks": "32ef78846b65ff98e2ff",
+   "sentences": "4feb6c13fcdbb16bf875"
+  },
+  "bible/111KIBSB.SFM/16": {
+   "plainText": "329ccd605d84dc864132",
+   "blocks": "4d992d1f48345b3225b7",
+   "sentences": "8f113871a455e4d4bfe8"
+  },
+  "bible/111KIBSB.SFM/17": {
+   "plainText": "8996ed8d2ea3033e430a",
+   "blocks": "d54f8cc69f9f50fa8eb1",
+   "sentences": "a1d23e85e39b27b70694"
+  },
+  "bible/111KIBSB.SFM/18": {
+   "plainText": "77b3f51ecb58927456e6",
+   "blocks": "fca6fc0bf35f4127f986",
+   "sentences": "ea721b77dd0f899c8dd6"
+  },
+  "bible/111KIBSB.SFM/19": {
+   "plainText": "9fcd0e7e7437d4307fe1",
+   "blocks": "3ee7869d33837b972906",
+   "sentences": "5d18fe07488919ff6ff8"
+  },
+  "bible/111KIBSB.SFM/20": {
+   "plainText": "c5f84d92d6c847c5e327",
+   "blocks": "affb5b583335c528f37d",
+   "sentences": "d67e8ff2f9ff52e7222e"
+  },
+  "bible/111KIBSB.SFM/21": {
+   "plainText": "ce7b1282fd27958b31a9",
+   "blocks": "d5bd014df45f679badb7",
+   "sentences": "60fc4477dec6c37e1ca3"
+  },
+  "bible/111KIBSB.SFM/22": {
+   "plainText": "10082abece63cf6fea01",
+   "blocks": "ebd34c6c05f06fc17a97",
+   "sentences": "f8d19b01ea191c5dcfdb"
+  },
+  "bible/122KIBSB.SFM/1": {
+   "plainText": "81015348c69a9051b350",
+   "blocks": "504e112b1c3c43329d64",
+   "sentences": "2afc5b90814921419f6f"
+  },
+  "bible/122KIBSB.SFM/2": {
+   "plainText": "4add95f45e64449c4878",
+   "blocks": "a7124838aaff836f3b87",
+   "sentences": "18fa48596b5b899293cf"
+  },
+  "bible/122KIBSB.SFM/3": {
+   "plainText": "555270ed4b6f82203061",
+   "blocks": "c7d7566fe10b7ae90d08",
+   "sentences": "97168778786397768ea2"
+  },
+  "bible/122KIBSB.SFM/4": {
+   "plainText": "49aaa569b371396cc849",
+   "blocks": "bf464feb24187e558ab9",
+   "sentences": "64acd2625f1feb16c388"
+  },
+  "bible/122KIBSB.SFM/5": {
+   "plainText": "0ea1ac2c7987e8885517",
+   "blocks": "3a5452d1bcdb70d54ab4",
+   "sentences": "f30a542fc2556932979f"
+  },
+  "bible/122KIBSB.SFM/6": {
+   "plainText": "99b5a6297eaacd164c86",
+   "blocks": "c6b9ed2db2bc98d7517c",
+   "sentences": "417149d3159cc918d3be"
+  },
+  "bible/122KIBSB.SFM/7": {
+   "plainText": "3e0e673ccf22637fea07",
+   "blocks": "6a1fdf02b11db4d7670a",
+   "sentences": "b2f1808b9b3ba0b0c167"
+  },
+  "bible/122KIBSB.SFM/8": {
+   "plainText": "212d7e896ea682a69be0",
+   "blocks": "1f3c8f86d6783a0b651e",
+   "sentences": "ee8d2bb1632520364d56"
+  },
+  "bible/122KIBSB.SFM/9": {
+   "plainText": "decb4241f498886f3384",
+   "blocks": "758899206556bfd782cd",
+   "sentences": "30b7d066b9c9e98b229f"
+  },
+  "bible/122KIBSB.SFM/10": {
+   "plainText": "5ff5b4ade1d8202bc10f",
+   "blocks": "b597d28c6f6745452351",
+   "sentences": "21d2b2ce9df3d3778b2e"
+  },
+  "bible/122KIBSB.SFM/11": {
+   "plainText": "3a77111d1b70d42892bb",
+   "blocks": "789e47c8fa00027bce58",
+   "sentences": "56f588684daa9aaa5a25"
+  },
+  "bible/122KIBSB.SFM/12": {
+   "plainText": "25d6b2efc96df7a1615e",
+   "blocks": "6533521bdb8221859d59",
+   "sentences": "8401efcb537c07cf0216"
+  },
+  "bible/122KIBSB.SFM/13": {
+   "plainText": "c15fdf403d6859d35b19",
+   "blocks": "3c396c47aebd3ae815ba",
+   "sentences": "5837e26e1313269b46fe"
+  },
+  "bible/122KIBSB.SFM/14": {
+   "plainText": "e29e13b536bc7f1a4032",
+   "blocks": "7917edbf1849fd081c63",
+   "sentences": "64023e4b2d58a8318bb3"
+  },
+  "bible/122KIBSB.SFM/15": {
+   "plainText": "2fc751ec437078b4a793",
+   "blocks": "b8256f8f453911b1cca4",
+   "sentences": "05f04cc428f15fbb9202"
+  },
+  "bible/122KIBSB.SFM/16": {
+   "plainText": "8dfd01467fca0fb62d6a",
+   "blocks": "f5dcb92f3c8080c636c9",
+   "sentences": "81dbcad29b7088cfd48b"
+  },
+  "bible/122KIBSB.SFM/17": {
+   "plainText": "2f1109b6b9c25742635b",
+   "blocks": "ae5027e6e326b729e7e3",
+   "sentences": "5af2435b03fa76778e26"
+  },
+  "bible/122KIBSB.SFM/18": {
+   "plainText": "81b7e0d7a8d3d7582e68",
+   "blocks": "c017c6eb7525e2f3bd19",
+   "sentences": "0d7b14727be07ae26519"
+  },
+  "bible/122KIBSB.SFM/19": {
+   "plainText": "c9be2421afbabe5b02e4",
+   "blocks": "0b326a201787aae941fa",
+   "sentences": "11b34e853aae75f10648"
+  },
+  "bible/122KIBSB.SFM/20": {
+   "plainText": "714a29b37af328c80e31",
+   "blocks": "e733f2eedcb4ba740b10",
+   "sentences": "be94e4682ab509ccef10"
+  },
+  "bible/122KIBSB.SFM/21": {
+   "plainText": "8e98d90647dc7209aeb8",
+   "blocks": "2923e3fb736bd0d7ca29",
+   "sentences": "b29575baf02c84dd18d5"
+  },
+  "bible/122KIBSB.SFM/22": {
+   "plainText": "4d1c9a4777a80fc7e657",
+   "blocks": "b48dd8ce663325fa8562",
+   "sentences": "7f57454135b3cd5e2376"
+  },
+  "bible/122KIBSB.SFM/23": {
+   "plainText": "21a1e0497441da7cfd3d",
+   "blocks": "93dfc4fb9bbfbd2ec2a7",
+   "sentences": "24e4f746d46e2dfe324c"
+  },
+  "bible/122KIBSB.SFM/24": {
+   "plainText": "972b08eaa3bbe79a3382",
+   "blocks": "4d15d1efc44f045df923",
+   "sentences": "fed984c98af80cbb1b81"
+  },
+  "bible/122KIBSB.SFM/25": {
+   "plainText": "f26147b9d90c544f0914",
+   "blocks": "e033e961efe16e737ac0",
+   "sentences": "9aefb3bcde81d42c1223"
+  },
+  "bible/131CHBSB.SFM/1": {
+   "plainText": "5269a2d5ccc4089e30a0",
+   "blocks": "0280347d538e8a0f388e",
+   "sentences": "f197f6aa45a8f7575524"
+  },
+  "bible/131CHBSB.SFM/2": {
+   "plainText": "56bd1aba6e261778c219",
+   "blocks": "ff2c5b9a380d273c7a34",
+   "sentences": "a0d06ee94bd7ba1cf9fa"
+  },
+  "bible/131CHBSB.SFM/3": {
+   "plainText": "333aef68e475082f663f",
+   "blocks": "c509d3f9a65cd9d17ea0",
+   "sentences": "59431eb554286253f5ac"
+  },
+  "bible/131CHBSB.SFM/4": {
+   "plainText": "d643addea98bbd82dabb",
+   "blocks": "d7772d0ac6c1ecf8282d",
+   "sentences": "136416c0f54e682ed371"
+  },
+  "bible/131CHBSB.SFM/5": {
+   "plainText": "0d2b329241ba99838fe4",
+   "blocks": "ea3c4b82e737ae079d42",
+   "sentences": "f6f157caa70ad001f076"
+  },
+  "bible/131CHBSB.SFM/6": {
+   "plainText": "a6a5e3644a6cf940561e",
+   "blocks": "4f5d23c7f922d9092d69",
+   "sentences": "b90c13e11f6fe1764101"
+  },
+  "bible/131CHBSB.SFM/7": {
+   "plainText": "048714c7ca2ed2c33efe",
+   "blocks": "315240fc0ca0003806bd",
+   "sentences": "114d43e777266d087862"
+  },
+  "bible/131CHBSB.SFM/8": {
+   "plainText": "68b5722f1373eb1ba840",
+   "blocks": "8b60380e77e5410b8fc5",
+   "sentences": "0d33b835eae1bff1d89e"
+  },
+  "bible/131CHBSB.SFM/9": {
+   "plainText": "22be16a251f064c607d3",
+   "blocks": "6a52066490ecd974268b",
+   "sentences": "a03edf5bf1175ae5a8df"
+  },
+  "bible/131CHBSB.SFM/10": {
+   "plainText": "e03cebd8aaf2bd7526db",
+   "blocks": "6efbcefba86b55ec70ac",
+   "sentences": "16c394ec5e7efbc4f4d5"
+  },
+  "bible/131CHBSB.SFM/11": {
+   "plainText": "d96a13532861b29dad04",
+   "blocks": "a9bfd789ec6c0fa7c02a",
+   "sentences": "a5f5ef96a6d6f92f7ded"
+  },
+  "bible/131CHBSB.SFM/12": {
+   "plainText": "5e68ff3ab12ef7d3e8ec",
+   "blocks": "9a6ea3572160cc9f9c10",
+   "sentences": "37148a53a21f728855a3"
+  },
+  "bible/131CHBSB.SFM/13": {
+   "plainText": "233353ece509f5aebba0",
+   "blocks": "6f8cc3dabd6b4f0e5b93",
+   "sentences": "80b68d37698a29f02022"
+  },
+  "bible/131CHBSB.SFM/14": {
+   "plainText": "55d70740ec880c74c9b8",
+   "blocks": "43dcb7c37be5ea4c6bb5",
+   "sentences": "c0d9db59b16f982d96bf"
+  },
+  "bible/131CHBSB.SFM/15": {
+   "plainText": "793f5d02457036e7738e",
+   "blocks": "5ce9cd568730b773b6b5",
+   "sentences": "9f5205a9ee014dd41228"
+  },
+  "bible/131CHBSB.SFM/16": {
+   "plainText": "7dadef6cbda956ec1eb0",
+   "blocks": "542b74c7094843e2068a",
+   "sentences": "81202b7bccf5dd86a85b"
+  },
+  "bible/131CHBSB.SFM/17": {
+   "plainText": "074f2a87c0b70fedacc1",
+   "blocks": "33f4fdaa322b027dcd99",
+   "sentences": "b7b9d71e4d7b85d52cbb"
+  },
+  "bible/131CHBSB.SFM/18": {
+   "plainText": "258c55b981613f1f3bbf",
+   "blocks": "f832a627ffca5315e210",
+   "sentences": "4d51d3de552200d7b1a3"
+  },
+  "bible/131CHBSB.SFM/19": {
+   "plainText": "58f7809c36d0b42efcee",
+   "blocks": "c72ecff2610c67e01268",
+   "sentences": "5f81556e4491d0e7f162"
+  },
+  "bible/131CHBSB.SFM/20": {
+   "plainText": "8a1006bd0c83c1844ef3",
+   "blocks": "f1b4b44173cbc5285486",
+   "sentences": "1f801bb3af0eeedab620"
+  },
+  "bible/131CHBSB.SFM/21": {
+   "plainText": "300d3ebf6719e546d8e4",
+   "blocks": "3e60f2fa9830786d00e3",
+   "sentences": "876eec4d45a8010de24c"
+  },
+  "bible/131CHBSB.SFM/22": {
+   "plainText": "9561a68115329198ffb6",
+   "blocks": "debf45e524f1e07625ce",
+   "sentences": "21791f1bb3c2ed6eb4af"
+  },
+  "bible/131CHBSB.SFM/23": {
+   "plainText": "5b5a0236683e02dc5239",
+   "blocks": "f8068477216328fc332a",
+   "sentences": "cf7f0754dfd22db91b58"
+  },
+  "bible/131CHBSB.SFM/24": {
+   "plainText": "7ff0e3b3b0ec1b175173",
+   "blocks": "e01e2f2cefc08d21ad49",
+   "sentences": "b51fd503572dd383b32a"
+  },
+  "bible/131CHBSB.SFM/25": {
+   "plainText": "5882da8276356429642c",
+   "blocks": "fa6656f5bca557a0426b",
+   "sentences": "d65988411ec15632f449"
+  },
+  "bible/131CHBSB.SFM/26": {
+   "plainText": "9c69672f972d8a2b7da4",
+   "blocks": "b5fc4647f75d84236f61",
+   "sentences": "fab8af6d23e286e6120d"
+  },
+  "bible/131CHBSB.SFM/27": {
+   "plainText": "d6bde9420a26c9189767",
+   "blocks": "daaabd466bdeee2e6e62",
+   "sentences": "f5b31e2f232fc6bb0748"
+  },
+  "bible/131CHBSB.SFM/28": {
+   "plainText": "f6b09353667b724d2dc4",
+   "blocks": "d1c167670301796048f0",
+   "sentences": "53f4518e4d87fc754cec"
+  },
+  "bible/131CHBSB.SFM/29": {
+   "plainText": "b4ebf77411f490375358",
+   "blocks": "f58fb72354befa9202af",
+   "sentences": "913712dea7b0c3f06d5c"
+  },
+  "bible/142CHBSB.SFM/1": {
+   "plainText": "bba406072d9222708d02",
+   "blocks": "5b2b64c92fa4e6916117",
+   "sentences": "59de593e465492e35bdf"
+  },
+  "bible/142CHBSB.SFM/2": {
+   "plainText": "1755a348eeb8dbc8d021",
+   "blocks": "e5e3a881ae7370219b75",
+   "sentences": "23eac1dbb0cc50c16424"
+  },
+  "bible/142CHBSB.SFM/3": {
+   "plainText": "5638e3c7f520c40662ae",
+   "blocks": "45617837432f9818ad4a",
+   "sentences": "4950d627b86cf4b606e2"
+  },
+  "bible/142CHBSB.SFM/4": {
+   "plainText": "9b5ed94016ef60fc6507",
+   "blocks": "5ab08c6ae4ac4fe10e1c",
+   "sentences": "d0e780455bff737cda4a"
+  },
+  "bible/142CHBSB.SFM/5": {
+   "plainText": "a1c0ed586c1dd6897844",
+   "blocks": "19255eb8d1618e091d4b",
+   "sentences": "75c4ddcc92736966bb42"
+  },
+  "bible/142CHBSB.SFM/6": {
+   "plainText": "8e89faa7d4281a5bceb7",
+   "blocks": "267f16ec862bac6493a3",
+   "sentences": "4e668af7e1987f2daa42"
+  },
+  "bible/142CHBSB.SFM/7": {
+   "plainText": "26e5b73fb5ed0460652f",
+   "blocks": "cbf97b07ab620659f2d4",
+   "sentences": "109d5224b3fcdf4bcd40"
+  },
+  "bible/142CHBSB.SFM/8": {
+   "plainText": "49a48dd11b2dc2f2f49f",
+   "blocks": "a56debb71c7338d508d2",
+   "sentences": "08091a23fb84cea48f06"
+  },
+  "bible/142CHBSB.SFM/9": {
+   "plainText": "a22db6c687a952767ca6",
+   "blocks": "577e06e71d93977b90f5",
+   "sentences": "277c69b322019c3913d1"
+  },
+  "bible/142CHBSB.SFM/10": {
+   "plainText": "940e36977892b497e5cd",
+   "blocks": "b1cef70fcb354f883915",
+   "sentences": "35d69197e0b9b2fee976"
+  },
+  "bible/142CHBSB.SFM/11": {
+   "plainText": "488ab96221da9dcf34f0",
+   "blocks": "915d5d25e95dc1859e6d",
+   "sentences": "be0ef600aeb88f4e4966"
+  },
+  "bible/142CHBSB.SFM/12": {
+   "plainText": "ad7a794860c7b42a66fa",
+   "blocks": "132f43696208af47962c",
+   "sentences": "9fdfb196abc7ddeb928a"
+  },
+  "bible/142CHBSB.SFM/13": {
+   "plainText": "b0af61b489b78dd5fbc4",
+   "blocks": "8f0d177e7058231e398e",
+   "sentences": "37f8a340737f0090394b"
+  },
+  "bible/142CHBSB.SFM/14": {
+   "plainText": "969bb7606eb49969a538",
+   "blocks": "f57f0f2aa1ad3055e95c",
+   "sentences": "56cc7adec9d43e338b1c"
+  },
+  "bible/142CHBSB.SFM/15": {
+   "plainText": "837bd10ca06de0f19f07",
+   "blocks": "18232554c639f0fc2e0b",
+   "sentences": "6f8e99bc50ab8f72a697"
+  },
+  "bible/142CHBSB.SFM/16": {
+   "plainText": "fac1b16eb1f1a54aaf2e",
+   "blocks": "f70f65606f1eb8518e79",
+   "sentences": "4b971e72f01742c63ffe"
+  },
+  "bible/142CHBSB.SFM/17": {
+   "plainText": "8bc199a4fbfb460527cf",
+   "blocks": "3f763193f7dc10e1b5cc",
+   "sentences": "310f8980b1fe43a7dafe"
+  },
+  "bible/142CHBSB.SFM/18": {
+   "plainText": "8a669fab30bedba4715f",
+   "blocks": "e13965fc6c478c3aec2a",
+   "sentences": "602de435284f25043867"
+  },
+  "bible/142CHBSB.SFM/19": {
+   "plainText": "146866766740c206d5f1",
+   "blocks": "09a660a91806d3d7679d",
+   "sentences": "a9a98873050457ba8699"
+  },
+  "bible/142CHBSB.SFM/20": {
+   "plainText": "52f631ccdbedba76b59c",
+   "blocks": "b7b0cb61bf833d5c329b",
+   "sentences": "87fc3cd139a00d94d91a"
+  },
+  "bible/142CHBSB.SFM/21": {
+   "plainText": "2f5e4c82afa984267165",
+   "blocks": "62137b318a4f1826420f",
+   "sentences": "668f7db74db0826807b0"
+  },
+  "bible/142CHBSB.SFM/22": {
+   "plainText": "75a6ba35374192dc233b",
+   "blocks": "53fcca9849769def36ce",
+   "sentences": "5b16f1b6f7bbb1905529"
+  },
+  "bible/142CHBSB.SFM/23": {
+   "plainText": "8058c2def637177c1c2a",
+   "blocks": "fdb22c30b5f8c47d57a2",
+   "sentences": "7318e8fc8201ac8ff1fe"
+  },
+  "bible/142CHBSB.SFM/24": {
+   "plainText": "be7feb2558b03167dc45",
+   "blocks": "8d620b83432ebb9a4cce",
+   "sentences": "267f0d9d992ec8d1a8da"
+  },
+  "bible/142CHBSB.SFM/25": {
+   "plainText": "9705b875c436a7d6f88a",
+   "blocks": "9a4f45375001010bef33",
+   "sentences": "d61aa4e1313def756877"
+  },
+  "bible/142CHBSB.SFM/26": {
+   "plainText": "5d166e3aa95524d99dd6",
+   "blocks": "6570d0d546308bba1f39",
+   "sentences": "7a2255c4079658b3b875"
+  },
+  "bible/142CHBSB.SFM/27": {
+   "plainText": "d582e3c4f67ab8ec618a",
+   "blocks": "f40d0419e5d1c31abe00",
+   "sentences": "491048dc9a59922940cf"
+  },
+  "bible/142CHBSB.SFM/28": {
+   "plainText": "9bfd93da84468173d320",
+   "blocks": "16de14d3ee7dc4af1d84",
+   "sentences": "e0faff498642a346f1c0"
+  },
+  "bible/142CHBSB.SFM/29": {
+   "plainText": "67bd1e78ccea627911c8",
+   "blocks": "76bee0799c87226f2e12",
+   "sentences": "7e0022b67ba61f70e6bb"
+  },
+  "bible/142CHBSB.SFM/30": {
+   "plainText": "aa5d52dbafa79fa9aee5",
+   "blocks": "4b5fea8e5029e6af6a1c",
+   "sentences": "fad0d10dc09ff92eba6e"
+  },
+  "bible/142CHBSB.SFM/31": {
+   "plainText": "92ec567c4aa7574196de",
+   "blocks": "b766e1f190a98f85d2e0",
+   "sentences": "439f0b2251583bbd8bd4"
+  },
+  "bible/142CHBSB.SFM/32": {
+   "plainText": "1e657fd25e29e2b640a4",
+   "blocks": "35c70924d2588ad4a80b",
+   "sentences": "f6f88d1957c4be89bb8c"
+  },
+  "bible/142CHBSB.SFM/33": {
+   "plainText": "02a204906e203ef8a225",
+   "blocks": "8e183e686fd146eeab5f",
+   "sentences": "ac419480b75f7c25275c"
+  },
+  "bible/142CHBSB.SFM/34": {
+   "plainText": "2de3bc2478abbb6afccd",
+   "blocks": "2a22a1b5b51e210ff1f1",
+   "sentences": "97d7b818d4cb6d9e85a3"
+  },
+  "bible/142CHBSB.SFM/35": {
+   "plainText": "1f10526de224676f04e8",
+   "blocks": "b3479144d702bc332ae9",
+   "sentences": "a4efa29512026ae753f6"
+  },
+  "bible/142CHBSB.SFM/36": {
+   "plainText": "9d9b58910d89dab2d2cd",
+   "blocks": "7abf77846f40614b1516",
+   "sentences": "5cc4b99316af0bd483b0"
+  },
+  "bible/15EZRBSB.SFM/1": {
+   "plainText": "a2c3a284b06445935aa8",
+   "blocks": "d9043e26908264ec5eb4",
+   "sentences": "f9da09121ba26ce2dbaa"
+  },
+  "bible/15EZRBSB.SFM/2": {
+   "plainText": "b59432a9a43b9c9f41ed",
+   "blocks": "cb13c7a54562710627f3",
+   "sentences": "3627be34085cc8536293"
+  },
+  "bible/15EZRBSB.SFM/3": {
+   "plainText": "316306fa2ef4ed67185f",
+   "blocks": "475a8384520d2668bc49",
+   "sentences": "4bc84698d802ac305203"
+  },
+  "bible/15EZRBSB.SFM/4": {
+   "plainText": "05338b2d2073224c2ef1",
+   "blocks": "043a9e2710eb289938c7",
+   "sentences": "69c497d52617c983d5ce"
+  },
+  "bible/15EZRBSB.SFM/5": {
+   "plainText": "fa64779985841f4f7cae",
+   "blocks": "abae0880e29a19e22dd6",
+   "sentences": "2133475caae918611b40"
+  },
+  "bible/15EZRBSB.SFM/6": {
+   "plainText": "bdb6388c4cc5fda80610",
+   "blocks": "be952a7d7beb88a148d2",
+   "sentences": "45b01c1f108b479d48e3"
+  },
+  "bible/15EZRBSB.SFM/7": {
+   "plainText": "b6513494113ab1a04eb1",
+   "blocks": "f0a614e5266fabe5a2da",
+   "sentences": "cb6314cd9c04eb651aca"
+  },
+  "bible/15EZRBSB.SFM/8": {
+   "plainText": "ccb0ebe3a447630e9472",
+   "blocks": "5422e2db2ecdd0ac3aae",
+   "sentences": "5621df94e83e720f9f24"
+  },
+  "bible/15EZRBSB.SFM/9": {
+   "plainText": "f7b8fa346a4c57626abc",
+   "blocks": "1732d45e76f076c57d13",
+   "sentences": "31342820fba694be3d5a"
+  },
+  "bible/15EZRBSB.SFM/10": {
+   "plainText": "25355e8fd9b4452ca091",
+   "blocks": "91908bb4b65fe4b262f2",
+   "sentences": "db38ebf9137546f5b722"
+  },
+  "bible/16NEHBSB.SFM/1": {
+   "plainText": "f28537c5d2216589f229",
+   "blocks": "8a9f4523e07f2f241989",
+   "sentences": "259c44e73fabdc5f1a39"
+  },
+  "bible/16NEHBSB.SFM/2": {
+   "plainText": "ee6b519cfef7dca7ecb1",
+   "blocks": "7a1c6759913076b815b2",
+   "sentences": "1df94707189e71921d81"
+  },
+  "bible/16NEHBSB.SFM/3": {
+   "plainText": "f25c57b6c068fac7398d",
+   "blocks": "56e996c8ac6c37d531b9",
+   "sentences": "8805947973a350628770"
+  },
+  "bible/16NEHBSB.SFM/4": {
+   "plainText": "739f41a694405fcf3a86",
+   "blocks": "c6e32b40b0974c8e06bf",
+   "sentences": "ee8f34e9da4f46c040a3"
+  },
+  "bible/16NEHBSB.SFM/5": {
+   "plainText": "25f14e36ff999f1437af",
+   "blocks": "d191bffccbc67e5634be",
+   "sentences": "724e546ff6a5855394e9"
+  },
+  "bible/16NEHBSB.SFM/6": {
+   "plainText": "7c1abe7047c928273602",
+   "blocks": "f3e0fe994c56e3c13abb",
+   "sentences": "e7458659f53e3cf8f18c"
+  },
+  "bible/16NEHBSB.SFM/7": {
+   "plainText": "ab77685a6cdb047f3ce7",
+   "blocks": "e35bacf1f74a148dd615",
+   "sentences": "d01a607b710e3d82cba1"
+  },
+  "bible/16NEHBSB.SFM/8": {
+   "plainText": "5e6d770e3416c2acde69",
+   "blocks": "f0311a95d2593ff52597",
+   "sentences": "181c402e4a3953179bfe"
+  },
+  "bible/16NEHBSB.SFM/9": {
+   "plainText": "8b8b7639d0fca4efc28e",
+   "blocks": "475819eba80cf72bfb3e",
+   "sentences": "17bdb5d658d3dc4ecf20"
+  },
+  "bible/16NEHBSB.SFM/10": {
+   "plainText": "0357d4b01a543b7ba150",
+   "blocks": "1e66e643c95e60c5a444",
+   "sentences": "09c33cc5adb0104670b8"
+  },
+  "bible/16NEHBSB.SFM/11": {
+   "plainText": "63640f94e6c08a49c603",
+   "blocks": "1da260588f373b90bfd9",
+   "sentences": "d767b164869bcf14e1a8"
+  },
+  "bible/16NEHBSB.SFM/12": {
+   "plainText": "1edc570584386f316e97",
+   "blocks": "80b8402028dfeaf03cde",
+   "sentences": "a2c7aad4b1bbe79fbc86"
+  },
+  "bible/16NEHBSB.SFM/13": {
+   "plainText": "3fca531f204d7466fcaa",
+   "blocks": "924c0b7599b677b1321c",
+   "sentences": "c458dfca06c4f4c424b8"
+  },
+  "bible/17ESTBSB.SFM/1": {
+   "plainText": "96a25f4cbf6ce2490eca",
+   "blocks": "bd04be46b5472d99673b",
+   "sentences": "4fa6b962ba4b00fe3b0d"
+  },
+  "bible/17ESTBSB.SFM/2": {
+   "plainText": "ac2c929bf680639b3ca0",
+   "blocks": "2482946f1a4442114795",
+   "sentences": "702d4c0cd94d8e812f0e"
+  },
+  "bible/17ESTBSB.SFM/3": {
+   "plainText": "01815203d17b22bfc939",
+   "blocks": "ad7ec41868a0d631f97b",
+   "sentences": "143329b3af9a4874ec65"
+  },
+  "bible/17ESTBSB.SFM/4": {
+   "plainText": "34e05f447d54a4ab1f5a",
+   "blocks": "16206abc1e181b0b36d6",
+   "sentences": "166b304293282691d464"
+  },
+  "bible/17ESTBSB.SFM/5": {
+   "plainText": "1d0a01dba6786ec68e1f",
+   "blocks": "1ad259506736397a595c",
+   "sentences": "fa3c7e6d90744fe7a84f"
+  },
+  "bible/17ESTBSB.SFM/6": {
+   "plainText": "2535a1ce67b6f4019391",
+   "blocks": "9c209f2c4a7b831534b6",
+   "sentences": "584b1b7ab052d060b44c"
+  },
+  "bible/17ESTBSB.SFM/7": {
+   "plainText": "e655964c25ffac6408e0",
+   "blocks": "6b4534117590046d375d",
+   "sentences": "aef282b3b361692ba8b8"
+  },
+  "bible/17ESTBSB.SFM/8": {
+   "plainText": "8426d90b425b902936b8",
+   "blocks": "a994246605a3fab7eb65",
+   "sentences": "86701d539781a73b5bd7"
+  },
+  "bible/17ESTBSB.SFM/9": {
+   "plainText": "b10cc01ed1509042641f",
+   "blocks": "2c1911480b002711762c",
+   "sentences": "4640c4322bbe57f52509"
+  },
+  "bible/17ESTBSB.SFM/10": {
+   "plainText": "a9aa848510cb4f5c01d3",
+   "blocks": "b0e5c5a0c81eca609d9f",
+   "sentences": "d0cfd751b27081318d8d"
+  },
+  "bible/18JOBBSB.SFM/1": {
+   "plainText": "8d072ef818959fec065b",
+   "blocks": "3512ea71cfe1c6764b40",
+   "sentences": "cd8f0458cdb1a73e055a"
+  },
+  "bible/18JOBBSB.SFM/2": {
+   "plainText": "2de9ead126c7bcd00315",
+   "blocks": "322e2e58197f79ddccc4",
+   "sentences": "1f33706304f0b55ba9a0"
+  },
+  "bible/18JOBBSB.SFM/3": {
+   "plainText": "daffd990b8400dbae130",
+   "blocks": "88beb8e98c57328a4aab",
+   "sentences": "b52a7b2b9ef6437c6a36"
+  },
+  "bible/18JOBBSB.SFM/4": {
+   "plainText": "949b1509a4a7735a549d",
+   "blocks": "db05369311f3305dcd6c",
+   "sentences": "d8fd0578f8c88f71f36b"
+  },
+  "bible/18JOBBSB.SFM/5": {
+   "plainText": "b4d17c8d2d8f2bead43b",
+   "blocks": "64a8ced91a94edbe1bf4",
+   "sentences": "e35bdc32ae317616d4ae"
+  },
+  "bible/18JOBBSB.SFM/6": {
+   "plainText": "26197d62f11379213e13",
+   "blocks": "26618d9f2d39edbfdff8",
+   "sentences": "a3d25bb12ff9ae74a2b1"
+  },
+  "bible/18JOBBSB.SFM/7": {
+   "plainText": "7a6e02f2cce90038d99e",
+   "blocks": "af154d88078a15231a61",
+   "sentences": "f558763b35421cfb4a6a"
+  },
+  "bible/18JOBBSB.SFM/8": {
+   "plainText": "182da74df63b00890e9b",
+   "blocks": "36f5b74b42c08e5b921f",
+   "sentences": "4211831ce5522ad53e85"
+  },
+  "bible/18JOBBSB.SFM/9": {
+   "plainText": "386bf2659b198abec4ca",
+   "blocks": "fabd20e9539b0446f327",
+   "sentences": "ab13417a497c324100d0"
+  },
+  "bible/18JOBBSB.SFM/10": {
+   "plainText": "5f60d4b60c29d5af5d31",
+   "blocks": "74ff76179acefd4ee5f5",
+   "sentences": "a9a84d9f07c225e77b96"
+  },
+  "bible/18JOBBSB.SFM/11": {
+   "plainText": "2eaa0795dbf66c95b1dc",
+   "blocks": "3494c95d132b6af7cc20",
+   "sentences": "fc3b7521c73db6f1563d"
+  },
+  "bible/18JOBBSB.SFM/12": {
+   "plainText": "94b42d8fc15af8c8e46b",
+   "blocks": "88ea6677ed33e292b790",
+   "sentences": "b7df4885f450efbc175d"
+  },
+  "bible/18JOBBSB.SFM/13": {
+   "plainText": "e1311bd46e319088b40d",
+   "blocks": "5da3678ea7470f26e7da",
+   "sentences": "8bea4bcf421ec7b3f51d"
+  },
+  "bible/18JOBBSB.SFM/14": {
+   "plainText": "69bd90ea328e535f6bc3",
+   "blocks": "8e2e10ce507b8c621e20",
+   "sentences": "a228452caf8a54396502"
+  },
+  "bible/18JOBBSB.SFM/15": {
+   "plainText": "f8705f14ed5dd75d5796",
+   "blocks": "95ccb6c8bd6e26ca09c7",
+   "sentences": "7a91c681e9969b8701c1"
+  },
+  "bible/18JOBBSB.SFM/16": {
+   "plainText": "fa00640b0d7046d07bcf",
+   "blocks": "45a44a52a7ca03a8aa8a",
+   "sentences": "c63bcfa6ccf168fe75b6"
+  },
+  "bible/18JOBBSB.SFM/17": {
+   "plainText": "3a2c018fb0a7dccb5093",
+   "blocks": "8035bec4e38695c9ccf7",
+   "sentences": "65a958a9483b646959e4"
+  },
+  "bible/18JOBBSB.SFM/18": {
+   "plainText": "b4ab0e1eab26410b9cce",
+   "blocks": "dfcc1ab342fe94028776",
+   "sentences": "dc8b47891efbd1dc0053"
+  },
+  "bible/18JOBBSB.SFM/19": {
+   "plainText": "548c485f24ea335b622c",
+   "blocks": "a181162f141bb2f176d1",
+   "sentences": "5def12c9118ad9ceedd2"
+  },
+  "bible/18JOBBSB.SFM/20": {
+   "plainText": "41f906d805f2572dd88c",
+   "blocks": "8b6fb42e7b54f1153946",
+   "sentences": "aa727e5e806ee1047de3"
+  },
+  "bible/18JOBBSB.SFM/21": {
+   "plainText": "e2c262825b3bcac42196",
+   "blocks": "ae2cd0974cbf22b82f64",
+   "sentences": "68297220cebe740005fb"
+  },
+  "bible/18JOBBSB.SFM/22": {
+   "plainText": "81818d318e6f3b164597",
+   "blocks": "75109a10917bf20ae595",
+   "sentences": "517961de7ab7595363b5"
+  },
+  "bible/18JOBBSB.SFM/23": {
+   "plainText": "caf7476771500b6018b1",
+   "blocks": "b5449b8d7008acc0d671",
+   "sentences": "9fb82bbfcef512e704f1"
+  },
+  "bible/18JOBBSB.SFM/24": {
+   "plainText": "ee5f4af24467a358f3d8",
+   "blocks": "d72d63c6c7d8094708eb",
+   "sentences": "35a2b90d63752ffa61cb"
+  },
+  "bible/18JOBBSB.SFM/25": {
+   "plainText": "90ec2c81cac184acaa46",
+   "blocks": "0313c659698d40b9dabf",
+   "sentences": "729852b750f13e3d1830"
+  },
+  "bible/18JOBBSB.SFM/26": {
+   "plainText": "443a3abcf72e0adf0595",
+   "blocks": "7b6a86f52cf9f720515c",
+   "sentences": "da1c901490a0c0915be9"
+  },
+  "bible/18JOBBSB.SFM/27": {
+   "plainText": "a5ab5c9858bbb9a10dd7",
+   "blocks": "84b83245cf9b6694dee0",
+   "sentences": "9def665597c19b347965"
+  },
+  "bible/18JOBBSB.SFM/28": {
+   "plainText": "0121e9ab877c2a82ca5b",
+   "blocks": "0c20aee2b9d7f191dc62",
+   "sentences": "9c129aebff082c15b957"
+  },
+  "bible/18JOBBSB.SFM/29": {
+   "plainText": "bda82d0160f5982b6fe2",
+   "blocks": "67c2ac26ea868f2e16da",
+   "sentences": "af058b39db9a3aa60407"
+  },
+  "bible/18JOBBSB.SFM/30": {
+   "plainText": "3c1595b30cb1f1f89d46",
+   "blocks": "770636c60728dd09269c",
+   "sentences": "e98194c9f1c348d57d6e"
+  },
+  "bible/18JOBBSB.SFM/31": {
+   "plainText": "263026a28a126aa94341",
+   "blocks": "f8631a24c04348787d6a",
+   "sentences": "8e53fe9b023455919f49"
+  },
+  "bible/18JOBBSB.SFM/32": {
+   "plainText": "ed5e3d3a9ba77eeca334",
+   "blocks": "f9c461dd2d99aafe9b0b",
+   "sentences": "cd55f9a7740c06027835"
+  },
+  "bible/18JOBBSB.SFM/33": {
+   "plainText": "df971856b8a2d3da572b",
+   "blocks": "d1e0f8b3d61bf67de93a",
+   "sentences": "1828dcb70328a44c1ed2"
+  },
+  "bible/18JOBBSB.SFM/34": {
+   "plainText": "8cacc54d4144574afb00",
+   "blocks": "2166011a263821bfc4fa",
+   "sentences": "2b2a2898b943ff155909"
+  },
+  "bible/18JOBBSB.SFM/35": {
+   "plainText": "e18d7976e92d43eaa660",
+   "blocks": "a81642b9b1ec5a08ca5f",
+   "sentences": "534388df2f417e83fb1f"
+  },
+  "bible/18JOBBSB.SFM/36": {
+   "plainText": "a817431d7356d66c53d2",
+   "blocks": "c561d0e00e5e76434208",
+   "sentences": "6f7c21ac3486a8b563c5"
+  },
+  "bible/18JOBBSB.SFM/37": {
+   "plainText": "5215c388b5eab1cc6422",
+   "blocks": "cd2980d9804ec0da6acd",
+   "sentences": "9c7ecac983b4dad1c22c"
+  },
+  "bible/18JOBBSB.SFM/38": {
+   "plainText": "d0217387de2b2a9542e4",
+   "blocks": "0af2a47fba05b7b296f4",
+   "sentences": "c1c15a08dd76be464511"
+  },
+  "bible/18JOBBSB.SFM/39": {
+   "plainText": "1acdd503372d5b7f97c9",
+   "blocks": "45d8771d39dd7f830648",
+   "sentences": "5ff115f22eedd0fde078"
+  },
+  "bible/18JOBBSB.SFM/40": {
+   "plainText": "39c4162a0bdaaa0b3ba8",
+   "blocks": "75aeb6d6acc8256b0c94",
+   "sentences": "fc36ff94b49fd7637b63"
+  },
+  "bible/18JOBBSB.SFM/41": {
+   "plainText": "1960f0a31b02347e7855",
+   "blocks": "611601e608ac17e03209",
+   "sentences": "b33deccecf83d70be4ab"
+  },
+  "bible/18JOBBSB.SFM/42": {
+   "plainText": "e5a8beffd8a4f9157633",
+   "blocks": "61e1787b3df5c8a44df9",
+   "sentences": "97dfd65597194215661d"
+  },
+  "bible/19PSABSB.SFM/1": {
+   "plainText": "5bac6c21c0668aa27245",
+   "blocks": "4b425871463316483f49",
+   "sentences": "f28374b432e100cc102a"
+  },
+  "bible/19PSABSB.SFM/2": {
+   "plainText": "7e585dc22e88ba7f2ecb",
+   "blocks": "be62587fc12c9ee01f02",
+   "sentences": "7a015580eeebcfc2dbdb"
+  },
+  "bible/19PSABSB.SFM/3": {
+   "plainText": "0ad93a5f5fb4ec977245",
+   "blocks": "f010f5d4657ccf78d162",
+   "sentences": "8e970cdb680c956ac798"
+  },
+  "bible/19PSABSB.SFM/4": {
+   "plainText": "0705eb9a4cc0124e0b00",
+   "blocks": "77e326bd1a00a7efcb66",
+   "sentences": "18a92dd0c2d8f019a4d9"
+  },
+  "bible/19PSABSB.SFM/5": {
+   "plainText": "e44057f237eaf20d3d66",
+   "blocks": "b746c18f68a9e95711ea",
+   "sentences": "2a95d09b39401c33d5eb"
+  },
+  "bible/19PSABSB.SFM/6": {
+   "plainText": "319adc5c1e03de806a59",
+   "blocks": "f544a92d66cd75a1e03b",
+   "sentences": "e1daeecb4c68cae75f4d"
+  },
+  "bible/19PSABSB.SFM/7": {
+   "plainText": "b7d2a4d81f1f16d306c4",
+   "blocks": "793e76918056741b87a2",
+   "sentences": "ab8148166c8106d71c3b"
+  },
+  "bible/19PSABSB.SFM/8": {
+   "plainText": "914d75d19a7bb9544095",
+   "blocks": "7af088c9e9a9c749593a",
+   "sentences": "0b68573447d39f188a3b"
+  },
+  "bible/19PSABSB.SFM/9": {
+   "plainText": "910d346f0ba286f61932",
+   "blocks": "f8b2ba468b66d8fffc60",
+   "sentences": "15f1ceb247368095fae4"
+  },
+  "bible/19PSABSB.SFM/10": {
+   "plainText": "0f6475b49f70bb0fd469",
+   "blocks": "1fe2d8ff841e981cc04c",
+   "sentences": "d510d2b46cb78550b7cf"
+  },
+  "bible/19PSABSB.SFM/11": {
+   "plainText": "633cc5d7804ac5d74fe8",
+   "blocks": "e40165619d4aa46f81a7",
+   "sentences": "296d024cfd0ed68ebd3b"
+  },
+  "bible/19PSABSB.SFM/12": {
+   "plainText": "e33d8352bc849b71ccda",
+   "blocks": "88e1df879c338403401b",
+   "sentences": "8d36b35a150dbf1d67e8"
+  },
+  "bible/19PSABSB.SFM/13": {
+   "plainText": "2c5d1594677dd643f363",
+   "blocks": "067bbaa5fa0edad777ce",
+   "sentences": "bdfa2a69e092956a89b4"
+  },
+  "bible/19PSABSB.SFM/14": {
+   "plainText": "32da254e7c1c1fb8c541",
+   "blocks": "9aee01c8be66bd9501fa",
+   "sentences": "e78dd7f126eb370e7c68"
+  },
+  "bible/19PSABSB.SFM/15": {
+   "plainText": "e1b920bb3f016a809a72",
+   "blocks": "94e8b30a45bd834ed59f",
+   "sentences": "8c878877994bc19ae704"
+  },
+  "bible/19PSABSB.SFM/16": {
+   "plainText": "ef6ec1301454d0423efe",
+   "blocks": "6ba7a3dae94031429882",
+   "sentences": "0c968e96ed9285806e35"
+  },
+  "bible/19PSABSB.SFM/17": {
+   "plainText": "5018a9ee38a5ffdf4c02",
+   "blocks": "3093b4bed90d717b5867",
+   "sentences": "6f9db112099cb020e224"
+  },
+  "bible/19PSABSB.SFM/18": {
+   "plainText": "e7bb1c5e1787236b86b6",
+   "blocks": "8002103765560f0b8244",
+   "sentences": "fa65dda3e5af956f7bf8"
+  },
+  "bible/19PSABSB.SFM/19": {
+   "plainText": "f55edf3e9eaed4cc1ee4",
+   "blocks": "911cc7e8a04de16ea837",
+   "sentences": "9f9e3583b2e80c214fec"
+  },
+  "bible/19PSABSB.SFM/20": {
+   "plainText": "cc48e493f0238741c89b",
+   "blocks": "a6d0598da01b20b6244f",
+   "sentences": "61e70cf8135d3bb0e4aa"
+  },
+  "bible/19PSABSB.SFM/21": {
+   "plainText": "05608a0ad3c8d5de0e35",
+   "blocks": "290be99e51917a464762",
+   "sentences": "607307be7215f969adc4"
+  },
+  "bible/19PSABSB.SFM/22": {
+   "plainText": "df770d248120ed3225eb",
+   "blocks": "7c46af4270ce6be3e656",
+   "sentences": "9344692e9717a5285c96"
+  },
+  "bible/19PSABSB.SFM/23": {
+   "plainText": "9227cc088abbdb572fde",
+   "blocks": "65c78fbd75e495e6c881",
+   "sentences": "b45aca8142f0b6f40a7a"
+  },
+  "bible/19PSABSB.SFM/24": {
+   "plainText": "084f116a6d67bd72e641",
+   "blocks": "3c0d6e341b7e862ff162",
+   "sentences": "d4da97a4692bcd72d8a5"
+  },
+  "bible/19PSABSB.SFM/25": {
+   "plainText": "b3271f85cf3d7e0c2560",
+   "blocks": "a2ab46adb7e699df9de7",
+   "sentences": "725ce9f3680543929c8c"
+  },
+  "bible/19PSABSB.SFM/26": {
+   "plainText": "164f01746668e38948d9",
+   "blocks": "15b1738d054e3c401a3c",
+   "sentences": "b967b672286c28f17fb4"
+  },
+  "bible/19PSABSB.SFM/27": {
+   "plainText": "9f8df6c4d4fa0ad72a06",
+   "blocks": "146882414e84f39555cb",
+   "sentences": "f3f33b6fdf90fb258a9a"
+  },
+  "bible/19PSABSB.SFM/28": {
+   "plainText": "866ac5988c0f0712bbed",
+   "blocks": "9e4a78063661665e6601",
+   "sentences": "eaac69bd36b1888fe51e"
+  },
+  "bible/19PSABSB.SFM/29": {
+   "plainText": "241edc5da5d61386006f",
+   "blocks": "8bfb9b38beb8bde14cd6",
+   "sentences": "c7beed85345eaaa6468d"
+  },
+  "bible/19PSABSB.SFM/30": {
+   "plainText": "aa651563791b41c99a9d",
+   "blocks": "501b139609bed7d96c03",
+   "sentences": "799a30c67b232567c23e"
+  },
+  "bible/19PSABSB.SFM/31": {
+   "plainText": "6777b4b9a79956b17719",
+   "blocks": "6204ed613ac3c103ea29",
+   "sentences": "074b2d8d3e168b2b9406"
+  },
+  "bible/19PSABSB.SFM/32": {
+   "plainText": "c5fb3f66ccb90b15b117",
+   "blocks": "2ea491c01088040e2f2b",
+   "sentences": "a599ab57e436f8a70e85"
+  },
+  "bible/19PSABSB.SFM/33": {
+   "plainText": "07e8c4f8484a50c35823",
+   "blocks": "f0414189bad32bc700f7",
+   "sentences": "78a32cd98f2962ee6d15"
+  },
+  "bible/19PSABSB.SFM/34": {
+   "plainText": "159549268f4e5e4c9a52",
+   "blocks": "9eebd68fbb4b980b2b21",
+   "sentences": "1520147870e9e6d6d9de"
+  },
+  "bible/19PSABSB.SFM/35": {
+   "plainText": "9d25fda48c8b32c6cf87",
+   "blocks": "3c877a6898f1b6075f40",
+   "sentences": "8a90c083a2fc7958a465"
+  },
+  "bible/19PSABSB.SFM/36": {
+   "plainText": "35f48826269d2c22b1a4",
+   "blocks": "7edeeb6d087b1d5c3d67",
+   "sentences": "2a914186a548a1b1160f"
+  },
+  "bible/19PSABSB.SFM/37": {
+   "plainText": "d14c938bb3747f37d401",
+   "blocks": "234d02764011c48a2371",
+   "sentences": "770ec5546592f653f435"
+  },
+  "bible/19PSABSB.SFM/38": {
+   "plainText": "31a55be36b1358877b09",
+   "blocks": "12e90ddfb010ab40d992",
+   "sentences": "18cd285ffa4b1d1f6f74"
+  },
+  "bible/19PSABSB.SFM/39": {
+   "plainText": "45b65c52ceca76b96b9e",
+   "blocks": "4e67a5af4eac9a5f03c8",
+   "sentences": "a160602219e0af760f60"
+  },
+  "bible/19PSABSB.SFM/40": {
+   "plainText": "6f2d46d44e35370302d9",
+   "blocks": "54431956764ddd03970b",
+   "sentences": "1f2f5c6626eefec24c28"
+  },
+  "bible/19PSABSB.SFM/41": {
+   "plainText": "f61c7cf871378bbe1df0",
+   "blocks": "9e0aa844534dba9d7c1e",
+   "sentences": "48d0cbd3c38cccf3b274"
+  },
+  "bible/19PSABSB.SFM/42": {
+   "plainText": "5cefa9769900ec7ff46f",
+   "blocks": "9f497dc2074d51412a7f",
+   "sentences": "552fc9b0f53d0625bcce"
+  },
+  "bible/19PSABSB.SFM/43": {
+   "plainText": "c2c9529402c263a3925d",
+   "blocks": "71cbe0e8fd5f8b9cf97f",
+   "sentences": "95ec78fc09c787084a33"
+  },
+  "bible/19PSABSB.SFM/44": {
+   "plainText": "66857d94da872cf12afb",
+   "blocks": "6a37c5bce0304a9b2ddb",
+   "sentences": "b0a7b6fa1efae7391fda"
+  },
+  "bible/19PSABSB.SFM/45": {
+   "plainText": "d7376fcb5637f46e0cfc",
+   "blocks": "d682448e66dcc590bc9c",
+   "sentences": "0c81966872dde679224a"
+  },
+  "bible/19PSABSB.SFM/46": {
+   "plainText": "2e4facca214898e922f3",
+   "blocks": "13b1a7871864668efd26",
+   "sentences": "940aecb1ea998e591bd0"
+  },
+  "bible/19PSABSB.SFM/47": {
+   "plainText": "5c58a07b96a25b76b0f5",
+   "blocks": "5c85624d2dc35efa5dc3",
+   "sentences": "6a12dece5434d31ef7c6"
+  },
+  "bible/19PSABSB.SFM/48": {
+   "plainText": "a5d648ebeafeab10edef",
+   "blocks": "4c0e66a990db89e00089",
+   "sentences": "21ac639114c7d7b0859f"
+  },
+  "bible/19PSABSB.SFM/49": {
+   "plainText": "60fd2163c121aafff370",
+   "blocks": "e1709bf03e5a4a54eb09",
+   "sentences": "568867c78e740b1d4291"
+  },
+  "bible/19PSABSB.SFM/50": {
+   "plainText": "4dd0eaf458a5713c78c5",
+   "blocks": "81372b18686e918dd2f2",
+   "sentences": "4288039e1dc90866ed48"
+  },
+  "bible/19PSABSB.SFM/51": {
+   "plainText": "be0975342b84e028af6e",
+   "blocks": "15bd9e2b544646aa9333",
+   "sentences": "8f4a2f85713018f150d9"
+  },
+  "bible/19PSABSB.SFM/52": {
+   "plainText": "e8e9a2898ceba98e5eb3",
+   "blocks": "313cd7253b0e0254797f",
+   "sentences": "bb9411b243eac08b35af"
+  },
+  "bible/19PSABSB.SFM/53": {
+   "plainText": "39d0f934864873ba5097",
+   "blocks": "b8e540bf7e5d97ec99dd",
+   "sentences": "1765d3580108dc92c82c"
+  },
+  "bible/19PSABSB.SFM/54": {
+   "plainText": "9c25ac8dba7b2989c8ea",
+   "blocks": "ba4391376b77d27d24cc",
+   "sentences": "920a6c557c736a016c38"
+  },
+  "bible/19PSABSB.SFM/55": {
+   "plainText": "20e2f5860ae839719fc3",
+   "blocks": "9c4f16eb7fe93c03d3bf",
+   "sentences": "0bf21da993a7a6b3f0d7"
+  },
+  "bible/19PSABSB.SFM/56": {
+   "plainText": "55abf47f39f53b77b915",
+   "blocks": "5aaf1d54dff0b1deb198",
+   "sentences": "4fee4ec420bdf612c2ae"
+  },
+  "bible/19PSABSB.SFM/57": {
+   "plainText": "e5fde54323d0172c3d6a",
+   "blocks": "fc3b01b31d45ab210351",
+   "sentences": "00d83e559f1c173b961f"
+  },
+  "bible/19PSABSB.SFM/58": {
+   "plainText": "ff2d171eb6b00b34cc00",
+   "blocks": "cee314610343e0fc461c",
+   "sentences": "d3a0c39fc27095bfe20d"
+  },
+  "bible/19PSABSB.SFM/59": {
+   "plainText": "d14652e5058db945f339",
+   "blocks": "4e6dc152c62f271d0da0",
+   "sentences": "98de6ddc74eda57af7c7"
+  },
+  "bible/19PSABSB.SFM/60": {
+   "plainText": "120417c6cf03dde7c2e4",
+   "blocks": "0328195f860dc6ebfd6c",
+   "sentences": "018ba60cc2046c82816f"
+  },
+  "bible/19PSABSB.SFM/61": {
+   "plainText": "00e63ad11d9a080ae0a5",
+   "blocks": "b063eb80837c9c773c5f",
+   "sentences": "2200a736f487aa1fba1a"
+  },
+  "bible/19PSABSB.SFM/62": {
+   "plainText": "0c5262d7076f54b8b178",
+   "blocks": "ee137501eb84b4f6c199",
+   "sentences": "1591e3ed5da7fafbe874"
+  },
+  "bible/19PSABSB.SFM/63": {
+   "plainText": "f7754d682c9fca0cb2b2",
+   "blocks": "f2ef1cd935d81bf8987e",
+   "sentences": "a0935210fdbc19f2d808"
+  },
+  "bible/19PSABSB.SFM/64": {
+   "plainText": "2ede4590812ee23223af",
+   "blocks": "3743571c0909f2e392f2",
+   "sentences": "d14820ef9b9223a7895a"
+  },
+  "bible/19PSABSB.SFM/65": {
+   "plainText": "8025ddf4e51efbf2e708",
+   "blocks": "14b0525157f4672e4902",
+   "sentences": "c9dd3c5b4431a7be516b"
+  },
+  "bible/19PSABSB.SFM/66": {
+   "plainText": "a87c1ed68c413e278a2b",
+   "blocks": "dbf1bb2d1d11296e7e4e",
+   "sentences": "303a91156bb0fa89ad5f"
+  },
+  "bible/19PSABSB.SFM/67": {
+   "plainText": "2e6743631c9d00190742",
+   "blocks": "276bb003305fc44bcd3d",
+   "sentences": "cae93d5e30d67555117b"
+  },
+  "bible/19PSABSB.SFM/68": {
+   "plainText": "c019225d85b93654b676",
+   "blocks": "ea1743b1b34b9e225c34",
+   "sentences": "ee9bf0e04cee5400c69d"
+  },
+  "bible/19PSABSB.SFM/69": {
+   "plainText": "9fa9ad7daef1d61a0053",
+   "blocks": "6bcf103211c721fbcb22",
+   "sentences": "cdafcff093f03360c74c"
+  },
+  "bible/19PSABSB.SFM/70": {
+   "plainText": "8d958d15e49fa50cf7c5",
+   "blocks": "1473a9dc929c31871052",
+   "sentences": "063ba1d4e386328ecb84"
+  },
+  "bible/19PSABSB.SFM/71": {
+   "plainText": "0f2f1ecd10e146c80429",
+   "blocks": "61f643a70bdfb72dfe47",
+   "sentences": "b972332975058e86dfac"
+  },
+  "bible/19PSABSB.SFM/72": {
+   "plainText": "7853cc0f82f20ef48ec2",
+   "blocks": "37c31b12e6c9eccf4a7f",
+   "sentences": "d3c512b6fbc18c476bb3"
+  },
+  "bible/19PSABSB.SFM/73": {
+   "plainText": "42c0648b12921cf715af",
+   "blocks": "038647a7da362d44f5d1",
+   "sentences": "ddea246ff7f13b2d3306"
+  },
+  "bible/19PSABSB.SFM/74": {
+   "plainText": "d63b77b4df56f26c2cad",
+   "blocks": "8380f7517c11df9569b1",
+   "sentences": "dda90614be36ddaaf447"
+  },
+  "bible/19PSABSB.SFM/75": {
+   "plainText": "5634ef771466709c66ab",
+   "blocks": "a5e7eb1d67755808b28c",
+   "sentences": "6ac73fb9b5162cef1bf0"
+  },
+  "bible/19PSABSB.SFM/76": {
+   "plainText": "3b5f8bbcf17c47bad230",
+   "blocks": "66b2abb48c2c9dfaeae3",
+   "sentences": "707a799ff1f98df923c5"
+  },
+  "bible/19PSABSB.SFM/77": {
+   "plainText": "7b99635311e449809e1d",
+   "blocks": "cdc5c4fda532c0d6e3f3",
+   "sentences": "836ec107a2b79bfc151f"
+  },
+  "bible/19PSABSB.SFM/78": {
+   "plainText": "5d46de85df5b32e9ccb7",
+   "blocks": "2ebb8e74b200248016ec",
+   "sentences": "9689b6160471192f6bf7"
+  },
+  "bible/19PSABSB.SFM/79": {
+   "plainText": "7b2a5a90c0bd28ea7e2c",
+   "blocks": "a5d0918abbb42fe40623",
+   "sentences": "d9e1341ca51826e0f300"
+  },
+  "bible/19PSABSB.SFM/80": {
+   "plainText": "5f357370871ff5a221dc",
+   "blocks": "b864cc001a210e53ce1c",
+   "sentences": "16855aec4ba0cd2bd177"
+  },
+  "bible/19PSABSB.SFM/81": {
+   "plainText": "755f3a8b651e83d660ef",
+   "blocks": "27af410162152e725ac5",
+   "sentences": "06a9a4b4eb08814eaaf7"
+  },
+  "bible/19PSABSB.SFM/82": {
+   "plainText": "23a3ad04ea8d19d8de25",
+   "blocks": "bdc0399d5975c19f3696",
+   "sentences": "2e12d56332ab9f7af751"
+  },
+  "bible/19PSABSB.SFM/83": {
+   "plainText": "6159f0c166953183f38b",
+   "blocks": "295bfa8a8af91e9c2868",
+   "sentences": "cc7a2c84a7612668fc37"
+  },
+  "bible/19PSABSB.SFM/84": {
+   "plainText": "ed638444c2c0a54bd312",
+   "blocks": "0265dde526dc662455d3",
+   "sentences": "66f00941d0d712f03d1e"
+  },
+  "bible/19PSABSB.SFM/85": {
+   "plainText": "208fd2835251ad2fce7b",
+   "blocks": "77cb679333016606ae06",
+   "sentences": "9917e1d12af2c24f62ab"
+  },
+  "bible/19PSABSB.SFM/86": {
+   "plainText": "51a054fca8d79ac590b6",
+   "blocks": "ef00be890c9937003b90",
+   "sentences": "04fb923e2e4f1d9c373d"
+  },
+  "bible/19PSABSB.SFM/87": {
+   "plainText": "234f1a00d5dd1fbb888a",
+   "blocks": "e55f38f643157e3f2348",
+   "sentences": "7490a2126d0de91aacdd"
+  },
+  "bible/19PSABSB.SFM/88": {
+   "plainText": "852ba5b99d830861da62",
+   "blocks": "79bbb2b740b0dc970b87",
+   "sentences": "b684115dd3911ab35485"
+  },
+  "bible/19PSABSB.SFM/89": {
+   "plainText": "34726fcc3afe11dd464e",
+   "blocks": "9e44b607b40624a2a3e4",
+   "sentences": "64f284996abcb971fd15"
+  },
+  "bible/19PSABSB.SFM/90": {
+   "plainText": "b41baf535a7540dd95fd",
+   "blocks": "631c0a46f2f2b64fce18",
+   "sentences": "8e1341838d1a75c3d965"
+  },
+  "bible/19PSABSB.SFM/91": {
+   "plainText": "91ddc650c1f8e491ebb9",
+   "blocks": "89b4999f044fe5214a86",
+   "sentences": "e87e203d220a132a494f"
+  },
+  "bible/19PSABSB.SFM/92": {
+   "plainText": "b5ab2734790291849316",
+   "blocks": "147514c5d87f2f6e5c07",
+   "sentences": "529c4bf1e193d55776e6"
+  },
+  "bible/19PSABSB.SFM/93": {
+   "plainText": "0c5516dfa4825a9d8933",
+   "blocks": "962bd6e7dc450f9f090b",
+   "sentences": "30a0c1365eca288f65a0"
+  },
+  "bible/19PSABSB.SFM/94": {
+   "plainText": "2eab18ae6446a31b39ba",
+   "blocks": "3186d9a11d4d9d2a7eef",
+   "sentences": "2222a533705a0cb22731"
+  },
+  "bible/19PSABSB.SFM/95": {
+   "plainText": "1526db638d67699516e4",
+   "blocks": "49e91ecc93512edd1f9b",
+   "sentences": "bf146e3a23caad41ac95"
+  },
+  "bible/19PSABSB.SFM/96": {
+   "plainText": "e5cfa573ee2625eaa57c",
+   "blocks": "5eb0f9370583aec640d6",
+   "sentences": "4579be54367c7d1e9678"
+  },
+  "bible/19PSABSB.SFM/97": {
+   "plainText": "36ff5de92df85323494b",
+   "blocks": "13ad3ce14dac1094c2d9",
+   "sentences": "7e207883dfde806a051e"
+  },
+  "bible/19PSABSB.SFM/98": {
+   "plainText": "63c752137e39a93e5073",
+   "blocks": "5b95f070aa004b78356d",
+   "sentences": "228bb7196133f9e626dc"
+  },
+  "bible/19PSABSB.SFM/99": {
+   "plainText": "8a6371b4d436f16074c7",
+   "blocks": "3209e480de9981ea2ca6",
+   "sentences": "fd3ce4947207fbc589a0"
+  },
+  "bible/19PSABSB.SFM/100": {
+   "plainText": "4090c437b7d0b363b833",
+   "blocks": "97513a5130c259c8f780",
+   "sentences": "76f922c237e9b0a03baf"
+  },
+  "bible/19PSABSB.SFM/101": {
+   "plainText": "731d5b3e23880993699e",
+   "blocks": "ceb2b02bbe9081245eeb",
+   "sentences": "30512860488916ea31bb"
+  },
+  "bible/19PSABSB.SFM/102": {
+   "plainText": "61459c13e4215c53b419",
+   "blocks": "5d8d4d6921b7d423ba65",
+   "sentences": "1b051bdc7bb1ca12e24e"
+  },
+  "bible/19PSABSB.SFM/103": {
+   "plainText": "d8a5a75e76f1b248905e",
+   "blocks": "b4092c0f27c5cac227fa",
+   "sentences": "e4b69aa201beda48205e"
+  },
+  "bible/19PSABSB.SFM/104": {
+   "plainText": "eb18de2ad63f576380d4",
+   "blocks": "ddd8b6f698979d30730d",
+   "sentences": "ab5cbc0119e21773de0f"
+  },
+  "bible/19PSABSB.SFM/105": {
+   "plainText": "2c083e6e33429d88132e",
+   "blocks": "d2fe9e77ffe1383c5c97",
+   "sentences": "127a4e2550cded9e1b2b"
+  },
+  "bible/19PSABSB.SFM/106": {
+   "plainText": "552541d875b251674a1d",
+   "blocks": "49b7b1e5cc7728b65287",
+   "sentences": "e7470fe11590c38fb2c0"
+  },
+  "bible/19PSABSB.SFM/107": {
+   "plainText": "3d75687fe33fad510ebe",
+   "blocks": "5de31cc71771a08a5ef5",
+   "sentences": "dd0445913c1e5411c5aa"
+  },
+  "bible/19PSABSB.SFM/108": {
+   "plainText": "d77287f94ad0696ae41c",
+   "blocks": "401a987e873c863fc80f",
+   "sentences": "54fdeca99eb741087349"
+  },
+  "bible/19PSABSB.SFM/109": {
+   "plainText": "2f6efd4ea135d6d19960",
+   "blocks": "58a32ef909cd7c7c16b1",
+   "sentences": "9bc567feaaa0a459c811"
+  },
+  "bible/19PSABSB.SFM/110": {
+   "plainText": "fc0ca213acf348e273a1",
+   "blocks": "5cb775f28407cac85b3e",
+   "sentences": "e1537b94591511a01d08"
+  },
+  "bible/19PSABSB.SFM/111": {
+   "plainText": "3c8c8c093d226dd386bd",
+   "blocks": "d53204a6961b2c6d097e",
+   "sentences": "34959e31ca29406eec1c"
+  },
+  "bible/19PSABSB.SFM/112": {
+   "plainText": "61473d85c84f0cc7964a",
+   "blocks": "a009f04c14490041a437",
+   "sentences": "a024375e75528c28dc33"
+  },
+  "bible/19PSABSB.SFM/113": {
+   "plainText": "762c5dc24553330b82fb",
+   "blocks": "ee24f2022dc894098ebf",
+   "sentences": "7c10044d8eb0585e591c"
+  },
+  "bible/19PSABSB.SFM/114": {
+   "plainText": "13a365409b73cdc9bb1a",
+   "blocks": "e63ab1e8bc24de53be7c",
+   "sentences": "6cf1364f706bb43c1597"
+  },
+  "bible/19PSABSB.SFM/115": {
+   "plainText": "640c45077df3bdbea4a8",
+   "blocks": "b1243aa0bfa8d8b59889",
+   "sentences": "2d1f9bd28e610d32ae4e"
+  },
+  "bible/19PSABSB.SFM/116": {
+   "plainText": "43defc869677d63e4609",
+   "blocks": "05c257c74d04b2ad97e5",
+   "sentences": "3c1ede50c8351bdfc54a"
+  },
+  "bible/19PSABSB.SFM/117": {
+   "plainText": "ee68d358f6688d0e0f97",
+   "blocks": "182e75d5993c66fbd037",
+   "sentences": "51d40c23170c87df3a8e"
+  },
+  "bible/19PSABSB.SFM/118": {
+   "plainText": "0e86c3f1584f44891410",
+   "blocks": "472e662dac6e94d0f8ba",
+   "sentences": "4c732cd440294cd1662d"
+  },
+  "bible/19PSABSB.SFM/119": {
+   "plainText": "e0dbd22c4a1cedf822f1",
+   "blocks": "abcec2d376faac823ea6",
+   "sentences": "ca4dbc9ce1ef888872ea"
+  },
+  "bible/19PSABSB.SFM/120": {
+   "plainText": "20a564b89c680668c136",
+   "blocks": "a98bcaca5cb8fe333f5b",
+   "sentences": "edbda393b2012c2dfd62"
+  },
+  "bible/19PSABSB.SFM/121": {
+   "plainText": "bdb16053ffdc9cac32d3",
+   "blocks": "21d56fb10f4b5936fdc7",
+   "sentences": "498ca3b983c61b7b03b1"
+  },
+  "bible/19PSABSB.SFM/122": {
+   "plainText": "ceba046b1ed830ecbcb3",
+   "blocks": "509157fdaf259f7ea906",
+   "sentences": "36c6ba045b4e671e2f37"
+  },
+  "bible/19PSABSB.SFM/123": {
+   "plainText": "6c521631653e9e1311f2",
+   "blocks": "66a26ccdef47fc566fe4",
+   "sentences": "48902c8192b0d25efcc3"
+  },
+  "bible/19PSABSB.SFM/124": {
+   "plainText": "b356f218ed771fd1be88",
+   "blocks": "f5a27f96945571021521",
+   "sentences": "a403fa85f134720a27d1"
+  },
+  "bible/19PSABSB.SFM/125": {
+   "plainText": "ac879dbffe32fd725397",
+   "blocks": "8064a988787234548c03",
+   "sentences": "045b2e0fa08353dc0907"
+  },
+  "bible/19PSABSB.SFM/126": {
+   "plainText": "1ba7e802d36b8ffa0551",
+   "blocks": "65c19871a893994da1cb",
+   "sentences": "9a317e2702d626818394"
+  },
+  "bible/19PSABSB.SFM/127": {
+   "plainText": "4d0e0fe974d7a1b21439",
+   "blocks": "aaab5c4bcc5080573715",
+   "sentences": "9ef08c91ff04a1d1d744"
+  },
+  "bible/19PSABSB.SFM/128": {
+   "plainText": "fdbc5569cbb15cc9499a",
+   "blocks": "9b0bd7c262fb4e41fa89",
+   "sentences": "d0ab0117816cfd316a1d"
+  },
+  "bible/19PSABSB.SFM/129": {
+   "plainText": "93b58a3979207ecaad2e",
+   "blocks": "ed4b210ee3a72e857199",
+   "sentences": "62e776a3f63d90d453e0"
+  },
+  "bible/19PSABSB.SFM/130": {
+   "plainText": "7f84771a95fdaf5fa92b",
+   "blocks": "5099b74b6da66d0aeef3",
+   "sentences": "f92dbfefcacd0a41c70a"
+  },
+  "bible/19PSABSB.SFM/131": {
+   "plainText": "b9dfc2de752e7b3be8fe",
+   "blocks": "e364c5a5d3663c2bba90",
+   "sentences": "e43040138b5638f74ebe"
+  },
+  "bible/19PSABSB.SFM/132": {
+   "plainText": "05e0aa74482b6f6279cc",
+   "blocks": "3b858c004dd0870a7b4f",
+   "sentences": "8b853c2fb429d550876c"
+  },
+  "bible/19PSABSB.SFM/133": {
+   "plainText": "5c1d573518dfa164209e",
+   "blocks": "8d6fdd47e4304d93495a",
+   "sentences": "160035adfc576fd1b799"
+  },
+  "bible/19PSABSB.SFM/134": {
+   "plainText": "e23583e150f27db04f99",
+   "blocks": "e269f38584bec35a220b",
+   "sentences": "e409eddca90d048f8d8e"
+  },
+  "bible/19PSABSB.SFM/135": {
+   "plainText": "c7a92838bb3390c05f7a",
+   "blocks": "c2780f36c7ea8181e99c",
+   "sentences": "f589b3a1478c224257a1"
+  },
+  "bible/19PSABSB.SFM/136": {
+   "plainText": "320826716662329f80cb",
+   "blocks": "256e8cc595fbfd51970e",
+   "sentences": "3cfbdf74fb47d68375c5"
+  },
+  "bible/19PSABSB.SFM/137": {
+   "plainText": "cfd1f68ebbd130639eeb",
+   "blocks": "0c90d6586090a328edaf",
+   "sentences": "12dce8a3567832db2a75"
+  },
+  "bible/19PSABSB.SFM/138": {
+   "plainText": "b86d637f4fcdf1520e44",
+   "blocks": "63a9337560145d123d6d",
+   "sentences": "224cd8063835ba0e358f"
+  },
+  "bible/19PSABSB.SFM/139": {
+   "plainText": "139851b16140cca8405f",
+   "blocks": "56c403d61b19b524d2c4",
+   "sentences": "c4dc05da675e4ecb0f13"
+  },
+  "bible/19PSABSB.SFM/140": {
+   "plainText": "966098a0ba8099268a43",
+   "blocks": "3d40d50bb5a74f80af44",
+   "sentences": "a2594d0d602100dacaa6"
+  },
+  "bible/19PSABSB.SFM/141": {
+   "plainText": "2e397947a70b8248ff4a",
+   "blocks": "7512262da2f1c9dfb980",
+   "sentences": "4a5e488cbf4eceee7645"
+  },
+  "bible/19PSABSB.SFM/142": {
+   "plainText": "aa65d725b0267a069465",
+   "blocks": "a60ff2942cf368b7df26",
+   "sentences": "59aeb21509fd0872c54a"
+  },
+  "bible/19PSABSB.SFM/143": {
+   "plainText": "82ebbf142058f81fedec",
+   "blocks": "893da81c28efb6d4fe25",
+   "sentences": "8db425e943b84046c64a"
+  },
+  "bible/19PSABSB.SFM/144": {
+   "plainText": "49d8b8fb693f2d11fef0",
+   "blocks": "ca5142980f26ae61b0a1",
+   "sentences": "5eebefec2ab7c04397c6"
+  },
+  "bible/19PSABSB.SFM/145": {
+   "plainText": "17299606fb219374b2b0",
+   "blocks": "8103128555b32a808df8",
+   "sentences": "14334afd5e0c3db05e8b"
+  },
+  "bible/19PSABSB.SFM/146": {
+   "plainText": "39b0af497a0e3d422979",
+   "blocks": "1e45132406a3cd141903",
+   "sentences": "ee14d1a2971b1af58a8d"
+  },
+  "bible/19PSABSB.SFM/147": {
+   "plainText": "62e8570b9719de73f62e",
+   "blocks": "a0dd2d274174463a7180",
+   "sentences": "ce75ee24b3d214a6a1c5"
+  },
+  "bible/19PSABSB.SFM/148": {
+   "plainText": "111c892b1e9aece3a4e3",
+   "blocks": "4d3d527d8c44e253b246",
+   "sentences": "8d69dde57434bd7d5870"
+  },
+  "bible/19PSABSB.SFM/149": {
+   "plainText": "12fa1034e4e97cf6c6a4",
+   "blocks": "d676f9868a816373bba8",
+   "sentences": "28a31cda8ab1c202cad2"
+  },
+  "bible/19PSABSB.SFM/150": {
+   "plainText": "0029620f47a29ccbc765",
+   "blocks": "9317b45c652248201804",
+   "sentences": "0447676583412bdddc15"
+  },
+  "bible/20PROBSB.SFM/1": {
+   "plainText": "efcbbdcef5d0b06cdb73",
+   "blocks": "e99d6a146851f08826a9",
+   "sentences": "5a818419dd3e8278be0f"
+  },
+  "bible/20PROBSB.SFM/2": {
+   "plainText": "aceec0dfb1755325fd96",
+   "blocks": "105e80acffc8269c2bdd",
+   "sentences": "ab1a74fac5a3d208efaf"
+  },
+  "bible/20PROBSB.SFM/3": {
+   "plainText": "addb0120506d4092dd67",
+   "blocks": "0f6702e58608c9adc431",
+   "sentences": "574830d4f716ea2b6613"
+  },
+  "bible/20PROBSB.SFM/4": {
+   "plainText": "8f18284f7323e5b108d5",
+   "blocks": "80007abc18255d59e99b",
+   "sentences": "22be70cdf062887dd22c"
+  },
+  "bible/20PROBSB.SFM/5": {
+   "plainText": "8e969ea9069a3585f640",
+   "blocks": "43e6b450da4d14a52cca",
+   "sentences": "9149e71d49066872c221"
+  },
+  "bible/20PROBSB.SFM/6": {
+   "plainText": "8dc1f18cd5e1334b54a5",
+   "blocks": "45bacdd5773ce0cb28e0",
+   "sentences": "596a6cf5744de13f1e78"
+  },
+  "bible/20PROBSB.SFM/7": {
+   "plainText": "dcf7e62c4152dd68dda4",
+   "blocks": "1104ca1d5c7e2a1f914c",
+   "sentences": "73151aad8a59ee8d19fa"
+  },
+  "bible/20PROBSB.SFM/8": {
+   "plainText": "f50198cf17f791a1095e",
+   "blocks": "0affd9d96b40d0852d8a",
+   "sentences": "ae72b1c9315bdb1ac90a"
+  },
+  "bible/20PROBSB.SFM/9": {
+   "plainText": "eb610b225c6d60aa25ef",
+   "blocks": "c9f25efba2931d733ad8",
+   "sentences": "629362d585994fff10e3"
+  },
+  "bible/20PROBSB.SFM/10": {
+   "plainText": "39aec16edc8fa618ac19",
+   "blocks": "16dd5a40858570226bbb",
+   "sentences": "855e0a4b022afc0e8d79"
+  },
+  "bible/20PROBSB.SFM/11": {
+   "plainText": "7f496454267617e45571",
+   "blocks": "3ba2ff2b3a9f7b19dc72",
+   "sentences": "96fbebf680f9b8e6729d"
+  },
+  "bible/20PROBSB.SFM/12": {
+   "plainText": "df8784e284ac725084ef",
+   "blocks": "5c3760285f6d5390568f",
+   "sentences": "f1d5bef9bcdb3ac65828"
+  },
+  "bible/20PROBSB.SFM/13": {
+   "plainText": "f7e999ee8ee010296882",
+   "blocks": "7b865d3309c55c2080a3",
+   "sentences": "d73cb29939e15fe4a591"
+  },
+  "bible/20PROBSB.SFM/14": {
+   "plainText": "01ace2940681deaf95cf",
+   "blocks": "4da1c8eea6018a0671ae",
+   "sentences": "abc7b6d0827c9df3cdc7"
+  },
+  "bible/20PROBSB.SFM/15": {
+   "plainText": "0e396b226e7dbc1b85a5",
+   "blocks": "00ded94febba70b77a8f",
+   "sentences": "48a5df00cef98a9dc50e"
+  },
+  "bible/20PROBSB.SFM/16": {
+   "plainText": "3ca7ec33294b225bf0c3",
+   "blocks": "ea80f400f2be83f79581",
+   "sentences": "07880288f4cffb1de9f1"
+  },
+  "bible/20PROBSB.SFM/17": {
+   "plainText": "8e7d71b43645e58cccb8",
+   "blocks": "317a2dcbc7fafb862127",
+   "sentences": "981a0974bec58bc4f120"
+  },
+  "bible/20PROBSB.SFM/18": {
+   "plainText": "fbbe7382e397e582d3da",
+   "blocks": "3f0cc8e08e367d2c4d78",
+   "sentences": "7fcc1523322866853b0f"
+  },
+  "bible/20PROBSB.SFM/19": {
+   "plainText": "932e1c4b1f30d3162f81",
+   "blocks": "e282481c3577ceb1f072",
+   "sentences": "ca83be900aa9ac048f7a"
+  },
+  "bible/20PROBSB.SFM/20": {
+   "plainText": "654c3559414c5e043473",
+   "blocks": "6c4f87626bd055560ff2",
+   "sentences": "dc1bdc3a10a74e99e20f"
+  },
+  "bible/20PROBSB.SFM/21": {
+   "plainText": "56a16794a2a78d0562db",
+   "blocks": "1473a94cad28fa4076de",
+   "sentences": "68437d5f3fccc9b5a2b2"
+  },
+  "bible/20PROBSB.SFM/22": {
+   "plainText": "113fabf67f137551ed8d",
+   "blocks": "fd49e5803e762f44a4f9",
+   "sentences": "449b0df62e49d7d2506a"
+  },
+  "bible/20PROBSB.SFM/23": {
+   "plainText": "3c26b732877a53e0c357",
+   "blocks": "c20e482b85998bfcd575",
+   "sentences": "9c3c5674986fc9f9fd2b"
+  },
+  "bible/20PROBSB.SFM/24": {
+   "plainText": "5594cbdbf2d03aa56828",
+   "blocks": "f11ba51f8ad13a272ea6",
+   "sentences": "7cd4001ca51096febd85"
+  },
+  "bible/20PROBSB.SFM/25": {
+   "plainText": "8e156c4ac22fde678956",
+   "blocks": "31b1fe49621db9e7b08f",
+   "sentences": "1475ba4a599a45924692"
+  },
+  "bible/20PROBSB.SFM/26": {
+   "plainText": "6b729d03e38e481c526a",
+   "blocks": "e9325133812ce7038afc",
+   "sentences": "c43a4b92dcd870510fdd"
+  },
+  "bible/20PROBSB.SFM/27": {
+   "plainText": "a02ede534dd828b2143f",
+   "blocks": "135411f73f6d100e8b1f",
+   "sentences": "65f347bddc9695731684"
+  },
+  "bible/20PROBSB.SFM/28": {
+   "plainText": "d06ca75923398c391bb0",
+   "blocks": "05a650df5c7ee6547f8b",
+   "sentences": "0eb36616f834694b6bfb"
+  },
+  "bible/20PROBSB.SFM/29": {
+   "plainText": "856b57abc84b131fb928",
+   "blocks": "bbd8cd280f49796c10cc",
+   "sentences": "4563f049e805e4cdb002"
+  },
+  "bible/20PROBSB.SFM/30": {
+   "plainText": "8d685cd8a1e289d2e3be",
+   "blocks": "97dccc80f43f9ed69e00",
+   "sentences": "8878745d593b56a5f7c8"
+  },
+  "bible/20PROBSB.SFM/31": {
+   "plainText": "a6da2acfdffa36d23a95",
+   "blocks": "24d3d59c73df51a03e1d",
+   "sentences": "b3b35b82be03fc418d5a"
+  },
+  "bible/21ECCBSB.SFM/1": {
+   "plainText": "ef521a8c0dad11f683f0",
+   "blocks": "77fc07dcf1f41be7a62a",
+   "sentences": "50a710042e07916eef19"
+  },
+  "bible/21ECCBSB.SFM/2": {
+   "plainText": "b9c3edf216f58bc5c7a5",
+   "blocks": "8695450eb2f68c5f26d4",
+   "sentences": "978caad099986de2c963"
+  },
+  "bible/21ECCBSB.SFM/3": {
+   "plainText": "352ec6f5569eeecdb16a",
+   "blocks": "83d143c74257788667f6",
+   "sentences": "41789d20663367336a6a"
+  },
+  "bible/21ECCBSB.SFM/4": {
+   "plainText": "9cb9cec2480b656ec29f",
+   "blocks": "b7ec6741b9052d58ea1e",
+   "sentences": "804212b46a39c14833a6"
+  },
+  "bible/21ECCBSB.SFM/5": {
+   "plainText": "0fba64340aa2cde4be1d",
+   "blocks": "b2204b6f7193c85888c5",
+   "sentences": "173c0dca743be2b1aaaa"
+  },
+  "bible/21ECCBSB.SFM/6": {
+   "plainText": "614944d706c13f4c3147",
+   "blocks": "0d3cbe42c9d88f7a239f",
+   "sentences": "d2a6a1de9947f5419d00"
+  },
+  "bible/21ECCBSB.SFM/7": {
+   "plainText": "b30449185e7fdaa28486",
+   "blocks": "4b560e1c1ba788254e08",
+   "sentences": "30dc2f978f2ffcd0744f"
+  },
+  "bible/21ECCBSB.SFM/8": {
+   "plainText": "d89dee6e8b1321c6be96",
+   "blocks": "4cfceb441cc28c56dbe8",
+   "sentences": "244e0b5345163a33fc7a"
+  },
+  "bible/21ECCBSB.SFM/9": {
+   "plainText": "55af0f323697081b5de6",
+   "blocks": "8f6c0fde91c2c7143efe",
+   "sentences": "f60d32c3aa2fe82ca73b"
+  },
+  "bible/21ECCBSB.SFM/10": {
+   "plainText": "abc92f5c18be3d2d4b64",
+   "blocks": "e0258b71f7b079596c15",
+   "sentences": "a4e5b5f072188243917a"
+  },
+  "bible/21ECCBSB.SFM/11": {
+   "plainText": "5d8baec9e292a47fed88",
+   "blocks": "a7fecab1dd286c8bd6cd",
+   "sentences": "7d9c74e9e1647b3bdb62"
+  },
+  "bible/21ECCBSB.SFM/12": {
+   "plainText": "44b41e1a9bd264c079d2",
+   "blocks": "60b3a2c0c78fd50d2a67",
+   "sentences": "180fd59fdb4e9577934b"
+  },
+  "bible/22SNGBSB.SFM/1": {
+   "plainText": "4086ae6c134f9daa2f4e",
+   "blocks": "c0584d77c23595a603e6",
+   "sentences": "6b2113aad40d34d2c4f5"
+  },
+  "bible/22SNGBSB.SFM/2": {
+   "plainText": "a12032acfda2455bba29",
+   "blocks": "1f2543bd86c9759c81dd",
+   "sentences": "de40c66ba0ad5f97709b"
+  },
+  "bible/22SNGBSB.SFM/3": {
+   "plainText": "3446bd720ec8e94c45b3",
+   "blocks": "151c865331b498fb1363",
+   "sentences": "208a738c1826dd69ec61"
+  },
+  "bible/22SNGBSB.SFM/4": {
+   "plainText": "8feaafa5a5c11a5d441e",
+   "blocks": "d9505faa70f0619bec16",
+   "sentences": "05c817bf09ddfd764bc4"
+  },
+  "bible/22SNGBSB.SFM/5": {
+   "plainText": "7dec84646cc94397f92f",
+   "blocks": "98707c94e17a31d28dad",
+   "sentences": "90c95e643dc2ca136742"
+  },
+  "bible/22SNGBSB.SFM/6": {
+   "plainText": "8029be2ceaa5bc19a9fd",
+   "blocks": "201aa9149852f309bd4b",
+   "sentences": "ad482516edd1197fc2f2"
+  },
+  "bible/22SNGBSB.SFM/7": {
+   "plainText": "9c3405a4d1d29a14c78d",
+   "blocks": "73695eeef3acedeb055f",
+   "sentences": "f7764f35c04778536fb1"
+  },
+  "bible/22SNGBSB.SFM/8": {
+   "plainText": "214a242594ac48364fe6",
+   "blocks": "03ae61d9c7256fd94a7f",
+   "sentences": "ce5b3701f4138d2e330c"
+  },
+  "bible/23ISABSB.SFM/1": {
+   "plainText": "b13a0d8b6525c4368e20",
+   "blocks": "10b0a59fc088f9d8295b",
+   "sentences": "a4b42f35c6b15742f18b"
+  },
+  "bible/23ISABSB.SFM/2": {
+   "plainText": "f5a207019031d8177e99",
+   "blocks": "e7d7d24441d18c91a449",
+   "sentences": "d298e47276f172f7b720"
+  },
+  "bible/23ISABSB.SFM/3": {
+   "plainText": "6cae30c3ef4e78928234",
+   "blocks": "ce914ab11bee3183f8cb",
+   "sentences": "603b1b431da7e7bbc748"
+  },
+  "bible/23ISABSB.SFM/4": {
+   "plainText": "d5a84cbded3fa0d3f0c4",
+   "blocks": "49ac0f468ee5d0815f06",
+   "sentences": "05050b0c32d6063342e3"
+  },
+  "bible/23ISABSB.SFM/5": {
+   "plainText": "89bf6d60a346c9e1e47e",
+   "blocks": "dbff6ce74f289404f19c",
+   "sentences": "fed1d47374a2ea1349ca"
+  },
+  "bible/23ISABSB.SFM/6": {
+   "plainText": "7de16a19105cd4e9bf79",
+   "blocks": "f13ee7a6d389bf8f4104",
+   "sentences": "efc5ad75364d9a13e379"
+  },
+  "bible/23ISABSB.SFM/7": {
+   "plainText": "a6f2aa811082c732fe79",
+   "blocks": "3dccba58fb853b902cd8",
+   "sentences": "8e101c3e2876455cbb8b"
+  },
+  "bible/23ISABSB.SFM/8": {
+   "plainText": "4641e7a2adee652c777d",
+   "blocks": "8bea3cc6d95a9178c68b",
+   "sentences": "60b1f016c76786903c96"
+  },
+  "bible/23ISABSB.SFM/9": {
+   "plainText": "2ba62238fd53b2c2956c",
+   "blocks": "b9cc4cce96342c11c2e3",
+   "sentences": "a5ff5630eab8114e0e38"
+  },
+  "bible/23ISABSB.SFM/10": {
+   "plainText": "b5b542674f81d29ae3f0",
+   "blocks": "a02b287e53dd905d1d10",
+   "sentences": "aad32be3cc846e2f8756"
+  },
+  "bible/23ISABSB.SFM/11": {
+   "plainText": "67473e894a3f8e1b697b",
+   "blocks": "d476eb0cf462d83f83d0",
+   "sentences": "a42f3fd3ca8c9b425f80"
+  },
+  "bible/23ISABSB.SFM/12": {
+   "plainText": "ab8dad352b22786c5fe9",
+   "blocks": "960b1e0dc3d0d16aa408",
+   "sentences": "4cd096755f890a5c7d3c"
+  },
+  "bible/23ISABSB.SFM/13": {
+   "plainText": "62afd93d3a70a9da36d1",
+   "blocks": "e8ed1c873b38514b04fa",
+   "sentences": "332a7a09d3b9f02cf9e1"
+  },
+  "bible/23ISABSB.SFM/14": {
+   "plainText": "0139a8f4066af73a23b1",
+   "blocks": "0ff88407d5c64e1359ce",
+   "sentences": "c6cdd45d0c00149c116b"
+  },
+  "bible/23ISABSB.SFM/15": {
+   "plainText": "2425cced1cc541792f1a",
+   "blocks": "defadfcee19212e90001",
+   "sentences": "9972a08e6d30ee7d34d0"
+  },
+  "bible/23ISABSB.SFM/16": {
+   "plainText": "d9406fc4f7d1790be69e",
+   "blocks": "2ceb15ed2218203a48b2",
+   "sentences": "554a7553069f9fcd6ccf"
+  },
+  "bible/23ISABSB.SFM/17": {
+   "plainText": "75224225cc453d4ef1c6",
+   "blocks": "2b5e5b84d89d9ab77355",
+   "sentences": "3750e86d26166ad0d7fd"
+  },
+  "bible/23ISABSB.SFM/18": {
+   "plainText": "4b36d9e454f94e8edbb3",
+   "blocks": "43ae2781f2e8bf6c1471",
+   "sentences": "1348b602df48c47f07fa"
+  },
+  "bible/23ISABSB.SFM/19": {
+   "plainText": "9113a4356c4744feae87",
+   "blocks": "ecd719ce969183cb3c50",
+   "sentences": "6e8824f5869127a4c36f"
+  },
+  "bible/23ISABSB.SFM/20": {
+   "plainText": "a8f9d233fe96652e4dda",
+   "blocks": "38111e87741c5536020f",
+   "sentences": "31146e75098114c0ca4b"
+  },
+  "bible/23ISABSB.SFM/21": {
+   "plainText": "fcae17a281386f77c867",
+   "blocks": "fbf1e47e454e9c70013a",
+   "sentences": "b81c3482c96ade555c74"
+  },
+  "bible/23ISABSB.SFM/22": {
+   "plainText": "88ba2dd3f4d865272a26",
+   "blocks": "440f051f80ebfc537df5",
+   "sentences": "c31df92b7386aa9ce656"
+  },
+  "bible/23ISABSB.SFM/23": {
+   "plainText": "0a69e5a5fcb802a74ac7",
+   "blocks": "c204b61e80e393efa4ac",
+   "sentences": "a2d62914ae553a847766"
+  },
+  "bible/23ISABSB.SFM/24": {
+   "plainText": "0ad15d8ac0eb6fc05d5b",
+   "blocks": "31de36e53d99c5cca9b9",
+   "sentences": "cc02503b5bae10243379"
+  },
+  "bible/23ISABSB.SFM/25": {
+   "plainText": "30519a2bc02537741151",
+   "blocks": "d9e080a8d782930d28f3",
+   "sentences": "00dbd885ca32d4bca0ad"
+  },
+  "bible/23ISABSB.SFM/26": {
+   "plainText": "eb85507633cecbface63",
+   "blocks": "9464d005108fee3c5ff7",
+   "sentences": "1d67de379bfa27ba875f"
+  },
+  "bible/23ISABSB.SFM/27": {
+   "plainText": "bc46e795cfb43a711f31",
+   "blocks": "4b6dfc325211b42e2f6a",
+   "sentences": "35ca1970f8f0e5ef937c"
+  },
+  "bible/23ISABSB.SFM/28": {
+   "plainText": "70d1a6bac2b18685b026",
+   "blocks": "12aa559a3ef81ff78ac2",
+   "sentences": "8f42ecfc0bfd5535e5eb"
+  },
+  "bible/23ISABSB.SFM/29": {
+   "plainText": "d894be87198e014a24de",
+   "blocks": "40bf5a1587089769fb9a",
+   "sentences": "6ed4dcc3ff4fe9440ced"
+  },
+  "bible/23ISABSB.SFM/30": {
+   "plainText": "e141d0c5ff9a326e77fa",
+   "blocks": "9f84f4434be3b479e504",
+   "sentences": "a4b302be4cc26f5d3cda"
+  },
+  "bible/23ISABSB.SFM/31": {
+   "plainText": "24247ef792f5a1250f63",
+   "blocks": "970978cd05b03d4a1d45",
+   "sentences": "38afa092e4ebbcb2c323"
+  },
+  "bible/23ISABSB.SFM/32": {
+   "plainText": "6540da89b33fb7753e08",
+   "blocks": "161a1ea5ae94fa857330",
+   "sentences": "c49acf8617bee197d55b"
+  },
+  "bible/23ISABSB.SFM/33": {
+   "plainText": "c46b44f0173aa1f4cd4c",
+   "blocks": "6fabe1cb0100d4a8fb19",
+   "sentences": "d91352154673ee1d7492"
+  },
+  "bible/23ISABSB.SFM/34": {
+   "plainText": "a36cbab014ff78cca231",
+   "blocks": "3b3fc2303f3f3830214e",
+   "sentences": "0329ece2addd7afb9b6e"
+  },
+  "bible/23ISABSB.SFM/35": {
+   "plainText": "7982bc5c03832a603685",
+   "blocks": "3404c566fc7310988d2c",
+   "sentences": "5ad67f7062cdce476d43"
+  },
+  "bible/23ISABSB.SFM/36": {
+   "plainText": "d86f9bb84e0bf6d51aa0",
+   "blocks": "368527b25e50e4a805ac",
+   "sentences": "811e387889efcbef243a"
+  },
+  "bible/23ISABSB.SFM/37": {
+   "plainText": "e3cb9031f118f4e9be34",
+   "blocks": "90c4211a2d55b61fa08e",
+   "sentences": "abd01ea88a6d775102bb"
+  },
+  "bible/23ISABSB.SFM/38": {
+   "plainText": "ce600de2ecded5555f6c",
+   "blocks": "320faece0b9602e0ad5a",
+   "sentences": "4cb7a66ef5009d7831fc"
+  },
+  "bible/23ISABSB.SFM/39": {
+   "plainText": "a962d69eaf6e5e02c41e",
+   "blocks": "e4cc3d6667145821a141",
+   "sentences": "3b5d151bc57c033a9d45"
+  },
+  "bible/23ISABSB.SFM/40": {
+   "plainText": "abcd914912dfce0bdc5b",
+   "blocks": "152288b0eb45c0873cbf",
+   "sentences": "295c574edfd63535439a"
+  },
+  "bible/23ISABSB.SFM/41": {
+   "plainText": "6ce5769c8bf71bbdd69b",
+   "blocks": "aa00de75e9e05ec7cea3",
+   "sentences": "9d2d31c236ac41d0c567"
+  },
+  "bible/23ISABSB.SFM/42": {
+   "plainText": "aa006a2724dbed565dc0",
+   "blocks": "6e0da9535330204e81df",
+   "sentences": "b2ff63a297d2d09b84f1"
+  },
+  "bible/23ISABSB.SFM/43": {
+   "plainText": "dd5d425e8307644dd5d4",
+   "blocks": "502f1577468d8c06680d",
+   "sentences": "705d6fb52612ea540f84"
+  },
+  "bible/23ISABSB.SFM/44": {
+   "plainText": "f5ffcd619f4574315cdc",
+   "blocks": "874c21342201941c7fe2",
+   "sentences": "eda5ef01f5fdacd9bf63"
+  },
+  "bible/23ISABSB.SFM/45": {
+   "plainText": "a92a100f3424f3d2b29c",
+   "blocks": "0db1e1aeb885c7318977",
+   "sentences": "922d3f4922d5d1c521c4"
+  },
+  "bible/23ISABSB.SFM/46": {
+   "plainText": "89f7cc9b693ba8e20fb5",
+   "blocks": "9e8e52c9f9b90e11829f",
+   "sentences": "c8479ad18ebdc94c5726"
+  },
+  "bible/23ISABSB.SFM/47": {
+   "plainText": "d5786ca61baf7b92d92d",
+   "blocks": "dfdbd8cdb3de715acd70",
+   "sentences": "f333332714570ff74762"
+  },
+  "bible/23ISABSB.SFM/48": {
+   "plainText": "9149ab80eb51b170ec25",
+   "blocks": "88443a341b4ced774852",
+   "sentences": "faef54ea2fd771182957"
+  },
+  "bible/23ISABSB.SFM/49": {
+   "plainText": "351003f196c0ee36dd87",
+   "blocks": "ce7815167fd433eeedbf",
+   "sentences": "dc23a21f0c3814f98c6c"
+  },
+  "bible/23ISABSB.SFM/50": {
+   "plainText": "31872cc6bc74f3d0970d",
+   "blocks": "ed9ab603f468ba30b8a8",
+   "sentences": "d6125efb71204ed5375b"
+  },
+  "bible/23ISABSB.SFM/51": {
+   "plainText": "8c5800c60f2a465dfd6d",
+   "blocks": "8825641c98431f50b60d",
+   "sentences": "eeb768ed1cbab645ef3f"
+  },
+  "bible/23ISABSB.SFM/52": {
+   "plainText": "788026d1f7929ae06283",
+   "blocks": "e5d239d56338303cb339",
+   "sentences": "1a651163a69acd599fa1"
+  },
+  "bible/23ISABSB.SFM/53": {
+   "plainText": "9d7edee29423573470a7",
+   "blocks": "d81964ef8ae571843a2d",
+   "sentences": "3ae69d0c9fcdd9bdfd18"
+  },
+  "bible/23ISABSB.SFM/54": {
+   "plainText": "cb8c9ec121a0c7ceea35",
+   "blocks": "cb59d6634225c3db352e",
+   "sentences": "1927d42d94635c52764c"
+  },
+  "bible/23ISABSB.SFM/55": {
+   "plainText": "fb94c165c3dd725e54cf",
+   "blocks": "d001613a1abf1c5afb5a",
+   "sentences": "2295369eeefa4e55b2b4"
+  },
+  "bible/23ISABSB.SFM/56": {
+   "plainText": "02bb962218b2558c27ac",
+   "blocks": "e19a01dc1cd48192c8e9",
+   "sentences": "37d5a2da70bb55d00f82"
+  },
+  "bible/23ISABSB.SFM/57": {
+   "plainText": "133d26e5b13d45770d7c",
+   "blocks": "35c2a66504e43fe96ee0",
+   "sentences": "4a2e4f545c3e82ab475b"
+  },
+  "bible/23ISABSB.SFM/58": {
+   "plainText": "d901ea450c289fe81d8c",
+   "blocks": "6aae501e176de4834444",
+   "sentences": "70f0f4e6fe4e9c3c4f6a"
+  },
+  "bible/23ISABSB.SFM/59": {
+   "plainText": "82c6c8516c3b3903fdfc",
+   "blocks": "2cde2d660b6349f1b625",
+   "sentences": "0234b1121d081c906ef9"
+  },
+  "bible/23ISABSB.SFM/60": {
+   "plainText": "b9ea65b864d3d02d7ac9",
+   "blocks": "0686d3ab05119bef2a1b",
+   "sentences": "4e07aedbab6ac14639f5"
+  },
+  "bible/23ISABSB.SFM/61": {
+   "plainText": "7d0a6ecab889673c4932",
+   "blocks": "9dee0198d1dea6d390e7",
+   "sentences": "f516b5d4591ea0eb9db0"
+  },
+  "bible/23ISABSB.SFM/62": {
+   "plainText": "3f3c2318459245bdb8ef",
+   "blocks": "ab1be39ec672d5253bbf",
+   "sentences": "eaee54405ba36d95c1ff"
+  },
+  "bible/23ISABSB.SFM/63": {
+   "plainText": "10c98954983a60fe89ed",
+   "blocks": "99f718b7b4c9fe24987a",
+   "sentences": "884ad8ed70d1ab33b1fe"
+  },
+  "bible/23ISABSB.SFM/64": {
+   "plainText": "434591e93f2d40f37fe6",
+   "blocks": "1fc992c41bf8c486b410",
+   "sentences": "42afe67dff915d3621ed"
+  },
+  "bible/23ISABSB.SFM/65": {
+   "plainText": "811f54ab61b95522a2d1",
+   "blocks": "6b97885d18b1a123a58d",
+   "sentences": "35e8248c5c59d42f221b"
+  },
+  "bible/23ISABSB.SFM/66": {
+   "plainText": "be5416b33885d26974a0",
+   "blocks": "b442852e809d69a8e640",
+   "sentences": "3942792d6c45f6fdbb65"
+  },
+  "bible/24JERBSB.SFM/1": {
+   "plainText": "bcdd600bcad10aa30194",
+   "blocks": "5fe4e32f7b9dd0cea0fc",
+   "sentences": "7b63269c14b0b8280449"
+  },
+  "bible/24JERBSB.SFM/2": {
+   "plainText": "158c1e899f571ff6dfd3",
+   "blocks": "217bd016acf7bdc025c8",
+   "sentences": "50f779ba96bf8ea9ab99"
+  },
+  "bible/24JERBSB.SFM/3": {
+   "plainText": "a32160d8bf444e7a628f",
+   "blocks": "3754398761b7a748676b",
+   "sentences": "c2edd7cff84b868140f1"
+  },
+  "bible/24JERBSB.SFM/4": {
+   "plainText": "7b7716ab10cff5190ebc",
+   "blocks": "6fdea2b3408c684802ee",
+   "sentences": "12ff92f904c6e2b08d62"
+  },
+  "bible/24JERBSB.SFM/5": {
+   "plainText": "b2cbbd4ceee070816ce0",
+   "blocks": "fd3bc6346f2a1825ce7c",
+   "sentences": "6f5d2ba8fa23f43745ed"
+  },
+  "bible/24JERBSB.SFM/6": {
+   "plainText": "f60ab1041820853257c9",
+   "blocks": "fb0f3d63463e146b1172",
+   "sentences": "180d100930712088f9e0"
+  },
+  "bible/24JERBSB.SFM/7": {
+   "plainText": "73d0b313c27d1cfef8ac",
+   "blocks": "08b01a9da5858ff81f93",
+   "sentences": "79f7e042ca60f831749d"
+  },
+  "bible/24JERBSB.SFM/8": {
+   "plainText": "07ce348de68ee7867550",
+   "blocks": "e0ca7d6ed1714ad7eaf5",
+   "sentences": "b70251ccf8262de53590"
+  },
+  "bible/24JERBSB.SFM/9": {
+   "plainText": "c184e591d5d7e55cd7da",
+   "blocks": "14454df46e236f77909a",
+   "sentences": "05b94d226d03f467ae0e"
+  },
+  "bible/24JERBSB.SFM/10": {
+   "plainText": "f897e5a7738d90b7ca76",
+   "blocks": "fdfe4e67e6f11cd26be5",
+   "sentences": "8d62d48cd85d30db0e3f"
+  },
+  "bible/24JERBSB.SFM/11": {
+   "plainText": "53623356be3d8ffd746b",
+   "blocks": "b5cfb06d82e05a9ca6cb",
+   "sentences": "d7db0c8200354bdf7d55"
+  },
+  "bible/24JERBSB.SFM/12": {
+   "plainText": "73ed361e45a018fe4ae0",
+   "blocks": "aef0ee000e38d85012c6",
+   "sentences": "d3e40956b6099903f869"
+  },
+  "bible/24JERBSB.SFM/13": {
+   "plainText": "6e2cedeeed87f258bec9",
+   "blocks": "13bf7bd853fc8fce15bc",
+   "sentences": "eefece98f09a7e63041f"
+  },
+  "bible/24JERBSB.SFM/14": {
+   "plainText": "0ff3047388ef8c60bce4",
+   "blocks": "26c1c983423d73eb21c2",
+   "sentences": "91762b7ebac4f4d2138f"
+  },
+  "bible/24JERBSB.SFM/15": {
+   "plainText": "2beb78ba70daf6f46033",
+   "blocks": "dd467c8527ff205eba21",
+   "sentences": "7d19535cb105f94ffc2b"
+  },
+  "bible/24JERBSB.SFM/16": {
+   "plainText": "47d33e6d1196e0d2f499",
+   "blocks": "d8248a257969a5be8394",
+   "sentences": "a8bb12761637e36a6ae2"
+  },
+  "bible/24JERBSB.SFM/17": {
+   "plainText": "58e9730864d5b7cbd49a",
+   "blocks": "ad9c0826adea57410507",
+   "sentences": "bfc38a20cae3d2b0f498"
+  },
+  "bible/24JERBSB.SFM/18": {
+   "plainText": "2bb1abbe865c66304721",
+   "blocks": "e294206f976061bce01a",
+   "sentences": "24d173499310b4af9dd8"
+  },
+  "bible/24JERBSB.SFM/19": {
+   "plainText": "013fb946df5d36665fda",
+   "blocks": "242b66fbcb82dec28723",
+   "sentences": "5e485662c0c404ff16f1"
+  },
+  "bible/24JERBSB.SFM/20": {
+   "plainText": "134f6e649a84f1735e4f",
+   "blocks": "ccfdc9e61a4b7b65a698",
+   "sentences": "171c362e576d7c4a47b5"
+  },
+  "bible/24JERBSB.SFM/21": {
+   "plainText": "15a922a5084955eeb23c",
+   "blocks": "271ba3de2334cea91dfa",
+   "sentences": "e763efb82ae013c0bc2a"
+  },
+  "bible/24JERBSB.SFM/22": {
+   "plainText": "eefd3192d3435583d4fa",
+   "blocks": "1ee2efd6fd60e1c0e92a",
+   "sentences": "3425ee2a14adfcbb3259"
+  },
+  "bible/24JERBSB.SFM/23": {
+   "plainText": "9be24d5f6b0464d50a2c",
+   "blocks": "7ec62740aa158294f310",
+   "sentences": "a41b12368f4e335baf73"
+  },
+  "bible/24JERBSB.SFM/24": {
+   "plainText": "bf8e95234d9c5ab7b80d",
+   "blocks": "78f245c9225a57216d71",
+   "sentences": "9642325b78b1aa2be411"
+  },
+  "bible/24JERBSB.SFM/25": {
+   "plainText": "9c6321054ad0033514df",
+   "blocks": "9038cf87345b3401787b",
+   "sentences": "7028eb1713d0ca1fd2c2"
+  },
+  "bible/24JERBSB.SFM/26": {
+   "plainText": "5d785e7cc71578fb8d07",
+   "blocks": "42710f9362e5d62b1185",
+   "sentences": "2e161479a351b68f2209"
+  },
+  "bible/24JERBSB.SFM/27": {
+   "plainText": "efd61334d592edcb6b24",
+   "blocks": "89068b425ff6bd21fd04",
+   "sentences": "3d681d0fc523e758559a"
+  },
+  "bible/24JERBSB.SFM/28": {
+   "plainText": "040bfcd154cfe20ec99e",
+   "blocks": "a86f6857a15466174642",
+   "sentences": "48403b2efdcbd2f621bb"
+  },
+  "bible/24JERBSB.SFM/29": {
+   "plainText": "6ba549dd811dac3ba6cd",
+   "blocks": "3c4488b34ada33195371",
+   "sentences": "3228b50c3cfc70cfe895"
+  },
+  "bible/24JERBSB.SFM/30": {
+   "plainText": "c2e32f5b38ddd2bc0c05",
+   "blocks": "eb71b385dc6dadae417e",
+   "sentences": "c18c2f93b461666a3285"
+  },
+  "bible/24JERBSB.SFM/31": {
+   "plainText": "900aaeeb2daf6f6d9230",
+   "blocks": "4ab4c4563d00caa90524",
+   "sentences": "bf360d357a36ff534bec"
+  },
+  "bible/24JERBSB.SFM/32": {
+   "plainText": "ea76cd8c39c028971219",
+   "blocks": "1f872bcff5fdf293388f",
+   "sentences": "dfa64a9c8743d1e59d98"
+  },
+  "bible/24JERBSB.SFM/33": {
+   "plainText": "966eef8b0b0d1c4db688",
+   "blocks": "b222f00d8427c368d15d",
+   "sentences": "47e21746a0312007cd61"
+  },
+  "bible/24JERBSB.SFM/34": {
+   "plainText": "dfeb4a1b15631977913b",
+   "blocks": "954df4152bc1c78ef694",
+   "sentences": "3fe6d0a26436c6451506"
+  },
+  "bible/24JERBSB.SFM/35": {
+   "plainText": "acf5cf6cd9784afe5a90",
+   "blocks": "6b6f1ee22886010bc23e",
+   "sentences": "abf4b39adccc132df127"
+  },
+  "bible/24JERBSB.SFM/36": {
+   "plainText": "37ffde19695dcbb61033",
+   "blocks": "578bda2202a8bf9abf3b",
+   "sentences": "448c431c12f738fae962"
+  },
+  "bible/24JERBSB.SFM/37": {
+   "plainText": "a97b90948fa2c450b879",
+   "blocks": "4efc5106f6396fac7488",
+   "sentences": "106e7dc89fa1e9ee0263"
+  },
+  "bible/24JERBSB.SFM/38": {
+   "plainText": "a02acdeebbb8d471bd92",
+   "blocks": "7f0e4247f7edd27eabe6",
+   "sentences": "edcf4b1d2dcd23bf8195"
+  },
+  "bible/24JERBSB.SFM/39": {
+   "plainText": "ac06a90ea8fc4672c3bf",
+   "blocks": "fd4aedf1cb39c9f661b7",
+   "sentences": "23d36805b769a84582b6"
+  },
+  "bible/24JERBSB.SFM/40": {
+   "plainText": "c2e2f89337824c1eb7ec",
+   "blocks": "75e69b181a02d0fd87f1",
+   "sentences": "53e1e2b4199bca2a35f5"
+  },
+  "bible/24JERBSB.SFM/41": {
+   "plainText": "1c3e7b3b68d4276c7151",
+   "blocks": "ce10d884c6301799b32f",
+   "sentences": "85f6e4feda6a817e744d"
+  },
+  "bible/24JERBSB.SFM/42": {
+   "plainText": "d8a398116f2474b9210b",
+   "blocks": "bb86567354be696dcc4d",
+   "sentences": "8f9bb4c3cd0affbdc248"
+  },
+  "bible/24JERBSB.SFM/43": {
+   "plainText": "a8a8b367749c50224891",
+   "blocks": "7cb8bd6e43385233510d",
+   "sentences": "4e72696d99a048f0b8b4"
+  },
+  "bible/24JERBSB.SFM/44": {
+   "plainText": "635f6a1c3060b678dd4a",
+   "blocks": "79296c1021340fe20984",
+   "sentences": "95d366e026eae30ec6b0"
+  },
+  "bible/24JERBSB.SFM/45": {
+   "plainText": "2a1f480d52e858fa57c0",
+   "blocks": "f09a58c53602479a3e76",
+   "sentences": "c206c9890003d49ea16b"
+  },
+  "bible/24JERBSB.SFM/46": {
+   "plainText": "c9f4f341770597eb00be",
+   "blocks": "ee1d8666cdf5075b5aa3",
+   "sentences": "5fe67dcfc4dd408e046c"
+  },
+  "bible/24JERBSB.SFM/47": {
+   "plainText": "fa8f3208acb55806ac23",
+   "blocks": "035f60d490aad39e52ac",
+   "sentences": "fc36e7d090a96990fe1c"
+  },
+  "bible/24JERBSB.SFM/48": {
+   "plainText": "5f1502d622a55e74890f",
+   "blocks": "3b8ae635a3b23de4f7c4",
+   "sentences": "3f81dae1ce0e453ad9a1"
+  },
+  "bible/24JERBSB.SFM/49": {
+   "plainText": "130811ccd971aaef2bfc",
+   "blocks": "6d2cdb81a124334b262b",
+   "sentences": "d40e6af2a3a1ac6b3955"
+  },
+  "bible/24JERBSB.SFM/50": {
+   "plainText": "832848b1dfabaad6a6c7",
+   "blocks": "6328107b9d406e409646",
+   "sentences": "3e3623cb08df704ebeed"
+  },
+  "bible/24JERBSB.SFM/51": {
+   "plainText": "bca8f1ad92ff0606ba74",
+   "blocks": "baaa82e07067494eace7",
+   "sentences": "a5504054ad813ff7dbb2"
+  },
+  "bible/24JERBSB.SFM/52": {
+   "plainText": "d5676b3f2cd934450e4b",
+   "blocks": "67b1f03b96324b47086f",
+   "sentences": "75c8e5f7c6a1a19d0926"
+  },
+  "bible/25LAMBSB.SFM/1": {
+   "plainText": "fbcf5d6b8fc26752fb42",
+   "blocks": "257cd09df0f8ebb114db",
+   "sentences": "04c86cbe68138c9c22eb"
+  },
+  "bible/25LAMBSB.SFM/2": {
+   "plainText": "570c4c79ca169dfe6193",
+   "blocks": "1decc773c0aacd2b84d1",
+   "sentences": "5b9a186b4a49d3994b4d"
+  },
+  "bible/25LAMBSB.SFM/3": {
+   "plainText": "ec4e0cae830c8964b281",
+   "blocks": "7fcfa8ea5b5d22000c52",
+   "sentences": "8307fbf86f770f863bfd"
+  },
+  "bible/25LAMBSB.SFM/4": {
+   "plainText": "0f9356a95d0917f8af07",
+   "blocks": "f5f004a8035f9d97a0d2",
+   "sentences": "966bc18bf2182836124c"
+  },
+  "bible/25LAMBSB.SFM/5": {
+   "plainText": "4dbe7a5bde656867b189",
+   "blocks": "abb8b95dc775ac124c42",
+   "sentences": "b8bed0fddd2dbb7a7e0a"
+  },
+  "bible/26EZKBSB.SFM/1": {
+   "plainText": "c622b8574d76eb6a9ad2",
+   "blocks": "0642dc2e8afa073ee0ed",
+   "sentences": "f64c5894bc24cbb5fe42"
+  },
+  "bible/26EZKBSB.SFM/2": {
+   "plainText": "9e26870ddb79b90c0f7c",
+   "blocks": "dcc80103eb9289477890",
+   "sentences": "58e9f9a6a55f2081f8fa"
+  },
+  "bible/26EZKBSB.SFM/3": {
+   "plainText": "1cfb7d3d2c6e9f0b255c",
+   "blocks": "e860c7cce75eaae40364",
+   "sentences": "ea0acd4bc0b0e61fd350"
+  },
+  "bible/26EZKBSB.SFM/4": {
+   "plainText": "1743e9f1cce6ddf95f03",
+   "blocks": "5f8e2dd69c79cc286c91",
+   "sentences": "d81c298060eb5220301c"
+  },
+  "bible/26EZKBSB.SFM/5": {
+   "plainText": "5f92e68561403ba1db5d",
+   "blocks": "7918850be65cafde2019",
+   "sentences": "5f36412ea2d66b1656a4"
+  },
+  "bible/26EZKBSB.SFM/6": {
+   "plainText": "0a9536873e9c4879bbad",
+   "blocks": "ca886f7a30d2210459a0",
+   "sentences": "5ff1e4572683d8e645b2"
+  },
+  "bible/26EZKBSB.SFM/7": {
+   "plainText": "5718ebc9fb0aa91a094e",
+   "blocks": "3a3e30174d6bb050fff5",
+   "sentences": "52c5384d9dbf40db4185"
+  },
+  "bible/26EZKBSB.SFM/8": {
+   "plainText": "54f5a2d6e03e1e4e1821",
+   "blocks": "ae3e55a8836efe20fb4a",
+   "sentences": "3ad1146432d44031965f"
+  },
+  "bible/26EZKBSB.SFM/9": {
+   "plainText": "3c9ed47a8d927915fbf8",
+   "blocks": "48472d72d60588783616",
+   "sentences": "b1bda0777b8c3292f64f"
+  },
+  "bible/26EZKBSB.SFM/10": {
+   "plainText": "9d578e1933f2ecafea08",
+   "blocks": "03ccc41d12dc37384b88",
+   "sentences": "88b8cc76e0ebb9b5765e"
+  },
+  "bible/26EZKBSB.SFM/11": {
+   "plainText": "1fc89c2254f9c46e08d8",
+   "blocks": "5bfd067be110cc5acc93",
+   "sentences": "0428a28774ce012b59db"
+  },
+  "bible/26EZKBSB.SFM/12": {
+   "plainText": "37fb5e74049fb7b9dff7",
+   "blocks": "e1c4d367091ade144819",
+   "sentences": "2362b5628cbeb772ca05"
+  },
+  "bible/26EZKBSB.SFM/13": {
+   "plainText": "a8d34d1d04a226f0c57b",
+   "blocks": "08af78493136b6b4121d",
+   "sentences": "28ac11076c0430dfdc38"
+  },
+  "bible/26EZKBSB.SFM/14": {
+   "plainText": "ddd007c129fc6a98d63f",
+   "blocks": "3afef36cb103111a637d",
+   "sentences": "3d9c85cdea5863dc0905"
+  },
+  "bible/26EZKBSB.SFM/15": {
+   "plainText": "cbdc485ce06efe0e2619",
+   "blocks": "d4a833a23f01273507fe",
+   "sentences": "4ee7ffc34c42a81003f0"
+  },
+  "bible/26EZKBSB.SFM/16": {
+   "plainText": "14f87a15e5829784f8b9",
+   "blocks": "595b71b8314b6ba36fab",
+   "sentences": "7ac37e3141152c0265b6"
+  },
+  "bible/26EZKBSB.SFM/17": {
+   "plainText": "c401159dc9e43726cc11",
+   "blocks": "f1197e2bf118262a5e41",
+   "sentences": "f403f40447083963d15a"
+  },
+  "bible/26EZKBSB.SFM/18": {
+   "plainText": "454d13a53545ad674db6",
+   "blocks": "cea2339db8ce049dc1a5",
+   "sentences": "9da16c00c4e5c417aad2"
+  },
+  "bible/26EZKBSB.SFM/19": {
+   "plainText": "c633611aa89e247e752f",
+   "blocks": "f368319d96b80b4cd151",
+   "sentences": "0fb2e91e3f60e18520cf"
+  },
+  "bible/26EZKBSB.SFM/20": {
+   "plainText": "09a745e22f64bb45ca3c",
+   "blocks": "d0208eb59c012cfc8fca",
+   "sentences": "f3583cd6a3b70b582cda"
+  },
+  "bible/26EZKBSB.SFM/21": {
+   "plainText": "feeb977a0b2903bb59ae",
+   "blocks": "8512a4514977c3ded872",
+   "sentences": "580a24475c373b0963d4"
+  },
+  "bible/26EZKBSB.SFM/22": {
+   "plainText": "049c8ea40c0bae6c0f11",
+   "blocks": "93d1b6513dd207373305",
+   "sentences": "0fb01e145553692ea2c0"
+  },
+  "bible/26EZKBSB.SFM/23": {
+   "plainText": "5de0cdc31bbc15614187",
+   "blocks": "ead9f516c7eae809785b",
+   "sentences": "a31df0f58a039f50048a"
+  },
+  "bible/26EZKBSB.SFM/24": {
+   "plainText": "20dd538923276a8101cf",
+   "blocks": "dd2e37a4c1f997ee2602",
+   "sentences": "14cde13c6efbf648ecc0"
+  },
+  "bible/26EZKBSB.SFM/25": {
+   "plainText": "6bce2578684bea6d9a16",
+   "blocks": "e43e4351413741a8611d",
+   "sentences": "a759448a336979bde10b"
+  },
+  "bible/26EZKBSB.SFM/26": {
+   "plainText": "6d54268dde5dbb940dee",
+   "blocks": "7d5e66fa369a1816db13",
+   "sentences": "638e61742f1259c0a292"
+  },
+  "bible/26EZKBSB.SFM/27": {
+   "plainText": "08689a224756faf904f6",
+   "blocks": "6d6e93f5f9670b6f3fe0",
+   "sentences": "2fd8628230c6287807d8"
+  },
+  "bible/26EZKBSB.SFM/28": {
+   "plainText": "fc6a52b235c1251df761",
+   "blocks": "aae8aceb4b16344f0a88",
+   "sentences": "17120a0360ac015d51a9"
+  },
+  "bible/26EZKBSB.SFM/29": {
+   "plainText": "06e1b25ac68c97046b92",
+   "blocks": "b332f231ebf876df709e",
+   "sentences": "721f47442e5f7bb67816"
+  },
+  "bible/26EZKBSB.SFM/30": {
+   "plainText": "70ca307fbc0c3ab52010",
+   "blocks": "fad40a74e30b2cdedf74",
+   "sentences": "fdf90d43d8478452fa91"
+  },
+  "bible/26EZKBSB.SFM/31": {
+   "plainText": "e325969c647a4a577f38",
+   "blocks": "60eb6e8482227f0960d0",
+   "sentences": "d232d28f96a271b5d2d1"
+  },
+  "bible/26EZKBSB.SFM/32": {
+   "plainText": "66ac9c2f9a459f9a840d",
+   "blocks": "f70911505d9d14dd2736",
+   "sentences": "0b6be5cc3a4d709f72d9"
+  },
+  "bible/26EZKBSB.SFM/33": {
+   "plainText": "1b2c2da87e634a14dbda",
+   "blocks": "8b2f61347a297ff0f9af",
+   "sentences": "434689d0e787b28fffe9"
+  },
+  "bible/26EZKBSB.SFM/34": {
+   "plainText": "a8eab890bf42a8d509e5",
+   "blocks": "d49b534228c7cd5fa840",
+   "sentences": "7f23a8664306f2c33401"
+  },
+  "bible/26EZKBSB.SFM/35": {
+   "plainText": "cbab068b3e91e069ff19",
+   "blocks": "2746f8770a66fd029471",
+   "sentences": "16e2b4aa5e4a680a0fbe"
+  },
+  "bible/26EZKBSB.SFM/36": {
+   "plainText": "7f3471ffc62a5a3592fa",
+   "blocks": "abc9a40bced6cfa4b329",
+   "sentences": "c37c293f8441ba59e539"
+  },
+  "bible/26EZKBSB.SFM/37": {
+   "plainText": "60d1ddc01928eb6096b2",
+   "blocks": "e4d5da53ae8f559dd350",
+   "sentences": "c79cd3e1200104635c5c"
+  },
+  "bible/26EZKBSB.SFM/38": {
+   "plainText": "c8a464fc40b2cef8cf2b",
+   "blocks": "55a2f92ef2e9fc095477",
+   "sentences": "25bf669dd7498460ffcc"
+  },
+  "bible/26EZKBSB.SFM/39": {
+   "plainText": "4e5e7f6070417b8e1f55",
+   "blocks": "c29b188e7327b3b36934",
+   "sentences": "e230fb204f643b3d6f76"
+  },
+  "bible/26EZKBSB.SFM/40": {
+   "plainText": "bc9d449bade860efd8c9",
+   "blocks": "786cb021976e954daa93",
+   "sentences": "f1ce4f6cb62fd5b723cd"
+  },
+  "bible/26EZKBSB.SFM/41": {
+   "plainText": "4d840bc9fe98b1c038d8",
+   "blocks": "274f582b01b9c70dda8c",
+   "sentences": "8cebdefe676fdc5c43ba"
+  },
+  "bible/26EZKBSB.SFM/42": {
+   "plainText": "75f43cfd514f0a1c9765",
+   "blocks": "25c442fa39dfbff62da9",
+   "sentences": "a38329d3fe0764bb1f67"
+  },
+  "bible/26EZKBSB.SFM/43": {
+   "plainText": "e4d1effdc3f2b7570538",
+   "blocks": "586e81371ab1e5df7943",
+   "sentences": "8b409a90231c26e14374"
+  },
+  "bible/26EZKBSB.SFM/44": {
+   "plainText": "52fb8c4daf61cbc7f32e",
+   "blocks": "b8ac78537e05d6d74539",
+   "sentences": "afb41a39c28eb8c6f9e1"
+  },
+  "bible/26EZKBSB.SFM/45": {
+   "plainText": "7b7c83523e3d4de76071",
+   "blocks": "bb06f9ad72426032ea59",
+   "sentences": "cb39ac34c1d66081e83c"
+  },
+  "bible/26EZKBSB.SFM/46": {
+   "plainText": "1c6b8c822d940592a94e",
+   "blocks": "ce0c2dd76423008a01a8",
+   "sentences": "14b1e8fc45e5c6589fd9"
+  },
+  "bible/26EZKBSB.SFM/47": {
+   "plainText": "3303db2d59cae87d7f0f",
+   "blocks": "b937889cf40e84f300c4",
+   "sentences": "102a7caeb7a31dce02bd"
+  },
+  "bible/26EZKBSB.SFM/48": {
+   "plainText": "267cc3b294cf200b8a5b",
+   "blocks": "a064da242ac98e77974a",
+   "sentences": "b4959a47a1b57e1e9777"
+  },
+  "bible/27DANBSB.SFM/1": {
+   "plainText": "ca40cffd86007a639b42",
+   "blocks": "a8fa572c75214b394bf4",
+   "sentences": "56210a74f701731a6ce3"
+  },
+  "bible/27DANBSB.SFM/2": {
+   "plainText": "29a387bc76283f9bc90c",
+   "blocks": "e9970ba850cae504ed05",
+   "sentences": "7499b21a39cac44f528c"
+  },
+  "bible/27DANBSB.SFM/3": {
+   "plainText": "f7347a51f756aae7bbca",
+   "blocks": "b2935a7c2dd154eb50af",
+   "sentences": "885b7155a4df891d8318"
+  },
+  "bible/27DANBSB.SFM/4": {
+   "plainText": "6585f0184680e33661f4",
+   "blocks": "c0ef1acfed82d53b9681",
+   "sentences": "6d636db3143d23c5aed9"
+  },
+  "bible/27DANBSB.SFM/5": {
+   "plainText": "658a541e77587718015d",
+   "blocks": "e9604e6b5fd1add6fbee",
+   "sentences": "d58ec3d2f887b109d338"
+  },
+  "bible/27DANBSB.SFM/6": {
+   "plainText": "2ddbc00869322bb1ed28",
+   "blocks": "438765ce87a88ded6001",
+   "sentences": "9680df31bacaaa0d1e6e"
+  },
+  "bible/27DANBSB.SFM/7": {
+   "plainText": "03e428380d014bf9222f",
+   "blocks": "2abd742762d8211f4eb7",
+   "sentences": "b148d325dbe6b31d6904"
+  },
+  "bible/27DANBSB.SFM/8": {
+   "plainText": "8d04b2097c1ddc05e0bd",
+   "blocks": "2c268751fb97716429f5",
+   "sentences": "5d69e783cef18191c64d"
+  },
+  "bible/27DANBSB.SFM/9": {
+   "plainText": "3381a0eeb6ac132cad33",
+   "blocks": "7505cb1ba2942b267b49",
+   "sentences": "1e1ed9b46dec2e4d4942"
+  },
+  "bible/27DANBSB.SFM/10": {
+   "plainText": "fcc0c1564764793ba104",
+   "blocks": "c85f277d6b2ceba672ce",
+   "sentences": "e72bec427446aff4a1f4"
+  },
+  "bible/27DANBSB.SFM/11": {
+   "plainText": "ff940c64ef0825d97d5d",
+   "blocks": "d0e92d7a629615eadf68",
+   "sentences": "6eedf80f965f39fcd4ed"
+  },
+  "bible/27DANBSB.SFM/12": {
+   "plainText": "25059a8cfb339637758b",
+   "blocks": "dc9eb35c576bcea79ccb",
+   "sentences": "0b34b751df5641bade38"
+  },
+  "bible/28HOSBSB.SFM/1": {
+   "plainText": "ff6011676dd75111fb74",
+   "blocks": "bc96d01aeee22c25c13d",
+   "sentences": "39216326762e39d6fbee"
+  },
+  "bible/28HOSBSB.SFM/2": {
+   "plainText": "2d7c8cea130adbb94fdb",
+   "blocks": "3eabf0df487a4d3303d3",
+   "sentences": "e76d828f0b7f86ecfbe2"
+  },
+  "bible/28HOSBSB.SFM/3": {
+   "plainText": "673933c767414c2ad39d",
+   "blocks": "1358bb69de756e1de580",
+   "sentences": "a5fcdaf9c1610b2ef256"
+  },
+  "bible/28HOSBSB.SFM/4": {
+   "plainText": "b170c439ccbeb13f1698",
+   "blocks": "977132c47de39d3fb645",
+   "sentences": "b20e40c539280a4fc467"
+  },
+  "bible/28HOSBSB.SFM/5": {
+   "plainText": "700abc21e23eb66261bc",
+   "blocks": "c70bfcb9196c8829bc4b",
+   "sentences": "3750e666408fbd20337c"
+  },
+  "bible/28HOSBSB.SFM/6": {
+   "plainText": "97740071081575c6dff1",
+   "blocks": "423f397934a3d4d1c7c9",
+   "sentences": "8f8d69ccee25377b8305"
+  },
+  "bible/28HOSBSB.SFM/7": {
+   "plainText": "29cbea3e47c525dfe286",
+   "blocks": "e063c492d2a084e99f15",
+   "sentences": "5665f06d85ab4346ce5c"
+  },
+  "bible/28HOSBSB.SFM/8": {
+   "plainText": "940c113d5b2ee0b727a9",
+   "blocks": "ce29aa9b1ddaa3f56cb5",
+   "sentences": "88329d67e7ca22f4cc74"
+  },
+  "bible/28HOSBSB.SFM/9": {
+   "plainText": "d0a9bc055938aba67f9c",
+   "blocks": "2fa2bbb8510ca1f9d17a",
+   "sentences": "b3479203c498017456c7"
+  },
+  "bible/28HOSBSB.SFM/10": {
+   "plainText": "f5acb68a9bf6f1b3d536",
+   "blocks": "08a2cf537876796467f8",
+   "sentences": "fa500d597e27ad301461"
+  },
+  "bible/28HOSBSB.SFM/11": {
+   "plainText": "c2208118efa58b603202",
+   "blocks": "90fc7bdf8acae03fe3e8",
+   "sentences": "03365ddf3b6cab9cfeb6"
+  },
+  "bible/28HOSBSB.SFM/12": {
+   "plainText": "79d311f7b01eeb77c8a0",
+   "blocks": "7af0716ae46629e94264",
+   "sentences": "71975312e3ea4c739169"
+  },
+  "bible/28HOSBSB.SFM/13": {
+   "plainText": "73ffe34540ba5254b2d3",
+   "blocks": "b12c24a4374e8dd13ba1",
+   "sentences": "a9ffcadf353045640273"
+  },
+  "bible/28HOSBSB.SFM/14": {
+   "plainText": "695d943b80b143eabca7",
+   "blocks": "0a5f465f8f903fdd16b0",
+   "sentences": "e2c207c8aa32dbc21972"
+  },
+  "bible/29JOLBSB.SFM/1": {
+   "plainText": "37d2cd4faefdc4744e7c",
+   "blocks": "234bf1853eee49fab8dc",
+   "sentences": "ed8be941235ef2f36738"
+  },
+  "bible/29JOLBSB.SFM/2": {
+   "plainText": "df801d1390eabca4ff62",
+   "blocks": "60956b9c93b5a696bae0",
+   "sentences": "61cfbba5efad15d305b8"
+  },
+  "bible/29JOLBSB.SFM/3": {
+   "plainText": "c7d18ac538adaf858a3d",
+   "blocks": "d163c700824acce08d49",
+   "sentences": "64783ff008e6a83fb057"
+  },
+  "bible/30AMOBSB.SFM/1": {
+   "plainText": "3dceab6c1c454ba71cbc",
+   "blocks": "32b620b8e59dc3d54a89",
+   "sentences": "b0e07318b2cb321e244f"
+  },
+  "bible/30AMOBSB.SFM/2": {
+   "plainText": "c32aad2b11cee57ce5ed",
+   "blocks": "374b9257b39d270f6203",
+   "sentences": "d0c7e27f0c60baba7cc4"
+  },
+  "bible/30AMOBSB.SFM/3": {
+   "plainText": "c904eca82246a06d2f9c",
+   "blocks": "f21df38f04070c01a249",
+   "sentences": "8ab9d32c27cb19307bd3"
+  },
+  "bible/30AMOBSB.SFM/4": {
+   "plainText": "a88b949c8377e9a189d9",
+   "blocks": "eb418f762a9db84e8aa5",
+   "sentences": "d38114cca6e21626c092"
+  },
+  "bible/30AMOBSB.SFM/5": {
+   "plainText": "5d8f5ece488f5f3b582a",
+   "blocks": "1a60781b604382636836",
+   "sentences": "7db79d18ee1becc63568"
+  },
+  "bible/30AMOBSB.SFM/6": {
+   "plainText": "cee9bd12cff674814b75",
+   "blocks": "835073f413228ce99e08",
+   "sentences": "d05bcb4430c0f0f4be53"
+  },
+  "bible/30AMOBSB.SFM/7": {
+   "plainText": "cc24f03733db87f2f7eb",
+   "blocks": "720192d29db339bca990",
+   "sentences": "e541a5d3eff7eafffd30"
+  },
+  "bible/30AMOBSB.SFM/8": {
+   "plainText": "597aa263967ff80f60de",
+   "blocks": "b77d33231844f4b80539",
+   "sentences": "9f6a2ab4157b58d3e93d"
+  },
+  "bible/30AMOBSB.SFM/9": {
+   "plainText": "1fcdf08a66fe4b42f7ad",
+   "blocks": "d858c9bb184b22c209bd",
+   "sentences": "2d3eb5f3b640a8a812c0"
+  },
+  "bible/31OBABSB.SFM/1": {
+   "plainText": "5c37eb240b6151d84c79",
+   "blocks": "5b920b2a1ebe4c555f68",
+   "sentences": "83f43fe4d86b4992cab5"
+  },
+  "bible/32JONBSB.SFM/1": {
+   "plainText": "02cc752525db4cf159c7",
+   "blocks": "5190b94a6f176fec5b0b",
+   "sentences": "36830327c34c25fc7b0b"
+  },
+  "bible/32JONBSB.SFM/2": {
+   "plainText": "7943a8c8ac3caff78ca9",
+   "blocks": "6cfcc11da5ec98f20860",
+   "sentences": "b90fe68e62a1a8f28f47"
+  },
+  "bible/32JONBSB.SFM/3": {
+   "plainText": "27f394eca80bba253620",
+   "blocks": "8f892d2fde48fe7828cd",
+   "sentences": "3b48b908f18db3ccd065"
+  },
+  "bible/32JONBSB.SFM/4": {
+   "plainText": "a25238869d01faedfe4d",
+   "blocks": "aca38ec04b4bbf8bcc5f",
+   "sentences": "c319f97b8bd5fd9b16ff"
+  },
+  "bible/33MICBSB.SFM/1": {
+   "plainText": "07a48d6ef5dd445a1248",
+   "blocks": "aac1f7c4435518941b12",
+   "sentences": "8d4c2d6614f4419073d9"
+  },
+  "bible/33MICBSB.SFM/2": {
+   "plainText": "15470ea4858582afb24d",
+   "blocks": "68c30a3ae19f10c64ec1",
+   "sentences": "643a0f99a0793bcc8433"
+  },
+  "bible/33MICBSB.SFM/3": {
+   "plainText": "77aca3bec63183b7add5",
+   "blocks": "d0e9ac11b149124d665d",
+   "sentences": "bf7c3852ee74b67c2d65"
+  },
+  "bible/33MICBSB.SFM/4": {
+   "plainText": "c6535a926fc1359c1f01",
+   "blocks": "171a0a6918c8f29f1e8a",
+   "sentences": "5d6b71f5bdf08e7021f5"
+  },
+  "bible/33MICBSB.SFM/5": {
+   "plainText": "eedbcb41e0466dc45f59",
+   "blocks": "afa9f322bdc7d919f00a",
+   "sentences": "c04a40e7b02ce70d62c1"
+  },
+  "bible/33MICBSB.SFM/6": {
+   "plainText": "421934cfcf6600eb0e88",
+   "blocks": "83527e782d133b6606f6",
+   "sentences": "37759a41f8e486a30cc4"
+  },
+  "bible/33MICBSB.SFM/7": {
+   "plainText": "4ecc853d1b46581c68ec",
+   "blocks": "e46e84272ca7dd72d5fd",
+   "sentences": "eadb5bdf46d59350e114"
+  },
+  "bible/34NAMBSB.SFM/1": {
+   "plainText": "2bf4bc306ab6f7d9f878",
+   "blocks": "f4f9d26fe06740c9f62c",
+   "sentences": "ee2bc28260d54c70064b"
+  },
+  "bible/34NAMBSB.SFM/2": {
+   "plainText": "75b2e3cb4bdfe2909ab7",
+   "blocks": "79a334b7d171cdff8717",
+   "sentences": "c22dc1b33b5255b69dbd"
+  },
+  "bible/34NAMBSB.SFM/3": {
+   "plainText": "78e8b128048659547afd",
+   "blocks": "b485f1155f28f8f6a7a1",
+   "sentences": "7e9df6f5dde73fcdad43"
+  },
+  "bible/35HABBSB.SFM/1": {
+   "plainText": "6dc0d370d69695c6d970",
+   "blocks": "1c4a86ef51868ef80d68",
+   "sentences": "0149fdac039e21141f8f"
+  },
+  "bible/35HABBSB.SFM/2": {
+   "plainText": "708c12e8381df695d175",
+   "blocks": "f151e717b455ebaa3f53",
+   "sentences": "d5d70b9b6fd88e93340d"
+  },
+  "bible/35HABBSB.SFM/3": {
+   "plainText": "c754238f4a50650cf9ac",
+   "blocks": "9d330f975970fa0dc6b2",
+   "sentences": "45b0cd377b652a6f0e4c"
+  },
+  "bible/36ZEPBSB.SFM/1": {
+   "plainText": "6307c20a15400e46cf37",
+   "blocks": "813bdc0146ec892eca85",
+   "sentences": "9e269b055d089271f901"
+  },
+  "bible/36ZEPBSB.SFM/2": {
+   "plainText": "9ce719d690cc22bf66ca",
+   "blocks": "fa43d07ef89c23f68177",
+   "sentences": "818ef4ebaaabfdf27931"
+  },
+  "bible/36ZEPBSB.SFM/3": {
+   "plainText": "85cbd2b18762416dcf2f",
+   "blocks": "09b511b2ac30b1af5dcb",
+   "sentences": "e62b5726158205cbed15"
+  },
+  "bible/37HAGBSB.SFM/1": {
+   "plainText": "1662c456266354433630",
+   "blocks": "318b6775bb7c5886179f",
+   "sentences": "796a6fc344feaa7cb347"
+  },
+  "bible/37HAGBSB.SFM/2": {
+   "plainText": "4233b25365f0395b0fd1",
+   "blocks": "d188410dae0bb411ca74",
+   "sentences": "3e6572224c293047984c"
+  },
+  "bible/38ZECBSB.SFM/1": {
+   "plainText": "777267234408b3493c34",
+   "blocks": "6568b631c39df48f9bd6",
+   "sentences": "1a39af03bca2b6c04f4f"
+  },
+  "bible/38ZECBSB.SFM/2": {
+   "plainText": "95a72772af03c9a4828a",
+   "blocks": "774437881a5b11dad872",
+   "sentences": "d339ea19ff0f05c6132b"
+  },
+  "bible/38ZECBSB.SFM/3": {
+   "plainText": "c8edc1b2d9358e516ed4",
+   "blocks": "b041cd0006067c2db024",
+   "sentences": "8711473e2cf73ccb7bba"
+  },
+  "bible/38ZECBSB.SFM/4": {
+   "plainText": "a6b56b8b360ba676cd6e",
+   "blocks": "3032137f0754d2fa46ca",
+   "sentences": "b54e96ae1a02661b852d"
+  },
+  "bible/38ZECBSB.SFM/5": {
+   "plainText": "1783cdd5b366905b9829",
+   "blocks": "17afe0cb8782a5ab91d0",
+   "sentences": "807131d5e307712e9db8"
+  },
+  "bible/38ZECBSB.SFM/6": {
+   "plainText": "951d04b7314fa03b4a61",
+   "blocks": "36a7488ede5e7e328902",
+   "sentences": "b8f13075a36fdb75d3c3"
+  },
+  "bible/38ZECBSB.SFM/7": {
+   "plainText": "74634c8aee229e2a3d46",
+   "blocks": "ae5cc138b5acf1f5764d",
+   "sentences": "0326dfc4e328e187e6d5"
+  },
+  "bible/38ZECBSB.SFM/8": {
+   "plainText": "9788f50fc31516382acd",
+   "blocks": "af2ea0002ed47cf809dd",
+   "sentences": "e6aa21e6b3dffa77586a"
+  },
+  "bible/38ZECBSB.SFM/9": {
+   "plainText": "ffdb8fa704c9f398c826",
+   "blocks": "ece5d51731c6016b0f0e",
+   "sentences": "e2d46bf71515691a3a02"
+  },
+  "bible/38ZECBSB.SFM/10": {
+   "plainText": "12f7ed7e26f4e660e8cb",
+   "blocks": "93e1b09b3a86ea863ada",
+   "sentences": "72b64f2f92163997f1c2"
+  },
+  "bible/38ZECBSB.SFM/11": {
+   "plainText": "3cb3b5f265551819979d",
+   "blocks": "b69fbdfa14333b85bf56",
+   "sentences": "d11012e6c64c8f77e869"
+  },
+  "bible/38ZECBSB.SFM/12": {
+   "plainText": "c1b072048b8f0f35a128",
+   "blocks": "662732345da3c05b5c06",
+   "sentences": "dcc7ca01212e98a87f97"
+  },
+  "bible/38ZECBSB.SFM/13": {
+   "plainText": "3cacb3732b4130681b61",
+   "blocks": "41e5eb7114f3d2f59207",
+   "sentences": "e3c5ad3162b66a48fd12"
+  },
+  "bible/38ZECBSB.SFM/14": {
+   "plainText": "a1bac454274555a76c1c",
+   "blocks": "1f21aa8f38441c055d47",
+   "sentences": "cd65a25e1963f64154ae"
+  },
+  "bible/39MALBSB.SFM/1": {
+   "plainText": "b6185a7c850e0cb8cb42",
+   "blocks": "d36a5f6998e46ebf6733",
+   "sentences": "a019f4b59dadb66471f9"
+  },
+  "bible/39MALBSB.SFM/2": {
+   "plainText": "b40ad449031a354ad0f3",
+   "blocks": "cc16946bd26a0a1753f5",
+   "sentences": "a6dd1d15fcf47e8b1480"
+  },
+  "bible/39MALBSB.SFM/3": {
+   "plainText": "424930e5376e98d08939",
+   "blocks": "49b78e44fdb5cdd03c4f",
+   "sentences": "16e64e8632e64b19b920"
+  },
+  "bible/39MALBSB.SFM/4": {
+   "plainText": "dfdb41deae6953899eb9",
+   "blocks": "89e3a465cf65f60ebbab",
+   "sentences": "8c50d278a4d4e592e270"
+  },
+  "bible/41MATBSB.SFM/1": {
+   "plainText": "b17bb6db5e5b52f127c2",
+   "blocks": "2b4565187e39c5bad1aa",
+   "sentences": "0343ed0b6c1cfc672892"
+  },
+  "bible/41MATBSB.SFM/2": {
+   "plainText": "5a5a885cd5ed9954458c",
+   "blocks": "4008437285aff8450bb8",
+   "sentences": "bfa1344f19812c96790f"
+  },
+  "bible/41MATBSB.SFM/3": {
+   "plainText": "e725ca26f155a48e9805",
+   "blocks": "bb11fcc7b1c4514d8c51",
+   "sentences": "bbfa51922ab77a2f449b"
+  },
+  "bible/41MATBSB.SFM/4": {
+   "plainText": "ee337611eab169abc91f",
+   "blocks": "bf9ece568f6dcd6f2f14",
+   "sentences": "ac3c1cc707b12c50e2d3"
+  },
+  "bible/41MATBSB.SFM/5": {
+   "plainText": "c5c9f88d55c0c41d32ba",
+   "blocks": "a3280ddecc327fe0e0c8",
+   "sentences": "66a29f4f070819edcfab"
+  },
+  "bible/41MATBSB.SFM/6": {
+   "plainText": "902aa0c41ced7906d7f3",
+   "blocks": "d9c874f1e231ff11042d",
+   "sentences": "3fc235811a15919614d6"
+  },
+  "bible/41MATBSB.SFM/7": {
+   "plainText": "7cf50c3567c77fe42796",
+   "blocks": "ba0410362bda89882ffb",
+   "sentences": "52780a93af962425b720"
+  },
+  "bible/41MATBSB.SFM/8": {
+   "plainText": "9aa366ecd5fdc9c34b52",
+   "blocks": "536e40616de6583f1ed6",
+   "sentences": "0440b76be98a35f39fd4"
+  },
+  "bible/41MATBSB.SFM/9": {
+   "plainText": "15c16e94705b0d5bc951",
+   "blocks": "bc9885a193c8f657142c",
+   "sentences": "df12b57ca6f3643d83e8"
+  },
+  "bible/41MATBSB.SFM/10": {
+   "plainText": "9b8c6e3a43fe07a9d56e",
+   "blocks": "da3cbc850da32f1ca42e",
+   "sentences": "16c50ecfa76a4770428c"
+  },
+  "bible/41MATBSB.SFM/11": {
+   "plainText": "bbc4063654af0a66623f",
+   "blocks": "0f56ed6515b6991cf969",
+   "sentences": "9d59a13c0bcce09c4044"
+  },
+  "bible/41MATBSB.SFM/12": {
+   "plainText": "a44c61b4a1bf662b40f1",
+   "blocks": "27ef80fdadb2d1baf4b6",
+   "sentences": "3995089042de721b50ca"
+  },
+  "bible/41MATBSB.SFM/13": {
+   "plainText": "6970e208a116afde249f",
+   "blocks": "9c2b55a5a847bb665537",
+   "sentences": "531b1a3f7b2574ae03d6"
+  },
+  "bible/41MATBSB.SFM/14": {
+   "plainText": "8773941b5cb64b113bab",
+   "blocks": "c4d17f00ee4abd387af6",
+   "sentences": "35beffbcc32f084396e6"
+  },
+  "bible/41MATBSB.SFM/15": {
+   "plainText": "708b392f36e28d1b15f4",
+   "blocks": "dea0218a5232b50f3c62",
+   "sentences": "82abf9d7dd9f346673d1"
+  },
+  "bible/41MATBSB.SFM/16": {
+   "plainText": "2a4d6fc5d2afdb056af6",
+   "blocks": "ed6b79c34be69c6efff9",
+   "sentences": "d33f101fee0f99f6d800"
+  },
+  "bible/41MATBSB.SFM/17": {
+   "plainText": "bfa8b0f1f53b53a82163",
+   "blocks": "0e1fac7ecb75ed353322",
+   "sentences": "3952b6e5487a8862b01e"
+  },
+  "bible/41MATBSB.SFM/18": {
+   "plainText": "ea2ee46bbac71826ea7c",
+   "blocks": "0f9aeb02c67894f80531",
+   "sentences": "6b3cb79b1e06ef733455"
+  },
+  "bible/41MATBSB.SFM/19": {
+   "plainText": "83616cde798360e99605",
+   "blocks": "b0f14800d555f0c6c868",
+   "sentences": "bbbc05d52e1f859d6348"
+  },
+  "bible/41MATBSB.SFM/20": {
+   "plainText": "d007690faa79013ae0f8",
+   "blocks": "7f9f59fb5d12f6cbad96",
+   "sentences": "075be0e69a2a02ff6395"
+  },
+  "bible/41MATBSB.SFM/21": {
+   "plainText": "945545795d70a21f4751",
+   "blocks": "bf09cfaba187378a90da",
+   "sentences": "4873773b458785536a04"
+  },
+  "bible/41MATBSB.SFM/22": {
+   "plainText": "4b88681413293e4fe8b7",
+   "blocks": "708e9dc18aa180939f18",
+   "sentences": "38c36111846aae1f758e"
+  },
+  "bible/41MATBSB.SFM/23": {
+   "plainText": "0ec67e77f5377059a172",
+   "blocks": "bc1e392e509990800f71",
+   "sentences": "9bb9ceb32006e437a72e"
+  },
+  "bible/41MATBSB.SFM/24": {
+   "plainText": "d1c65ed5fbfe8dca6da4",
+   "blocks": "2818cb70ad9ca9076178",
+   "sentences": "d37ad78a67df42d024a9"
+  },
+  "bible/41MATBSB.SFM/25": {
+   "plainText": "64418a93528871df56df",
+   "blocks": "5a58f5f3e623e4f11578",
+   "sentences": "16b1d3883ed2095a5e71"
+  },
+  "bible/41MATBSB.SFM/26": {
+   "plainText": "d393a1c754d7a745130b",
+   "blocks": "b88cd9a394b6f605b618",
+   "sentences": "fce124fd2e5c46d49ae3"
+  },
+  "bible/41MATBSB.SFM/27": {
+   "plainText": "49c32bb2532c522f1b9d",
+   "blocks": "2acf5528c0fdb7a9cb85",
+   "sentences": "d6ae33b0c02abef88090"
+  },
+  "bible/41MATBSB.SFM/28": {
+   "plainText": "32b5f1ca0cb33c74f7fa",
+   "blocks": "7406a3adea80914a21f6",
+   "sentences": "34fb50246c4fb2fff502"
+  },
+  "bible/42MRKBSB.SFM/1": {
+   "plainText": "79c7a3f13fe0f5e531c3",
+   "blocks": "6cb4a2ef85c6024c7fb1",
+   "sentences": "5a720a12846dfe56e0d6"
+  },
+  "bible/42MRKBSB.SFM/2": {
+   "plainText": "8982afb9caae770f5683",
+   "blocks": "8a2c3ef20a7848b2d150",
+   "sentences": "d573930efcd667367d1a"
+  },
+  "bible/42MRKBSB.SFM/3": {
+   "plainText": "ad050820aa0c00235b1d",
+   "blocks": "6eceae52783096459f2d",
+   "sentences": "93f67de99c305618f96a"
+  },
+  "bible/42MRKBSB.SFM/4": {
+   "plainText": "06b17d8c316434d2d578",
+   "blocks": "c09f3b1a8abd3d537466",
+   "sentences": "de2b1e5225a6a96e0435"
+  },
+  "bible/42MRKBSB.SFM/5": {
+   "plainText": "d91af207043ce4740ae5",
+   "blocks": "5afda4d6999170e666a5",
+   "sentences": "22e67b2795bac951b388"
+  },
+  "bible/42MRKBSB.SFM/6": {
+   "plainText": "32dade0c6338a036fbc2",
+   "blocks": "7b36de9aade297cd27b6",
+   "sentences": "5d64c71898d107706a49"
+  },
+  "bible/42MRKBSB.SFM/7": {
+   "plainText": "3caa366af1cbc6107bab",
+   "blocks": "be091f61aaf726ff7cdb",
+   "sentences": "92fd76c47cc83164c969"
+  },
+  "bible/42MRKBSB.SFM/8": {
+   "plainText": "d50ff3e63968a25871af",
+   "blocks": "bdf579492ff4de5f148e",
+   "sentences": "55287d28aedeb49fc2e7"
+  },
+  "bible/42MRKBSB.SFM/9": {
+   "plainText": "0b7f6f619c81664f1f8c",
+   "blocks": "2751b39def1a6e3e6a81",
+   "sentences": "a95058395c3daa39aa03"
+  },
+  "bible/42MRKBSB.SFM/10": {
+   "plainText": "1b32d054db779e1bb8a8",
+   "blocks": "8b5451735ea171bfd976",
+   "sentences": "fc1d9d6bc8c14ee460b0"
+  },
+  "bible/42MRKBSB.SFM/11": {
+   "plainText": "f3db54463ea4bb163e43",
+   "blocks": "8eb32ea86572fdf7ca8d",
+   "sentences": "04ff113224f89b0b19b8"
+  },
+  "bible/42MRKBSB.SFM/12": {
+   "plainText": "e6711fa9a2d6eb632ee1",
+   "blocks": "b599514ee4c2adeebeaa",
+   "sentences": "0526ffc02c685f00f7f5"
+  },
+  "bible/42MRKBSB.SFM/13": {
+   "plainText": "bae7748b2c7f126f4879",
+   "blocks": "e370109ecea0d59db315",
+   "sentences": "881febc48961afc29c31"
+  },
+  "bible/42MRKBSB.SFM/14": {
+   "plainText": "ba4aaf90964cdb6029f2",
+   "blocks": "7a0fcf851fb1f6e9859f",
+   "sentences": "bd5afa6818b501339f39"
+  },
+  "bible/42MRKBSB.SFM/15": {
+   "plainText": "0d960a97bea19540c874",
+   "blocks": "3dfdf2b6ba256a34089c",
+   "sentences": "7da563452d3d294c8615"
+  },
+  "bible/42MRKBSB.SFM/16": {
+   "plainText": "d30164897e3a06aa41b9",
+   "blocks": "7f99dc342673c2b643f2",
+   "sentences": "237ea8cf265a70ea44f2"
+  },
+  "bible/43LUKBSB.SFM/1": {
+   "plainText": "27e8cd9691d470f240c3",
+   "blocks": "8a30d88be4047ada1424",
+   "sentences": "5f0bf1586e372ca09f2a"
+  },
+  "bible/43LUKBSB.SFM/2": {
+   "plainText": "a940680e2eb62451b080",
+   "blocks": "67099b56b83ea5a57a8f",
+   "sentences": "da74fb135588132631fe"
+  },
+  "bible/43LUKBSB.SFM/3": {
+   "plainText": "e9f22983da4f8baf72f5",
+   "blocks": "b3172db8a1c4a18dc3de",
+   "sentences": "85086d73c2a0cb97b0a1"
+  },
+  "bible/43LUKBSB.SFM/4": {
+   "plainText": "a66b869ec0747faef9c7",
+   "blocks": "129086d890fe9fbb87a0",
+   "sentences": "4394f2f7e497fda51b3e"
+  },
+  "bible/43LUKBSB.SFM/5": {
+   "plainText": "99f4d295ddd3ed58c94c",
+   "blocks": "d6896d0b063cd42f3dd6",
+   "sentences": "d7fffaef91cec5ac652e"
+  },
+  "bible/43LUKBSB.SFM/6": {
+   "plainText": "2279627f2286987194ee",
+   "blocks": "46cf0fb7d9667a0c5b3a",
+   "sentences": "d28dc64a12fb390ea257"
+  },
+  "bible/43LUKBSB.SFM/7": {
+   "plainText": "ac8e173d46910da61883",
+   "blocks": "c0c264ea04e813a62d45",
+   "sentences": "144863c767a4f74e059f"
+  },
+  "bible/43LUKBSB.SFM/8": {
+   "plainText": "8e1b51ab86784269617b",
+   "blocks": "a63d4e7d68a8a1bb0e89",
+   "sentences": "59b9fa2b568e31509ab5"
+  },
+  "bible/43LUKBSB.SFM/9": {
+   "plainText": "e6be2c18758539d28e9c",
+   "blocks": "7bea8227170763ad69f6",
+   "sentences": "d8f0f6ae21902496a29f"
+  },
+  "bible/43LUKBSB.SFM/10": {
+   "plainText": "e442f89d57307d43a27c",
+   "blocks": "34482af45ce874e75d26",
+   "sentences": "a470f33c3123e938e91b"
+  },
+  "bible/43LUKBSB.SFM/11": {
+   "plainText": "06cb077e74160a9d16d7",
+   "blocks": "84deb6a14a4b8a448d26",
+   "sentences": "1eb6e79bf01aa8817518"
+  },
+  "bible/43LUKBSB.SFM/12": {
+   "plainText": "cd825bd908779c11dd42",
+   "blocks": "4676b0980bc92dc6ec87",
+   "sentences": "856dc04b16a632a505e1"
+  },
+  "bible/43LUKBSB.SFM/13": {
+   "plainText": "2a651fb4acb484676a5f",
+   "blocks": "0d5cd3e4b8a110fdb979",
+   "sentences": "434494ede7293635d3f8"
+  },
+  "bible/43LUKBSB.SFM/14": {
+   "plainText": "e305532dd7bb0ef1b958",
+   "blocks": "5aa9f695bebb1d2ae293",
+   "sentences": "38d17f326657c11a4b96"
+  },
+  "bible/43LUKBSB.SFM/15": {
+   "plainText": "23e833909e90f9ffd782",
+   "blocks": "da29079950745d9a61a0",
+   "sentences": "eac7ce1ee7015880a778"
+  },
+  "bible/43LUKBSB.SFM/16": {
+   "plainText": "e59a36b75608eb8df754",
+   "blocks": "f4f170f526732b8450fd",
+   "sentences": "bf06ec007145cb2ad263"
+  },
+  "bible/43LUKBSB.SFM/17": {
+   "plainText": "6e9c8b05f93d968f2e6a",
+   "blocks": "866eb9f1b4b5c882f463",
+   "sentences": "b9ec5ce2176191df57ee"
+  },
+  "bible/43LUKBSB.SFM/18": {
+   "plainText": "05ecf58e6f8b06817d65",
+   "blocks": "76b41fc16dbb2f4507ae",
+   "sentences": "47084bca2fdb1cd94142"
+  },
+  "bible/43LUKBSB.SFM/19": {
+   "plainText": "ad0ba42672071f8d2bf1",
+   "blocks": "37d95ef1e11c1cd4a3df",
+   "sentences": "73ba260369350017ae51"
+  },
+  "bible/43LUKBSB.SFM/20": {
+   "plainText": "2739ea62069b796b9ea1",
+   "blocks": "df9395be897633cb43e0",
+   "sentences": "93a5af59e44861b204e0"
+  },
+  "bible/43LUKBSB.SFM/21": {
+   "plainText": "ce9d8639bff7ee6b917a",
+   "blocks": "7f92ea4cb15bbcdbcad9",
+   "sentences": "8edabd597b869a2bc9d4"
+  },
+  "bible/43LUKBSB.SFM/22": {
+   "plainText": "de537cbcc5211a56b57b",
+   "blocks": "f7c461caf25802d0357e",
+   "sentences": "6bf1f4b6ad9735d003c2"
+  },
+  "bible/43LUKBSB.SFM/23": {
+   "plainText": "e3dae59467ebdca8c73e",
+   "blocks": "5f80175f4bad93036316",
+   "sentences": "883f82fcc2c824f6d17f"
+  },
+  "bible/43LUKBSB.SFM/24": {
+   "plainText": "97de819f420d06fe64cc",
+   "blocks": "f3ec3b55e2ab3083b38b",
+   "sentences": "e471d04b1a6ef21d55ab"
+  },
+  "bible/44JHNBSB.SFM/1": {
+   "plainText": "8423ec610af9c0c50c1d",
+   "blocks": "a099100d31c9d6aeb4a5",
+   "sentences": "baa32d8ed78b260f6941"
+  },
+  "bible/44JHNBSB.SFM/2": {
+   "plainText": "965410be9b687e746d0f",
+   "blocks": "7ae42157c730871948c4",
+   "sentences": "562b36fc80d46957de68"
+  },
+  "bible/44JHNBSB.SFM/3": {
+   "plainText": "ac562b18d66a0e344008",
+   "blocks": "ffffe0d3934a4b2ef1b7",
+   "sentences": "dad02c629c51ec00e4f4"
+  },
+  "bible/44JHNBSB.SFM/4": {
+   "plainText": "894bdb8348b56642f757",
+   "blocks": "e5ec4c7dd9b6f71cf2ed",
+   "sentences": "6ccca50f2527b556787a"
+  },
+  "bible/44JHNBSB.SFM/5": {
+   "plainText": "acc676fbbee6340851a8",
+   "blocks": "cf823a3fa66d49c269ca",
+   "sentences": "985a457c8f41b7cce23b"
+  },
+  "bible/44JHNBSB.SFM/6": {
+   "plainText": "5c202ac731dc21ce54f2",
+   "blocks": "392327f5a680f3837763",
+   "sentences": "5f0fe318d8a283854136"
+  },
+  "bible/44JHNBSB.SFM/7": {
+   "plainText": "e9cbd70deb296d8bab34",
+   "blocks": "3af50d2c843893e22441",
+   "sentences": "f3f8e21d5cfd36800245"
+  },
+  "bible/44JHNBSB.SFM/8": {
+   "plainText": "df5c67eb2b7c29fbb533",
+   "blocks": "5e9353d4e76c3c0e7a96",
+   "sentences": "019f448c1628d8a4c7e1"
+  },
+  "bible/44JHNBSB.SFM/9": {
+   "plainText": "bf68f65e03cdde297a7b",
+   "blocks": "7f8d717adc71d7cfd5dc",
+   "sentences": "6de3ea24db00cef2bc32"
+  },
+  "bible/44JHNBSB.SFM/10": {
+   "plainText": "47a78d5b7189492f9797",
+   "blocks": "9d9ce390611861ccf492",
+   "sentences": "ea4b73e39ae4f67bc46a"
+  },
+  "bible/44JHNBSB.SFM/11": {
+   "plainText": "edb4cae2490cfb29f1a1",
+   "blocks": "e3253228bae9c622f24f",
+   "sentences": "b0e48399b4aa7edee97e"
+  },
+  "bible/44JHNBSB.SFM/12": {
+   "plainText": "0d13f60cd89bba88c2e2",
+   "blocks": "9509c2a75b510bbe1699",
+   "sentences": "6760a879d7d04a1f2f36"
+  },
+  "bible/44JHNBSB.SFM/13": {
+   "plainText": "a3f10b8859808c0d7d01",
+   "blocks": "c7f8822a120cb67d1da2",
+   "sentences": "46a6977e04422a7d7cde"
+  },
+  "bible/44JHNBSB.SFM/14": {
+   "plainText": "e442ecbf29d96cbff3be",
+   "blocks": "de1eb0fbca2e6c47fc58",
+   "sentences": "30fbe9d896fe0bcb6d01"
+  },
+  "bible/44JHNBSB.SFM/15": {
+   "plainText": "fa9406f3c267a4b26b1f",
+   "blocks": "523e8982bfb953d6d9f9",
+   "sentences": "c3f6685df78d5ccd6f69"
+  },
+  "bible/44JHNBSB.SFM/16": {
+   "plainText": "4c1fdd453a605aee86a6",
+   "blocks": "10811cae730bcd393662",
+   "sentences": "d7859537cabda464b6c7"
+  },
+  "bible/44JHNBSB.SFM/17": {
+   "plainText": "98baf4b990b6cf35d64f",
+   "blocks": "0d3d7ecbdf87031fe6db",
+   "sentences": "4fdfbc883a6eb8b0428c"
+  },
+  "bible/44JHNBSB.SFM/18": {
+   "plainText": "bdf43c0b893efb04e255",
+   "blocks": "3ea49bc4c6f32224602a",
+   "sentences": "99513bf6555b5339dbe1"
+  },
+  "bible/44JHNBSB.SFM/19": {
+   "plainText": "4e0763a4ea232e99cde7",
+   "blocks": "3272d95949e335510e95",
+   "sentences": "49f123da303351bf8952"
+  },
+  "bible/44JHNBSB.SFM/20": {
+   "plainText": "e1b4dca4cea7207193e2",
+   "blocks": "8822e891e11869eb668c",
+   "sentences": "dd0992a7edf933cee066"
+  },
+  "bible/44JHNBSB.SFM/21": {
+   "plainText": "9e72fbe531e657842ef5",
+   "blocks": "07917d87307d847f9fc1",
+   "sentences": "70ed303db1a755ba7f2e"
+  },
+  "bible/45ACTBSB.SFM/1": {
+   "plainText": "b00326a2e1faf8ee8922",
+   "blocks": "a0b8b298d7f3fa315d07",
+   "sentences": "505a8688aa2039d99e22"
+  },
+  "bible/45ACTBSB.SFM/2": {
+   "plainText": "9b54c768043765d78f7f",
+   "blocks": "350b90bd816524a9aba3",
+   "sentences": "99c4b0c6825f587b6c98"
+  },
+  "bible/45ACTBSB.SFM/3": {
+   "plainText": "9358fcca34ed4d89ae3a",
+   "blocks": "9e944b4c2b9c8889c484",
+   "sentences": "e72ac4abb62ec10942d3"
+  },
+  "bible/45ACTBSB.SFM/4": {
+   "plainText": "a5928f4334d8a6dd8575",
+   "blocks": "98a61d910f1d1a9be701",
+   "sentences": "7cc75d153aa92b61d3d4"
+  },
+  "bible/45ACTBSB.SFM/5": {
+   "plainText": "f4780c5873fcc07c3a13",
+   "blocks": "5fb418dc43891c5f9efb",
+   "sentences": "021b22a565cbedc57066"
+  },
+  "bible/45ACTBSB.SFM/6": {
+   "plainText": "8d5f22957bfaa572ba7e",
+   "blocks": "65aeb335f3e0a7858a44",
+   "sentences": "9c2053241f907d88b805"
+  },
+  "bible/45ACTBSB.SFM/7": {
+   "plainText": "6adb508b5169a3aa7763",
+   "blocks": "313de87e1e2bdbf133d9",
+   "sentences": "e1c46edef0197dd319ce"
+  },
+  "bible/45ACTBSB.SFM/8": {
+   "plainText": "c279a6fae12f08f12137",
+   "blocks": "6c865f42ac5e7b479416",
+   "sentences": "979b874e72b934d0a6b6"
+  },
+  "bible/45ACTBSB.SFM/9": {
+   "plainText": "9c07e57e438e53c977b7",
+   "blocks": "50ab4e5ae42fe18e890f",
+   "sentences": "a5df5deda50a392fbbfa"
+  },
+  "bible/45ACTBSB.SFM/10": {
+   "plainText": "333e20eba28137e2fccc",
+   "blocks": "e2b0b10220753d2fdc48",
+   "sentences": "e0b11142e8917c3ddba3"
+  },
+  "bible/45ACTBSB.SFM/11": {
+   "plainText": "5fb7d0ca7b11bea869b6",
+   "blocks": "0d236a08e97719b34631",
+   "sentences": "0540118dbc21d907eb03"
+  },
+  "bible/45ACTBSB.SFM/12": {
+   "plainText": "5a5404fe9bd2e4f69755",
+   "blocks": "91180b5dec1f9b7f1369",
+   "sentences": "860fb58f04c2300d6068"
+  },
+  "bible/45ACTBSB.SFM/13": {
+   "plainText": "5f720ba2858042784e17",
+   "blocks": "f893f289328104d544aa",
+   "sentences": "db017b7dda217af17ece"
+  },
+  "bible/45ACTBSB.SFM/14": {
+   "plainText": "378263c7d5b3904d4bb2",
+   "blocks": "02a498726448568a8ec1",
+   "sentences": "2c07e1cf3c23f656b539"
+  },
+  "bible/45ACTBSB.SFM/15": {
+   "plainText": "d0e6b69378e0fd5bd5a6",
+   "blocks": "33335acf894742d8bd98",
+   "sentences": "caf76eb71c4f866b8627"
+  },
+  "bible/45ACTBSB.SFM/16": {
+   "plainText": "ac4655c153b895bd0229",
+   "blocks": "8615c55f50c8a24ff137",
+   "sentences": "d96352755023508403ec"
+  },
+  "bible/45ACTBSB.SFM/17": {
+   "plainText": "f2d9d01f098ba86811ec",
+   "blocks": "84f6cd9e51866e2ea6b4",
+   "sentences": "5734cf503b345c072cf6"
+  },
+  "bible/45ACTBSB.SFM/18": {
+   "plainText": "1426f63111191531af03",
+   "blocks": "be6bd48572b7de21e18d",
+   "sentences": "375ead437e89740a816e"
+  },
+  "bible/45ACTBSB.SFM/19": {
+   "plainText": "6f0fadfea016a1263a9b",
+   "blocks": "b8e6e5107bacdd7b2dc1",
+   "sentences": "a986d4a2c486f655453b"
+  },
+  "bible/45ACTBSB.SFM/20": {
+   "plainText": "6a18bc6f5730a8961dfa",
+   "blocks": "c9e0649b4e82cfac3600",
+   "sentences": "a266ad3ef973b93f29b9"
+  },
+  "bible/45ACTBSB.SFM/21": {
+   "plainText": "d11aa52b7707b4bdd232",
+   "blocks": "b0686bdadd2f2a80f92a",
+   "sentences": "5a7d8c87bd7ad9e7be07"
+  },
+  "bible/45ACTBSB.SFM/22": {
+   "plainText": "a1f3a7e7e3a92dbf7d09",
+   "blocks": "2682e84d44f0e9b9033e",
+   "sentences": "b31ffe1a0b448cdd650e"
+  },
+  "bible/45ACTBSB.SFM/23": {
+   "plainText": "cca3ab7f342f2940d17b",
+   "blocks": "53241f253fc6c56449fa",
+   "sentences": "f4fcbfdb95c581e89b62"
+  },
+  "bible/45ACTBSB.SFM/24": {
+   "plainText": "1e746e17d0379144bcf0",
+   "blocks": "d7f01ef24960aa5afaf7",
+   "sentences": "e7d0b2108dfed9b15843"
+  },
+  "bible/45ACTBSB.SFM/25": {
+   "plainText": "67ac2faddcde9d7d6dd5",
+   "blocks": "e6d25d87fea078772d49",
+   "sentences": "1dfeb21a2e2e19da7bad"
+  },
+  "bible/45ACTBSB.SFM/26": {
+   "plainText": "0dee861940bd037811c0",
+   "blocks": "925268e3fdcca5ccbe2f",
+   "sentences": "1d093b0976fa32cc855c"
+  },
+  "bible/45ACTBSB.SFM/27": {
+   "plainText": "9ef7d8ab20e3c333adbf",
+   "blocks": "c0ff929d662db74455bf",
+   "sentences": "265692add6952b545c14"
+  },
+  "bible/45ACTBSB.SFM/28": {
+   "plainText": "7486c12cb3c1197c8c16",
+   "blocks": "985912951e8b9a885cb9",
+   "sentences": "5f0ac4cfb56c9ac10c3b"
+  },
+  "bible/46ROMBSB.SFM/1": {
+   "plainText": "5edec123f7ecd13c4aea",
+   "blocks": "1f8f593437965f9d83ed",
+   "sentences": "2e18040f64b2018c47b9"
+  },
+  "bible/46ROMBSB.SFM/2": {
+   "plainText": "b34d327f74d4e0088bd0",
+   "blocks": "d3f3c59a2a819fa9c102",
+   "sentences": "d04ce8f8f7f9ee1ce859"
+  },
+  "bible/46ROMBSB.SFM/3": {
+   "plainText": "6cd6a0e4f989bc8b1718",
+   "blocks": "d15e28140de7f4bf8ce2",
+   "sentences": "b09ffb79eed1e0cf9ff3"
+  },
+  "bible/46ROMBSB.SFM/4": {
+   "plainText": "575b84113adfc7cbbba1",
+   "blocks": "ee8780289c2c70ea408e",
+   "sentences": "6d289e005aff08487cc9"
+  },
+  "bible/46ROMBSB.SFM/5": {
+   "plainText": "71570c6bf0b072d50b78",
+   "blocks": "aa91d57e5547ceba9fd6",
+   "sentences": "32677a5681b6fdc9c1ee"
+  },
+  "bible/46ROMBSB.SFM/6": {
+   "plainText": "ab7fcab156ca9dce4b53",
+   "blocks": "2f6700da0173613025c5",
+   "sentences": "bfc3085a998542547fff"
+  },
+  "bible/46ROMBSB.SFM/7": {
+   "plainText": "a2a7a2ac83cf69e8fd53",
+   "blocks": "843ab9cdc042ec5b9e87",
+   "sentences": "dd4bd7658a5cd4334a63"
+  },
+  "bible/46ROMBSB.SFM/8": {
+   "plainText": "e65608c9453fd289039a",
+   "blocks": "09b71eb2db5e5cfb1cc4",
+   "sentences": "b32bcfd13ca2c079c6b9"
+  },
+  "bible/46ROMBSB.SFM/9": {
+   "plainText": "87a1cda0b72e8c343909",
+   "blocks": "e8aa095d8771c69caca6",
+   "sentences": "9488e21ef175bafec4d8"
+  },
+  "bible/46ROMBSB.SFM/10": {
+   "plainText": "2ccdbb219604e6a78be6",
+   "blocks": "f3d2d7cc008e473a5b47",
+   "sentences": "6ffdabad6dfb1e1d3b4d"
+  },
+  "bible/46ROMBSB.SFM/11": {
+   "plainText": "f5cfba2827403a1e22af",
+   "blocks": "8a65180422e3bdacb765",
+   "sentences": "93a98729ab4c9920f4c9"
+  },
+  "bible/46ROMBSB.SFM/12": {
+   "plainText": "d29b7231f9d71b2c10b8",
+   "blocks": "04742b2766d0872f40d3",
+   "sentences": "399fa70a5c753422f8ac"
+  },
+  "bible/46ROMBSB.SFM/13": {
+   "plainText": "a9547ac62a0f87e21908",
+   "blocks": "599cd59ed6674e5f6987",
+   "sentences": "25448db704372edd2cf7"
+  },
+  "bible/46ROMBSB.SFM/14": {
+   "plainText": "6bdb95e49cccb5e274d8",
+   "blocks": "541a1c769faaefaf3c8e",
+   "sentences": "d2fbf697e83c3baa0e7e"
+  },
+  "bible/46ROMBSB.SFM/15": {
+   "plainText": "7d0fcb8fce47a1b582e6",
+   "blocks": "4dd7b3db4626feb7c098",
+   "sentences": "0bd45f28db1da1f4e04c"
+  },
+  "bible/46ROMBSB.SFM/16": {
+   "plainText": "7c198559bdc92db42737",
+   "blocks": "4839d3b86aa9294797df",
+   "sentences": "ee4a497b2c942b01964f"
+  },
+  "bible/471COBSB.SFM/1": {
+   "plainText": "efd20142b4c16b369a34",
+   "blocks": "42d6525ccb1e956b10c0",
+   "sentences": "2d9f357ba8e3f0308593"
+  },
+  "bible/471COBSB.SFM/2": {
+   "plainText": "60c30cef18c8cd0a07c4",
+   "blocks": "5e1efe3b92bb334e531c",
+   "sentences": "e365c9fd2cf7547a64f3"
+  },
+  "bible/471COBSB.SFM/3": {
+   "plainText": "31700b458e80a333d2a9",
+   "blocks": "6c5b263cf668e9881af6",
+   "sentences": "8801a25c7bbff196715a"
+  },
+  "bible/471COBSB.SFM/4": {
+   "plainText": "a93ef598054921324e4a",
+   "blocks": "f1e96c56518a114a2800",
+   "sentences": "839cfcd361308d0fec25"
+  },
+  "bible/471COBSB.SFM/5": {
+   "plainText": "b1b4e37602810434ed7a",
+   "blocks": "07904f4ea2329f420cd9",
+   "sentences": "e5af51564d2ff884064e"
+  },
+  "bible/471COBSB.SFM/6": {
+   "plainText": "6f2f894ffd2fe269dd60",
+   "blocks": "53e98be136a12c4cbcd0",
+   "sentences": "f6f9fe7998197075ff69"
+  },
+  "bible/471COBSB.SFM/7": {
+   "plainText": "6fb440ac9ee4b5d95813",
+   "blocks": "8af3d99939b2a2e6d587",
+   "sentences": "44c27a5b00c899da94ef"
+  },
+  "bible/471COBSB.SFM/8": {
+   "plainText": "07a762c1d39f13192a11",
+   "blocks": "5fca8a824d3ef658d06f",
+   "sentences": "e3738426cdb498b89d58"
+  },
+  "bible/471COBSB.SFM/9": {
+   "plainText": "93539eb25a11f6a54fc7",
+   "blocks": "5fefab2db048d80070de",
+   "sentences": "dc80aa3792f6bdb2f5a0"
+  },
+  "bible/471COBSB.SFM/10": {
+   "plainText": "c77e6aba54f095c30afd",
+   "blocks": "2a9ca2088496be77274f",
+   "sentences": "85bd443651e50094dcde"
+  },
+  "bible/471COBSB.SFM/11": {
+   "plainText": "0dbd786703914267a60a",
+   "blocks": "89ed05dbeac13667d468",
+   "sentences": "9005b96ab47c88724717"
+  },
+  "bible/471COBSB.SFM/12": {
+   "plainText": "c03709037ca566b1344e",
+   "blocks": "cb0a91032143bbafe7c8",
+   "sentences": "db808fd13c433754985f"
+  },
+  "bible/471COBSB.SFM/13": {
+   "plainText": "a5fa1bd3486f72a5fd70",
+   "blocks": "cd72e7edcb733e4754f0",
+   "sentences": "22fd9b6cd82ad91da8a1"
+  },
+  "bible/471COBSB.SFM/14": {
+   "plainText": "48478b1275a2572cdd35",
+   "blocks": "4fcc96cf5cd11f4abed3",
+   "sentences": "2277f7cd91114d12f19a"
+  },
+  "bible/471COBSB.SFM/15": {
+   "plainText": "cb286ac34a26a23b0c63",
+   "blocks": "fdd0123fd74914ff3720",
+   "sentences": "1975cc912653553b1634"
+  },
+  "bible/471COBSB.SFM/16": {
+   "plainText": "a52e7f698749e9faa017",
+   "blocks": "e5b79dd9a9569eb41578",
+   "sentences": "62a5fb0fda7d08787b45"
+  },
+  "bible/482COBSB.SFM/1": {
+   "plainText": "4d669f44bd4a964460bf",
+   "blocks": "194a144216c9dbf8340c",
+   "sentences": "f5f4aa5601ac350083a3"
+  },
+  "bible/482COBSB.SFM/2": {
+   "plainText": "6c67b85b1ab89d13a862",
+   "blocks": "aa2075d36f69909622bf",
+   "sentences": "65688d2f7e210ec9070b"
+  },
+  "bible/482COBSB.SFM/3": {
+   "plainText": "0dff018ce121d1729c53",
+   "blocks": "99cba7ac722a1f3c71a8",
+   "sentences": "5a54341937a182361366"
+  },
+  "bible/482COBSB.SFM/4": {
+   "plainText": "9e8e69d7dfac53bf55c1",
+   "blocks": "d8a8256fdadbc11a67f9",
+   "sentences": "3591c9f5df3cc4afaf52"
+  },
+  "bible/482COBSB.SFM/5": {
+   "plainText": "5aaeeea6b96613f0acef",
+   "blocks": "ab4533a83882c7afcf66",
+   "sentences": "e59c703daa44a9cc22de"
+  },
+  "bible/482COBSB.SFM/6": {
+   "plainText": "ac88d7d1252c197055bc",
+   "blocks": "0efa0ec567bf986d1986",
+   "sentences": "4ffaf97aa25452038309"
+  },
+  "bible/482COBSB.SFM/7": {
+   "plainText": "50358db0b14dbc78dd92",
+   "blocks": "1878bf4039f75e110c15",
+   "sentences": "b34cde9f728f40d9e433"
+  },
+  "bible/482COBSB.SFM/8": {
+   "plainText": "434424afd5c22f574205",
+   "blocks": "7a5425446d836b6882e9",
+   "sentences": "712c79c2708364504ff2"
+  },
+  "bible/482COBSB.SFM/9": {
+   "plainText": "2265e89de16e8f8c6abe",
+   "blocks": "bedc25ac389da96257db",
+   "sentences": "5f7f69ca336bc1198cc2"
+  },
+  "bible/482COBSB.SFM/10": {
+   "plainText": "c14f7986c10037433dab",
+   "blocks": "5c372426f4cad6222a14",
+   "sentences": "ccf70741e4f773a9c8b7"
+  },
+  "bible/482COBSB.SFM/11": {
+   "plainText": "cc6d85eeaaf66cd1b51b",
+   "blocks": "59f59bb2ad1dd9124c98",
+   "sentences": "04d0b926b51d196bf3af"
+  },
+  "bible/482COBSB.SFM/12": {
+   "plainText": "9ed04a2c7a447411d8b3",
+   "blocks": "a811afd4af736b95778e",
+   "sentences": "cba1b7bbeebbd5710ca7"
+  },
+  "bible/482COBSB.SFM/13": {
+   "plainText": "86d7a502cfbe908b8531",
+   "blocks": "2201338a490beb3e38cd",
+   "sentences": "6e42f781b40fe8df3382"
+  },
+  "bible/49GALBSB.SFM/1": {
+   "plainText": "b7265045d1ab9a2d8a0b",
+   "blocks": "c92152f1db4030eb8c96",
+   "sentences": "1396a89ce38b3e2a082b"
+  },
+  "bible/49GALBSB.SFM/2": {
+   "plainText": "3ce058f30a14bba174a2",
+   "blocks": "a00f3aab46395976d857",
+   "sentences": "e2d5d2b4d4cacba09c3d"
+  },
+  "bible/49GALBSB.SFM/3": {
+   "plainText": "1fc920835aa6628a1966",
+   "blocks": "b2e0c6a43730fa135c7c",
+   "sentences": "c8bd628bc1a56a568143"
+  },
+  "bible/49GALBSB.SFM/4": {
+   "plainText": "a390e615db76ceea0335",
+   "blocks": "309da44d36cf3f487a84",
+   "sentences": "0ee4da49b2246a32641c"
+  },
+  "bible/49GALBSB.SFM/5": {
+   "plainText": "b57c08bedffd0713d5dc",
+   "blocks": "ff84c502987cdb46dc4a",
+   "sentences": "537d6f0289dfc7018070"
+  },
+  "bible/49GALBSB.SFM/6": {
+   "plainText": "71b6547e14ca2dd9ad8c",
+   "blocks": "73b465679556bb3f204a",
+   "sentences": "b850d289ca2f4766107a"
+  },
+  "bible/50EPHBSB.SFM/1": {
+   "plainText": "673e9daf98f5c2482651",
+   "blocks": "71a257f171a7548ba1c7",
+   "sentences": "3fa10bd1dc78020e8286"
+  },
+  "bible/50EPHBSB.SFM/2": {
+   "plainText": "e4391c69e0e6be16bc92",
+   "blocks": "f622657ece77785a57d0",
+   "sentences": "b2d1d68d2c56b2577e34"
+  },
+  "bible/50EPHBSB.SFM/3": {
+   "plainText": "4b36821f3228c9beb09b",
+   "blocks": "0ae4a4bbd3c269fab9b6",
+   "sentences": "a73966c64ed364121fd7"
+  },
+  "bible/50EPHBSB.SFM/4": {
+   "plainText": "530b55d1663c33765972",
+   "blocks": "2e723be2df65390b4380",
+   "sentences": "66f7f3afea6955b97ae5"
+  },
+  "bible/50EPHBSB.SFM/5": {
+   "plainText": "b41e8bb74598f3df572c",
+   "blocks": "3669ccaacfd6f6c0e479",
+   "sentences": "6aee8d93420c0aa587d1"
+  },
+  "bible/50EPHBSB.SFM/6": {
+   "plainText": "ba92449da2b489013029",
+   "blocks": "e9534e24b832b3e8ff0a",
+   "sentences": "e6e49acd640d1d0f2c93"
+  },
+  "bible/51PHPBSB.SFM/1": {
+   "plainText": "c5a6a7e046f93034571c",
+   "blocks": "1b64c20e22ce36428a70",
+   "sentences": "90a75242eec525c159a3"
+  },
+  "bible/51PHPBSB.SFM/2": {
+   "plainText": "6de45c822b13e61455e6",
+   "blocks": "78b6c6f7950a06715a17",
+   "sentences": "4305ad94a10cdf18410d"
+  },
+  "bible/51PHPBSB.SFM/3": {
+   "plainText": "9c025581a5d77f6093ed",
+   "blocks": "3b87ecbca8cc08595df2",
+   "sentences": "525e990249459f949830"
+  },
+  "bible/51PHPBSB.SFM/4": {
+   "plainText": "761bf6e589134c13b777",
+   "blocks": "edcdda260f1bebead6c4",
+   "sentences": "2de61e9e40e678bb4764"
+  },
+  "bible/52COLBSB.SFM/1": {
+   "plainText": "d034520d1d377568c591",
+   "blocks": "f44012ce8ebf8ed369fc",
+   "sentences": "fc729ee136d144563f68"
+  },
+  "bible/52COLBSB.SFM/2": {
+   "plainText": "26bb0c26d3937fd7e241",
+   "blocks": "144f4b116c34d3523597",
+   "sentences": "8521425bc3fc419e9836"
+  },
+  "bible/52COLBSB.SFM/3": {
+   "plainText": "325c4f298b778ffa513a",
+   "blocks": "bbaef3e80451b8f79155",
+   "sentences": "9b299d5f1964cd9383a9"
+  },
+  "bible/52COLBSB.SFM/4": {
+   "plainText": "63f511777d758e79e368",
+   "blocks": "c88600398569c51ce2f8",
+   "sentences": "ccc24eb752c64cdf7dcd"
+  },
+  "bible/531THBSB.SFM/1": {
+   "plainText": "dab91a151927b9015e9d",
+   "blocks": "642c6a3df3979046db21",
+   "sentences": "9067757ac8636e2870ef"
+  },
+  "bible/531THBSB.SFM/2": {
+   "plainText": "cf3e128e55fff1f14eef",
+   "blocks": "0b74f79c3dcaec12945f",
+   "sentences": "8e603fc9ba4333203c18"
+  },
+  "bible/531THBSB.SFM/3": {
+   "plainText": "688911ad4f3a9cdb919f",
+   "blocks": "97e5b5cf6c03dde96fff",
+   "sentences": "37e8d2f4aa9390fe2d42"
+  },
+  "bible/531THBSB.SFM/4": {
+   "plainText": "e9c4eaf9f0be2723b8bc",
+   "blocks": "df3e9b445a6b2a8deb4c",
+   "sentences": "c74109de00ca2c66fbff"
+  },
+  "bible/531THBSB.SFM/5": {
+   "plainText": "f553915f17668b1604c5",
+   "blocks": "c59e3e37eb1eafdc7f78",
+   "sentences": "11fac1b921b8c9c4fa91"
+  },
+  "bible/542THBSB.SFM/1": {
+   "plainText": "a5b1d91992f1b3c0c59b",
+   "blocks": "8757232f71c3a7258a3c",
+   "sentences": "f9763d6e6db50314f96c"
+  },
+  "bible/542THBSB.SFM/2": {
+   "plainText": "b19a95bd06ad0c0b1434",
+   "blocks": "6f4b7d42a9052cbc3b5e",
+   "sentences": "d4dee0dc2b6f7ad3ba6f"
+  },
+  "bible/542THBSB.SFM/3": {
+   "plainText": "c54b33b85d9255e1fe34",
+   "blocks": "af099516c4189a3f62ef",
+   "sentences": "61307029ff4671177e93"
+  },
+  "bible/551TIBSB.SFM/1": {
+   "plainText": "71e8ce5354aeb8b3a11c",
+   "blocks": "fa27096acf3da5d409f2",
+   "sentences": "4df661061344cf20e1b3"
+  },
+  "bible/551TIBSB.SFM/2": {
+   "plainText": "bfc80701cfd20141bbcf",
+   "blocks": "86a820e5ef1c781ba5f5",
+   "sentences": "b514e41156e6eee80e7a"
+  },
+  "bible/551TIBSB.SFM/3": {
+   "plainText": "fa9f024e7fc28354bcc9",
+   "blocks": "4c29cbcfd18f4c54b940",
+   "sentences": "f83c1433249eeb495d12"
+  },
+  "bible/551TIBSB.SFM/4": {
+   "plainText": "9fa795c0315d32cfa644",
+   "blocks": "ebdd6b86dee7859dea01",
+   "sentences": "806c547252f57e3c0beb"
+  },
+  "bible/551TIBSB.SFM/5": {
+   "plainText": "5e909b641eb8b0a7e644",
+   "blocks": "554564ca78ddde454f37",
+   "sentences": "cd45983f817e78d97000"
+  },
+  "bible/551TIBSB.SFM/6": {
+   "plainText": "549c56d765b4e935aa06",
+   "blocks": "83e92cc407d4e3ab3dda",
+   "sentences": "8a3a2b78c4550ed3f8dc"
+  },
+  "bible/562TIBSB.SFM/1": {
+   "plainText": "002a9a833d5139d35951",
+   "blocks": "b97900fa4f29f4a530e4",
+   "sentences": "3b6d350ddccea4146d96"
+  },
+  "bible/562TIBSB.SFM/2": {
+   "plainText": "aa8b53fe2d6c4a9376bf",
+   "blocks": "2b391107114b47eeb8e7",
+   "sentences": "3e254714d864c1576f72"
+  },
+  "bible/562TIBSB.SFM/3": {
+   "plainText": "562cc67bd01fbad8cd54",
+   "blocks": "6c051e34e2346f267ebf",
+   "sentences": "cddebec316b3d5493ef7"
+  },
+  "bible/562TIBSB.SFM/4": {
+   "plainText": "baffcc3f20ae607d3f53",
+   "blocks": "55bc01e49c8a64fa8ea0",
+   "sentences": "ac81b844b6f53197e023"
+  },
+  "bible/57TITBSB.SFM/1": {
+   "plainText": "cf2905e66b0d10fb821a",
+   "blocks": "152ac37b3a36d3fbc04b",
+   "sentences": "600cdc0808f9de00b739"
+  },
+  "bible/57TITBSB.SFM/2": {
+   "plainText": "bc64552bc417b1a70700",
+   "blocks": "2d14597490188b6ed94b",
+   "sentences": "bdb2b48d639afea5e33f"
+  },
+  "bible/57TITBSB.SFM/3": {
+   "plainText": "7f638291aeec83b60c9e",
+   "blocks": "6c883b75da11b7b422a0",
+   "sentences": "8e32935e14790df94338"
+  },
+  "bible/58PHMBSB.SFM/1": {
+   "plainText": "fb1f104896d8986ece7b",
+   "blocks": "826ad7dde6cdac60fbea",
+   "sentences": "7b3c0080217c940591b5"
+  },
+  "bible/59HEBBSB.SFM/1": {
+   "plainText": "8679763c1d24983b7dbc",
+   "blocks": "bd73350694ddc885a637",
+   "sentences": "fa11533250d08a3cf045"
+  },
+  "bible/59HEBBSB.SFM/2": {
+   "plainText": "8e03ab9f10548d2a0d73",
+   "blocks": "6b9cf2c884922b48320e",
+   "sentences": "b004ad0a66cfc3a98419"
+  },
+  "bible/59HEBBSB.SFM/3": {
+   "plainText": "4c675de4fb4d407933d8",
+   "blocks": "e19b007adf8bf11b7d94",
+   "sentences": "db003d907fdf47bf27fc"
+  },
+  "bible/59HEBBSB.SFM/4": {
+   "plainText": "e9a4b5f1340bfc10fe34",
+   "blocks": "caad7982c586c096a23d",
+   "sentences": "d1e744169fcbdb359c38"
+  },
+  "bible/59HEBBSB.SFM/5": {
+   "plainText": "96cf2e68969b94d3b559",
+   "blocks": "fb3cc86ad0068499ed50",
+   "sentences": "fdbec8b3f0826d6efa91"
+  },
+  "bible/59HEBBSB.SFM/6": {
+   "plainText": "80d4d0a078395d0faed6",
+   "blocks": "56c8b9c5de8624e49bc2",
+   "sentences": "cc0d13c6f225f41d15d0"
+  },
+  "bible/59HEBBSB.SFM/7": {
+   "plainText": "bd886e672df3185bd9c4",
+   "blocks": "1e0cf830c0ff509c56c8",
+   "sentences": "02072820632637e503b0"
+  },
+  "bible/59HEBBSB.SFM/8": {
+   "plainText": "09faee31dc507deaa36f",
+   "blocks": "abb8d3fa75703b869ef3",
+   "sentences": "aa4859c65c8f3ee7dc2c"
+  },
+  "bible/59HEBBSB.SFM/9": {
+   "plainText": "a368f2eaf65ddca1bdb5",
+   "blocks": "30c79a5083a406a9bbc1",
+   "sentences": "2d5aa0c90fbd56108d6a"
+  },
+  "bible/59HEBBSB.SFM/10": {
+   "plainText": "26ec6a3f727642bca116",
+   "blocks": "d5295f5e390155973016",
+   "sentences": "58720e86ea1bcb4102e2"
+  },
+  "bible/59HEBBSB.SFM/11": {
+   "plainText": "40a675b5700572d59ce1",
+   "blocks": "ffb256ba6c63e8cba337",
+   "sentences": "5d962403ba320b8b6036"
+  },
+  "bible/59HEBBSB.SFM/12": {
+   "plainText": "f015c10a7493b8cd0bb4",
+   "blocks": "6e2209d728ae6ca588f7",
+   "sentences": "df6ee4ab6c4049674a04"
+  },
+  "bible/59HEBBSB.SFM/13": {
+   "plainText": "2f34802ae4b56222252f",
+   "blocks": "e104eecd21c7bc02fc0a",
+   "sentences": "f50122c9e7e1a82d5bd4"
+  },
+  "bible/60JASBSB.SFM/1": {
+   "plainText": "8c2ea008881e43fd8402",
+   "blocks": "bd688701fbc14fab4c71",
+   "sentences": "754639e20f8cab504527"
+  },
+  "bible/60JASBSB.SFM/2": {
+   "plainText": "55c6f8c01322a29257a0",
+   "blocks": "5cbb2b93378e83533e07",
+   "sentences": "bf7b2048f2f861ce3b4d"
+  },
+  "bible/60JASBSB.SFM/3": {
+   "plainText": "ef6a9d72b314d30eb5f3",
+   "blocks": "7a8a38c62175472216f0",
+   "sentences": "579ec8f58325b3fc8ecc"
+  },
+  "bible/60JASBSB.SFM/4": {
+   "plainText": "b29aadc1a80f53f246d3",
+   "blocks": "3e6a39b084cd75369340",
+   "sentences": "a142ce4d6c52076c9b12"
+  },
+  "bible/60JASBSB.SFM/5": {
+   "plainText": "900135698bb63a07a4da",
+   "blocks": "a645ede9f383b209b694",
+   "sentences": "5e16a37f23e5af424cca"
+  },
+  "bible/611PEBSB.SFM/1": {
+   "plainText": "2d4ce8104a20d6c22a0e",
+   "blocks": "eebf8387bc1d55b52bb2",
+   "sentences": "4e6b9f32d5e2bbfe0492"
+  },
+  "bible/611PEBSB.SFM/2": {
+   "plainText": "562eec3626469b178228",
+   "blocks": "1a8a38541effb9a7de4d",
+   "sentences": "bf14eca72cc5bb98d587"
+  },
+  "bible/611PEBSB.SFM/3": {
+   "plainText": "05b504fd9e9400f8b593",
+   "blocks": "12f461defff9ffa9be13",
+   "sentences": "f70565d8caf9d83993e4"
+  },
+  "bible/611PEBSB.SFM/4": {
+   "plainText": "499cfd416938ab306226",
+   "blocks": "5ab084f9b2ef08a3c2d8",
+   "sentences": "00f283506c95186bcb9a"
+  },
+  "bible/611PEBSB.SFM/5": {
+   "plainText": "1c3c54ada567ae3954b1",
+   "blocks": "010a49152022006967f3",
+   "sentences": "c7334b98d3d68ae681e7"
+  },
+  "bible/622PEBSB.SFM/1": {
+   "plainText": "916e66789b7f08d93705",
+   "blocks": "3b42aa4b0f069ef53943",
+   "sentences": "cd59d9ba73248b2a057c"
+  },
+  "bible/622PEBSB.SFM/2": {
+   "plainText": "6d4c963efdd225885b5e",
+   "blocks": "d35e4f61c37543107dd8",
+   "sentences": "a4c6582954a20a23d0ea"
+  },
+  "bible/622PEBSB.SFM/3": {
+   "plainText": "a693780d1e1a4cae68d1",
+   "blocks": "a4e6db46315a842597ad",
+   "sentences": "059d706d6c8545619195"
+  },
+  "bible/631JNBSB.SFM/1": {
+   "plainText": "c20031593939938090a3",
+   "blocks": "727b892158b6162f1f97",
+   "sentences": "4afcdb25c26823b7a203"
+  },
+  "bible/631JNBSB.SFM/2": {
+   "plainText": "4bad6fc8aa4e7103625c",
+   "blocks": "5f2ed45424e4faca1ce4",
+   "sentences": "64340a156fce09ea7695"
+  },
+  "bible/631JNBSB.SFM/3": {
+   "plainText": "aa61726cd788901b9cb0",
+   "blocks": "68301f097c5925757046",
+   "sentences": "74f40ed4f03905ea6996"
+  },
+  "bible/631JNBSB.SFM/4": {
+   "plainText": "f9d04570d99ea3f06cb0",
+   "blocks": "d47be696a4f466b11030",
+   "sentences": "caf08175f0a69abf298c"
+  },
+  "bible/631JNBSB.SFM/5": {
+   "plainText": "c721fc11ebd252afd892",
+   "blocks": "0f14cb56d0938d1cf2b4",
+   "sentences": "9387761a3fe26948cc1f"
+  },
+  "bible/642JNBSB.SFM/1": {
+   "plainText": "7b0fb244cb1b914b0fa8",
+   "blocks": "ad485691ea3581ecb650",
+   "sentences": "c3d8de06bf00e9cb0ff8"
+  },
+  "bible/653JNBSB.SFM/1": {
+   "plainText": "64b76f5e26c828303c33",
+   "blocks": "7c5744f2ed70dc43b723",
+   "sentences": "e02f71f04ec6df62f7a2"
+  },
+  "bible/66JUDBSB.SFM/1": {
+   "plainText": "7b9bc99268688592a463",
+   "blocks": "2c40412dcbfb5e90e188",
+   "sentences": "cb2b4acc83e51f87b9ac"
+  },
+  "bible/67REVBSB.SFM/1": {
+   "plainText": "d022b59c9c45bd17d5e3",
+   "blocks": "35145d2ff6a48db84d89",
+   "sentences": "f0769560dbd0cbf6806b"
+  },
+  "bible/67REVBSB.SFM/2": {
+   "plainText": "39cdacba4b23a6c3ac05",
+   "blocks": "1f3283a66ffd7c126196",
+   "sentences": "8f50dd78c65b88931bcb"
+  },
+  "bible/67REVBSB.SFM/3": {
+   "plainText": "da3f153032ab3fd8bcc4",
+   "blocks": "377495f5aa970e0851a0",
+   "sentences": "1fa2035100644ad4c18b"
+  },
+  "bible/67REVBSB.SFM/4": {
+   "plainText": "5dfb5ce34e42de6487b9",
+   "blocks": "1c43d239afeaf124f984",
+   "sentences": "7fa15c91c13b5ac767e6"
+  },
+  "bible/67REVBSB.SFM/5": {
+   "plainText": "318553c44ef2ecc319e3",
+   "blocks": "ff880b3f570f0cb5a944",
+   "sentences": "69820ba69029dcc27032"
+  },
+  "bible/67REVBSB.SFM/6": {
+   "plainText": "7baf78c874e4b739da74",
+   "blocks": "b62ef454ec8b92a07cc6",
+   "sentences": "b45c0fc19e49737f3fff"
+  },
+  "bible/67REVBSB.SFM/7": {
+   "plainText": "a0443aa82ee1e81d2213",
+   "blocks": "ecd4e45a3e27ba0644e1",
+   "sentences": "93de7b7b2eb4940dbe49"
+  },
+  "bible/67REVBSB.SFM/8": {
+   "plainText": "0c0b6fe42a4d8d0fac15",
+   "blocks": "e2b0ec5f2ef9c6ad33da",
+   "sentences": "b72799e4666f07596ea5"
+  },
+  "bible/67REVBSB.SFM/9": {
+   "plainText": "b3b01ee9db307361c018",
+   "blocks": "12b45c5ff99d1a782d0a",
+   "sentences": "b429a988ef528cda8fe2"
+  },
+  "bible/67REVBSB.SFM/10": {
+   "plainText": "04445b98f9729187b9af",
+   "blocks": "5c369c8c1dcab41034d1",
+   "sentences": "b470d1400b3d944138bf"
+  },
+  "bible/67REVBSB.SFM/11": {
+   "plainText": "5efe4e344c1ff8990585",
+   "blocks": "e2a36c9f77bf6e4ad504",
+   "sentences": "9cb2c49ac912c0e90f0d"
+  },
+  "bible/67REVBSB.SFM/12": {
+   "plainText": "595a05d6bb48f43ed4c6",
+   "blocks": "58658499959fd5e789e2",
+   "sentences": "421cb5b11b43357dcdfb"
+  },
+  "bible/67REVBSB.SFM/13": {
+   "plainText": "6cd6060b7f4a7ad57949",
+   "blocks": "c805891254a890cb72a1",
+   "sentences": "20fa5f68616567d00d9c"
+  },
+  "bible/67REVBSB.SFM/14": {
+   "plainText": "1d76b10cb0dbb3e269d0",
+   "blocks": "b2b804ddd8029617a1f7",
+   "sentences": "392cee62fc42f7afdd18"
+  },
+  "bible/67REVBSB.SFM/15": {
+   "plainText": "c55669a285478a488677",
+   "blocks": "65fce58ffd499e35e435",
+   "sentences": "2d8a7845930f823281e5"
+  },
+  "bible/67REVBSB.SFM/16": {
+   "plainText": "7fed36e623c099972ea7",
+   "blocks": "9424e3afba09c6b95fa6",
+   "sentences": "1619ae4c460a0cc57e88"
+  },
+  "bible/67REVBSB.SFM/17": {
+   "plainText": "69dee8ff397ced10939f",
+   "blocks": "19ced8e4e3f4a5ba52b4",
+   "sentences": "8315d527c84c0427d9c0"
+  },
+  "bible/67REVBSB.SFM/18": {
+   "plainText": "c21ec67744dd80723201",
+   "blocks": "92034e72feec9245242d",
+   "sentences": "60f58ae6b62baec92b30"
+  },
+  "bible/67REVBSB.SFM/19": {
+   "plainText": "367a40d9ec6bac55293a",
+   "blocks": "77fdd9330cf92d3d841f",
+   "sentences": "b6b7d58929ff1f41f960"
+  },
+  "bible/67REVBSB.SFM/20": {
+   "plainText": "9140c73ac158c99380f6",
+   "blocks": "462b40f4b0b165ec39d0",
+   "sentences": "8919d591ecc6d3b748b3"
+  },
+  "bible/67REVBSB.SFM/21": {
+   "plainText": "65388d2f148c2d1480ec",
+   "blocks": "145ef463c94629e1028c",
+   "sentences": "35e5f7d4bc4a4ae7c5f2"
+  },
+  "bible/67REVBSB.SFM/22": {
+   "plainText": "9123efa243add350197c",
+   "blocks": "e434f06684720a93758f",
+   "sentences": "c768c86f835b7a26a527"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/01-FrontMatter.md": {
+   "plainText": "600996d547d92ee71e5a",
+   "blocks": "1d6d46adc6333db3f972",
+   "sentences": "11a181e2259132d8f004"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/02-ChapterOne.md": {
+   "plainText": "aa722ce1d9e80c157e90",
+   "blocks": "61c41616fdf73a8cad4c",
+   "sentences": "5941a75097158083545b"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/03-ChapterTwo.md": {
+   "plainText": "35c1e41f12bc0827cf9f",
+   "blocks": "f168b0e546593307ebb9",
+   "sentences": "d23f6e10d512eb5b08cf"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/04-ChapterThree.md": {
+   "plainText": "9e9f9f89dfad01ca8266",
+   "blocks": "5873b83de0630fc3a94d",
+   "sentences": "46e51b0fcf7326a9084c"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/05-ChapterFour.md": {
+   "plainText": "95e494fec66d49127dbb",
+   "blocks": "1a292d1b72aec41ab3ff",
+   "sentences": "3b460edcbe653689b4b3"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/06-ChapterFive.md": {
+   "plainText": "30be82f301590b5c7cfc",
+   "blocks": "0c2a5652b2aba21663fa",
+   "sentences": "b2d7e7de7aae834dcfe0"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/07-ChapterSix.md": {
+   "plainText": "de8c65b80d0603529a18",
+   "blocks": "9ff90d5718a203ffff41",
+   "sentences": "7a617ebba8e632abfd82"
+  },
+  "series/A Library of Classics/A Pastoral Shelf/Oration II/08-Bibliography.md": {
+   "plainText": "3dda93aaa31f20f0af04",
+   "blocks": "64002106113ce7963967",
+   "sentences": "8f4190234f567594e090"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/01-FrontMatter.md": {
+   "plainText": "5c71ae8458687922dbb4",
+   "blocks": "aa2476337c4f26426783",
+   "sentences": "d7e775984394ce7eafa4"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/02-ChapterOne.md": {
+   "plainText": "59a7bdfe4b652162af07",
+   "blocks": "2e19aee2b8d3fc0bad82",
+   "sentences": "a3c1202678798dca1bcb"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/03-ChapterTwo.md": {
+   "plainText": "005e1e0505fe77ea1418",
+   "blocks": "404c1915cd70b64a3749",
+   "sentences": "9e1a4f77b793d84535fd"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/04-ChapterThree.md": {
+   "plainText": "cc07154ff82a86619076",
+   "blocks": "7cb85d175089c5df6734",
+   "sentences": "1a759730e882ad9688f0"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/05-ChapterFour.md": {
+   "plainText": "3f053dcc7f9002f06c92",
+   "blocks": "bcd48565a674df20c426",
+   "sentences": "c55d2d6cd2e4192f5af2"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/06-ChapterFive.md": {
+   "plainText": "cbe7e75c01a75fcf622e",
+   "blocks": "e771750733e44d4ed76e",
+   "sentences": "c9e5a245fd4435dfd3c9"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/07-ChapterSix.md": {
+   "plainText": "5123fd7f5717ede35a11",
+   "blocks": "afff9b1796b88a20e7d0",
+   "sentences": "766db1a9214d1d4044a0"
+  },
+  "series/A Library of Classics/A Philosophical Shelf/On the Shortness of Life/08-Bibliography.md": {
+   "plainText": "4034087f63f62f3b4637",
+   "blocks": "e3839c0820a27b913ad0",
+   "sentences": "54bdf2d3dc147d5f177f"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/1-FrontMatter.md": {
+   "plainText": "f09271dad6f110bc53f0",
+   "blocks": "29719e8504f41bc414dd",
+   "sentences": "6b08b1c555055c59fc89"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/2-SeriesOrientation.md": {
+   "plainText": "69ea6ad17d8a47fb0338",
+   "blocks": "91ea5b9337e7a7efa13a",
+   "sentences": "7f4c374b3885fb3bd22a"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/3-Intro-L'Ouverture.md": {
+   "plainText": "8ce28e289b545dcf0e89",
+   "blocks": "06e03ad707567621ecec",
+   "sentences": "550c538ed533c4659114"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/4-Session1-LEvangile.md": {
+   "plainText": "041e1428cd9fd8cd74b2",
+   "blocks": "fe5b6e2687d6686d8b54",
+   "sentences": "6e16a287d77a9e1e5d24"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/5-Session2-LEau.md": {
+   "plainText": "9f6523bcdec1348c6a86",
+   "blocks": "cbd463337452c194981c",
+   "sentences": "c2e6fcf8ec5a9f3fd024"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/6-Session3-LeChemin.md": {
+   "plainText": "c7d8b40313a7471099c7",
+   "blocks": "b4f8ba7e74ea9f3cad2a",
+   "sentences": "893cc4425a1ffc685c77"
+  },
+  "series/Narrative Journey Series/Foundations/L’Appel du Christ/7-Conclusion-LeRappel.md": {
+   "plainText": "8eb044eb1fc28b0627d7",
+   "blocks": "51f5525b0ce337a32ae1",
+   "sentences": "61e8a428a0cb0fb5bbb2"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/1-FrontMatter.md": {
+   "plainText": "1f92f0d6c48cf768d357",
+   "blocks": "c051782351fcccb067cf",
+   "sentences": "db84d66692fcd525def4"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/2-SeriesOrientation.md": {
+   "plainText": "65b0744d8389a25b08f9",
+   "blocks": "5da0fae0c2fc170aee81",
+   "sentences": "c70fdbd80b7a637cf59d"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/3-Intro-The Opening.md": {
+   "plainText": "6818a2d96a5902b1730a",
+   "blocks": "8939200b334c5b962236",
+   "sentences": "84bb7e9023da65c31389"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/4-Session1-TheGospel.md": {
+   "plainText": "73a2c9eb623397ec85a2",
+   "blocks": "984fae6c44f64b5af2bd",
+   "sentences": "6a750c32acf4a0f5fba9"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/5-Session2-TheWater.md": {
+   "plainText": "f132e60f09289b331bcc",
+   "blocks": "f895d955470868bb554b",
+   "sentences": "fcd51e5585aa120f9a90"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/6-Session3-TheWay.md": {
+   "plainText": "388e62059e2f2e60c872",
+   "blocks": "8b68fdf086c3010267b1",
+   "sentences": "d98a7db940341520b97c"
+  },
+  "series/Narrative Journey Series/Foundations/The Call of Christ/7-Conclusion-TheRecall.md": {
+   "plainText": "6382a50efcc7ff52c79c",
+   "blocks": "eca87ed51204f147551b",
+   "sentences": "0a2272e8c0ac63d891b9"
+  },
+  "series/Passage Series/HomeStead/01-FrontMatter.md": {
+   "plainText": "c9d92d1b5a587eb36f07",
+   "blocks": "0cd82f3b84dd41f85b70",
+   "sentences": "be3eeae77bf36a4f7de1"
+  },
+  "series/Passage Series/HomeStead/02-PartOne-Preparation.md": {
+   "plainText": "8003dc270ac676c68198",
+   "blocks": "db2613ceed65435fe08a",
+   "sentences": "9e4249bd3131afbc9d83"
+  },
+  "series/Passage Series/HomeStead/03-PartTwo-Challenge.md": {
+   "plainText": "38e68be247c5daadca93",
+   "blocks": "d04142a58bb3b3356380",
+   "sentences": "4e6cae289abf1de8f014"
+  },
+  "series/Passage Series/HomeStead/04-PartThree-Celebration.md": {
+   "plainText": "950b82c3f1ae561193e9",
+   "blocks": "de2e8bdd44fc7d7c9ac7",
+   "sentences": "7bf8187de7bd5a2c1c98"
+  },
+  "series/Passage Series/HomeStead/05-PartFour-Journal.md": {
+   "plainText": "66980914481897b4816a",
+   "blocks": "e8eb3fd54552e30b5262",
+   "sentences": "5a960aabb54ae602802e"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/01-Front-Matter.md": {
+   "plainText": "801fad565c46b4dbf92e",
+   "blocks": "8f80fd8c752f32d66e27",
+   "sentences": "9ad3c9a1f7e5e6470d26"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/02-Introduction.md": {
+   "plainText": "841335535aeeb4e18220",
+   "blocks": "c11113867be00a6e14e0",
+   "sentences": "7dde9cf1afd2ba23c8bb"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/03-Wisdom-Calls-Out.md": {
+   "plainText": "e0f226ec74a823c50e98",
+   "blocks": "d86334101bc38c9b4315",
+   "sentences": "7b5cdc96c028b4785061"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/04-The-Fear-of-the-Lord.md": {
+   "plainText": "374d55dbf8f970ad79bc",
+   "blocks": "3f02123a5a4c50c0785c",
+   "sentences": "722e3bed9e73d20959c4"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/05-Every-Good-Path.md": {
+   "plainText": "d6e2f2b94ae03659a3df",
+   "blocks": "33580eb9c153898a4188",
+   "sentences": "deac33cf680c6599e3fd"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/06-Come-Eat-of-My-Bread.md": {
+   "plainText": "9060e9afeeb19529e700",
+   "blocks": "799f62f40c87ad3f2b92",
+   "sentences": "c2af1023ed24409e9cc4"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/07-Do-Not-Forget-My-Teaching.md": {
+   "plainText": "4d1517aa2633a4c7a080",
+   "blocks": "88c6c5636f537def78dc",
+   "sentences": "3c8c9381f2eab9d4e8e2"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/08-By-Me-Kings-Rule.md": {
+   "plainText": "9b0c610ef57efa5e8409",
+   "blocks": "0f8262f330b433922df1",
+   "sentences": "564889ad8837605f4a24"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/09-Conclusion.md": {
+   "plainText": "0d0b0d3da71a5cb5a0b0",
+   "blocks": "51332c258e6ea339e7f0",
+   "sentences": "380f42a545c9cfb1fa29"
+  },
+  "series/Vade Mecum/Proverbs and Faith Formation/10-Bibliography.md": {
+   "plainText": "f2f56b253e171fcb2999",
+   "blocks": "8e21f74e470fa7aa0dd4",
+   "sentences": "55675a74952235b654ba"
+  }
+ }
+}

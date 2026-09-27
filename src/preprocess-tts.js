@@ -182,15 +182,34 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
   // Build plain text for hashing (all block text concatenated)
   const plainText = blocks.map(b => b.nodes[0].text).join('\n\n');
 
-  // Build sentence index: each sentence gets a blockIndex + sentenceIndex.
-  // Headings use displayText (original case, no SSML tags) for web reader matching.
-  // Paragraphs are split on sentence boundaries (. ! ? followed by space or end).
+  return {
+    name: chapterName || 'Untitled',
+    blocks,
+    sentences: buildSentenceIndex(blocks),
+    plainText,
+  };
+}
+
+/**
+ * Build the sentence index: each sentence gets a blockIndex + sentenceIndex.
+ * Headings use displayText (original case, no SSML tags) for web reader matching, plus
+ * `matchText` = what the narrator actually SAYS (the block's TTS text without break tags),
+ * which is what the timestamp builder must look for in the alignment: a scripture title
+ * displayed "Genesis 28" is read "Genesis, Chapter 28", so searching for the display text
+ * failed and the title's timing was a proportional guess (0–8 s over the first heading).
+ * Paragraphs are split on sentence boundaries (. ! ? followed by space or end).
+ * Exported so a timestamps-only rebuild can re-derive it from a stored .tts.json.
+ */
+export function buildSentenceIndex(blocks) {
   const sentences = [];
   for (let bi = 0; bi < blocks.length; bi++) {
     const block = blocks[bi];
     if (block.displayText) {
       // Heading block — use original text for matching
-      sentences.push({ blockIndex: bi, sentenceIndex: 0, text: block.displayText });
+      const spoken = block.nodes[0].text.replace(/<break[^>]*\/>/g, '').replace(/\s+/g, ' ').trim();
+      const s = { blockIndex: bi, sentenceIndex: 0, text: block.displayText };
+      if (spoken && spoken !== block.displayText) s.matchText = spoken;
+      sentences.push(s);
     } else {
       const sents = splitSentences(block.nodes[0].text);
       for (let si = 0; si < sents.length; si++) {
@@ -204,13 +223,7 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
       }
     }
   }
-
-  return {
-    name: chapterName || 'Untitled',
-    blocks,
-    sentences,
-    plainText,
-  };
+  return sentences;
 }
 
 /**
