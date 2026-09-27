@@ -374,5 +374,5 @@ Reference data point: first book (Oration II) -- approximately 153K characters, 
 |---|---|
 | **ElevenLabs** | ~7.6% of the 2M monthly Pro quota, or ~25% of the 600K Impact quota. |
 | **GCS storage** | ~180 MB, approximately $0.004/month. |
-| **Timestamp-only rebuild** | Re-run generation with `force_regenerate=true`: cached chunks are reused (0 ElevenLabs credits), only `.timestamps.json` is rebuilt. |
+| **Timestamp-only rebuild** | Run the `rebuild-timestamps.yml` workflow (dry-run by default; `write` backs up then rewrites): rebuilds `.timestamps.json` from the stored chunk alignments, 0 ElevenLabs credits. **Never use `force_regenerate=true` for this** — it re-narrates every chunk at full cost. |
 | **Per-edit regeneration** | ~800 characters (1 chunk) = negligible. |

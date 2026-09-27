@@ -192,6 +192,8 @@ The slug function lowercases, strips apostrophes, replaces non-alphanumeric char
 "L'Appel du Christ"     → "lappel-du-christ"
 ```
 
+Only the straight apostrophe `'` is stripped. The real book title uses a curly `’`, which becomes a hyphen: `L’Appel du Christ` → `l-appel-du-christ` (the live GCS path).
+
 Full path example:
 ```
 audio/a-library-of-classics/a-pastoral-shelf/oration-ii/02-chapterone.mp3
@@ -343,16 +345,16 @@ Example for a chapter with: H1, H3 subtitle, H2 section heading, paragraph (3 se
 | 3 | 2 | `<p>` | "The mutual love between..." |
 | 4 | 0 | `<h2>` | "Section 103: Conquered..." |
 
-Note: heading text in segments is sentence-cased (e.g., "Mutual affection" not "Mutual Affection") and has no trailing period.
+Note: heading text in segments is the heading's original DISPLAY text (e.g., "Mutual Affection") with no trailing period — the sentence-cased form is only what the narrator is given.
 
 Multiple segments share the same `blockIndex` when they're different sentences within the same paragraph.
 
 ### Important notes
 
-- **Text comes from our preprocessor**. For paragraphs, it matches the rendered markdown content directly. For headings, the text is sentence-cased for TTS — use case-insensitive matching when joining to rendered content.
+- **Text comes from our preprocessor**. For paragraphs, it matches the rendered markdown content directly. For headings, the text is the display text. Paragraph text is the SPOKEN form, which can differ from the page: scripture references spelled out ("First Samuel, chapter 1, verses 27 through 28."), parenthetical references removed, a "." appended to a paragraph lacking end punctuation, and (in the four oldest books) leftover `- ` list markers. Match with a letters-and-digits fold over the whole unit, never exact substrings — see the shared `@noble-collective/userdata/narration` module (Collective-Shared) and the app's `NarrationAlignment`.
 - **Headings are sentence-cased** for TTS (e.g., `"Responsibility commitment"` not `"Responsibility Commitment"`), with proper nouns whitelisted. The original display text is stored in `block.displayText` for web reader matching. Headings get SSML `<break>` pauses (H1: 2s, H2: 1.5s, H3-H6: 1s) instead of trailing periods. Match heading segments against rendered text using the display text, not the TTS text.
-- **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy. No silence gaps between chunks — timestamps are contiguous with zero cumulative drift.
-- **Segments are contiguous** — timestamps cover the full chapter duration with no gaps.
+- **Timing comes from ElevenLabs** character-level alignment — generated alongside the audio for exact accuracy, with zero cumulative drift across chunks.
+- **Segments are NOT contiguous** — pauses (`<break>`s, section silence) leave gaps between one segment's `end` and the next `start` (Genesis 28: title 0–1.75 s, first heading from 3.86 s). Hold the previous sentence through a short gap rather than blanking the highlight.
 - **blockIndex is a hint, not an index.** The preprocessor and renderer may count elements differently. Always match by `text`, using `blockIndex` only as a starting position for the search.
 - **Typical count:** 60–4,400+ segments per chapter depending on length. HomeStead Part One has 4,425 segments across 390 minutes.
 - **Numbered oration paragraphs** (e.g., "103.") have a paragraph break inserted after the number to produce a TTS pause: `"103.\n\nIn the next place..."`. This does not affect the rendered content.
