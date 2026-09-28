@@ -9,6 +9,22 @@
 import { convertBibleRef } from './bible-refs.js';
 import { normalizeSpoken, convertReference, spokenChapterTitle } from './languages.js';
 
+/**
+ * Removes print page markers — `<!-- page 27 -->` / `<!-- page xii -->`, where a
+ * printed page begins (the readers' "Go to page"; Noble-Imprint-App
+ * plans/2026-09-28-reader-header-tabs.md). A marker on its own line goes with
+ * its line break, one inside a line goes alone, so a tagged session is
+ * byte-for-byte the untagged one: same narration, same content hash (no
+ * regeneration). Only page markers — other comments are left as they were.
+ * @param {string} markdown
+ * @returns {string}
+ */
+export function stripPageMarkers(markdown) {
+  return markdown
+    .replace(/^[ \t]*<!--\s*page\s+(?:\d{1,4}|[ivxlcdm]{1,8})\s*-->[ \t]*\r?\n/gim, '')
+    .replace(/<!--\s*page\s+(?:\d{1,4}|[ivxlcdm]{1,8})\s*-->/gi, '');
+}
+
 // Greek Unicode ranges (Basic Greek + Extended Greek)
 const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
 
@@ -25,7 +41,7 @@ const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
 export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false) {
   // Pass-through when the switch is off \u2014 preserves the exact deployed output.
   const norm = languageNormalization ? (t) => normalizeSpoken(t, language) : (t) => t;
-  const lines = markdown.split('\n');
+  const lines = stripPageMarkers(markdown).split('\n');
   const blocks = [];
   let chapterName = '';
   let currentParagraph = [];
