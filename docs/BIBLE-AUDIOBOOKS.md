@@ -80,9 +80,10 @@ audio/bible/{tx}/{book-slug}/
   chunks/{NNN}/{hash}.mp3 + .align.json
 ```
 
-`{book-slug}` = `slugify(bookName)`. **Gotcha:** the generation side slugifies the USFM
-`\h` name; the website slugifies the references.json name. They match for most books but
-NOT for Psalms/Song (see §8) — reconcile before adding those.
+`{book-slug}` = `slugify(USFM \h name)` — so Psalms is `psalms` and Song of Solomon is `song`.
+Consumers map their own book names to it (resolved 2026-09-27, see §8.1): the resource site
+`bibleAudioSlug()` (`src/server/audio.js`), Coram Deo `BOOK_ID_TO_AUDIO_SLUG_OVERRIDE`
+(`src/lib/books.ts`), the app slugs from `\h` directly.
 
 ---
 
@@ -243,11 +244,13 @@ generated before normalization existed.
    verse-key name: `Psalms`→`Psalm`, `Song`→`Song of Solomon`. This breaks TWO things:
    - **Web paragraph/heading flags** — fixed by `resolveRefBookName()` in `bible.js`
      (add new aliases there if another book mismatches).
-   - **The GCS book-slug** — generation slugs from `\h` (`psalms`), the website looks up
-     from the ref name (`psalm`) → the site won't find the audio. **Not yet reconciled.**
-     Before adding Psalms/Song, normalize the generation-side book name too (apply the same
-     alias in `detect-changes.findBibleWorkItems`, or pass an explicit slug), so both sides
-     agree. Proverbs/2 Timothy are unaffected (names match).
+   - **The GCS book-slug** — generation slugs from `\h` (`psalms`, `song`). **RESOLVED
+     2026-09-27 on the consumer side** (generation unchanged — the published paths stay):
+     the resource site maps `Psalm`→`psalms`, `Song of Solomon`→`song` (`bibleAudioSlug`,
+     `src/server/audio.js`, unit test over all 66 books); Coram Deo overrides book 22 →
+     `song` (`src/lib/books.ts`, `books.test.ts` over all 66). Until then neither site played
+     any Psalm or Song of Solomon audio. A new book whose `\h` differs from its display name
+     needs the same one-line mapping on both sites (their tests will fail and say which).
 
 2. **Edits re-render at generation granularity.** The Bible now uses the **section** strategy
    (one generation per heading-span, capped at 2000 — see CHUNKING-AND-PAUSES.md), NOT the old

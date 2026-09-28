@@ -399,6 +399,8 @@ Signed URLs expire after 1 hour. If the user pauses for a long time and resumes,
 
 This is the most impactful feature — highlighting the sentence being spoken and scrolling the text to follow along.
 
+> **Superseded (2026-09-27) — don't implement the algorithm below.** Matching a segment's `text` against a paragraph (first-N-characters, `blockIndex` hints, per-element sentence splitting) fails wherever the spoken form differs from the page: verse numbers, spelled-out references, removed parentheticals, sentences across list items, repeated lines. Every Noble Collective reader now uses ONE engine — `@noble-collective/userdata/narration` (Collective-Shared, ARCHITECTURE §9b), a port of the mobile app's `NarrationAlignment`, parity-locked to the app's Dart by a generated golden file. See **Addendum §6**. The section below is kept as history.
+
 ### Algorithm
 
 ```
@@ -616,7 +618,7 @@ The website's implementation can serve as a reference. The key files are:
 
 | File | Location | What it does |
 |------|----------|--------------|
-| `audio-player.js` | `Noble-Imprint-Resource-Website/src/public/js/audio-player.js` | Full player + text sync with autoscroll, "Jump to audio" link, expandable mobile controls |
+| `audio-player.js` | `Noble-Imprint-Resource-Website/src/public/js/audio-player.js` | Full player + text sync (via the shared narration engine, `narration-bundle.js`) with autoscroll, "Jump to audio" link, expandable mobile controls, Bible A–B loop, in-place Bible chapter advance |
 | `audio.js` | `Noble-Imprint-Resource-Website/src/server/audio.js` | Server-side GCS manifest loading + signed URL generation |
 | `style.css` | `Noble-Imprint-Resource-Website/src/public/css/style.css` | Player bar + highlight styles (search for `.audio-`) |
 | `session.ejs` | `Noble-Imprint-Resource-Website/src/views/session.ejs` | Player HTML template (search for `audio-fab`) |
@@ -748,4 +750,13 @@ The player and text-sync approach are the same; only the discovery path and cont
 - **File layout**: one segment per line (compact JSON inside). Same JSON.
 - Existing files were rebuilt timestamps-only by `rebuild-timestamps.yml` (no TTS); originals
   are under `audio/_backup/2026-09-27-timestamps/`.
+
+### 6. One highlight engine for every reader (2026-09-27)
+
+Plan + outcome: `Collective-Shared/plans/2026-09-27-audio-highlight-parity.md`.
+
+- **The engine:** `@noble-collective/userdata/narration` (SDK ≥ 0.3.0). Parse → `repairSegmentTimings` (ends capped at the next start) → for the Bible `splitSegmentsAtVerses(segs, verses, headings)` (a sentence crossing verses is cut at the word each verse begins, from `words`) → `NarrationAlignment.build(blockTexts, segTexts)` once per session/chapter (letters+digits fold, whole-unit ordered placement, gap fitting, spoken→written references) → per frame `segmentIndexAt` (holds a sentence through a pause ≤ 3 s) + `shownSegment` (a short unplaced segment keeps the previous lit). Seeks to a sentence start `leadInBefore` it (≤ 0.3 s).
+- **Consumers:** the mobile app (the Dart original), the resource site (books + Bible), Coram Deo (Bible: the sentence inside its verse). Rules every consumer follows: never match `segment.text` against a block directly; a web page's block text leaves out verse-number / footnote `<sup>`s; a Bible highlight never spans more than one verse; the A–B loop snaps with the same verse placement (`segmentVerses`).
+- **Measured:** the resource site lights 98.6–99.8 % of listening time per book (the rest is spoken list numbers, never lit by design) and 100 % of the Bible; Coram Deo 602/602 verse sentences exactly on the live DOM.
+- **Pipeline implications:** consumers now tolerate the spoken form, so paragraph `text` does NOT need a display-text field. Still open for the pipeline: `@include` support before any Essentials book gets audio (it would narrate the raw directive and skip the shared content).
 
