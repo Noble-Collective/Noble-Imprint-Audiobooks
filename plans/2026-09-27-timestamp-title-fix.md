@@ -62,3 +62,22 @@ Nothing anywhere persists a segment index (resume = seconds in localStorage).
 3. Skip list splitting (low value, only risky on the website).
 
 Rollback = copy backups back. No TTS, no manifest change, no refresh needed.
+
+## Also found this session (2026-09-27/28)
+- `voice-compare.yml` was invalid YAML since `e386697` (a plain `run:` containing
+  "x-refresh-key: …") — GitHub filed a failed run (and an email) on every push; fixed
+  `738c590` (block scalar, like generate.yml).
+- Consumers of the rebuilt files: the app splits Bible sentences at verses with the new
+  `words` (Noble-Imprint-App `de840cfe`, `plans/2026-09-28-bible-verse-highlight.md`) and
+  its A–B loop starts verses on the exact word; the resources site + Coram Deo ignore
+  `words` (sentence-level highlight, unchanged).
+
+## OPEN — image titles with parentheses leak into the narration
+`preprocess-tts.js` `cleanLine` strips images with `!\[.*?\]\(.*?\)`, which stops at
+the FIRST `)`. An image title containing parentheses — Proverbs and Faith Formation
+session 8: `"…Encaustic (wax and<br>pigments) on wood, 39.4 × 20.5 cm. The Walters Art
+Museum."` — leaves its tail in the text, so the narrator READS "…on wood, 39.4 × 20.5
+cm. The Walters Art Museum.")." (2 images; The Vocationed Pastor s4 has a 3rd, no audio
+yet). Fix: an image-aware strip (skip a quoted title: `!\[[^\]]*\]\([^\s)]*(?:\s+"[^"]*")?\)`)
++ a test. It CHANGES the TTS text → those chunks' hashes → re-narration of that
+session's affected chunks (small, but ElevenLabs credits): needs Steve's approval.
