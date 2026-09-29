@@ -120,7 +120,7 @@ Audiobook generation is enabled per-book via `meta.json` in the Resources repo:
 | `project_id` | Reserved (unused). |
 | `voice_id` | Default ElevenLabs voice for all sessions. |
 | `voice_test_map` | Per-session voice overrides for A/B testing. |
-| `model_id` | ElevenLabs model. `eleven_multilingual_v2` is current. |
+| `model_id` | ElevenLabs model. `eleven_multilingual_v2` is current — see [ELEVENLABS-MODELS.md](ELEVENLABS-MODELS.md) before changing (v3/v4 evaluations, cache-key gap). |
 | `quality_preset` | ElevenLabs quality setting (`high`). |
 | `voice_settings` | Stability, similarity boost, style, and speed parameters. |
 | `skip_sessions` | Session files to exclude from generation (front matter, bibliography, etc.). |
