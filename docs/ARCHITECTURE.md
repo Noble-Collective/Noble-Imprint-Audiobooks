@@ -152,6 +152,7 @@ Transforms markdown into clean spoken text suitable for TTS:
 | Greek text | Stripped (only appears in skipped front matter). |
 | Tables, links, images | Stripped. |
 | Paragraphs | Grouped into blocks. |
+| Print page markers (`<!-- page 27 -->`) | Removed first (`stripPageMarkers`) — own-line markers with their line break — so a tagged session narrates and hashes exactly like the untagged one (no regeneration). They mark where printed pages begin for the readers' "Go to page" (Noble-Imprint-App plans/2026-09-28-reader-header-tabs.md). Only page markers: other comments (e.g. `<!-- @include: … -->`) are unchanged — and do reach the narration text today. Test: `tests/page-markers.test.mjs`. |
 
 ### Language Normalization Layer
 
