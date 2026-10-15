@@ -1,0 +1,33 @@
+name: Eleven v4 probe (no audiobook writes)
+
+# Short /with-timestamps calls on eleven_v4 to answer the open API questions before an
+# A/B render. ~1,200 chars. Writes nothing to GCS; results come back as a run artifact.
+# See src/v4-probe.js and docs/ELEVENLABS-MODELS.md.
+on:
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: 'Model to probe'
+        required: false
+        default: 'eleven_v4'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - name: Probe
+        run: node src/v4-probe.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          MODEL_ID: ${{ github.event.inputs.model_id }}
+          OUT_DIR: probe-out
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: v4-probe
+          path: probe-out
