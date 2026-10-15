@@ -1,7 +1,7 @@
 name: Narration A/B (publish to website)
 
 # Whole-chapter A/B of the Bible narration: A = live audio, B = today's model with the text
-# fixes, C = Eleven v4 with the same fixes, C2 = C slowed to 0.90. Published to GCS
+# fixes, C = Eleven v4 with the same fixes (C2 = C slowed to 0.90, opt-in). Published to GCS
 # voice-test/ab-{book}-{ch}/ and served at /voice-test/ab-{book}-{ch}. Writes nothing else.
 # See src/model-ab.js. DRY_RUN prints every version's spoken text without spending credits.
 
@@ -13,7 +13,7 @@ on:
         required: false
         default: 'NUM:1,ACT:27'
       variants:
-        description: 'Rendered variants (A and C2 are free and automatic)'
+        description: 'Rendered variants (A is free + automatic; add C2 for C slowed to 0.90)'
         required: false
         default: 'B,C'
       dry_run:

@@ -6,7 +6,7 @@
  *   A  — the LIVE audio as shipped (copied from audio/bible/…, 0 credits)
  *   B  — today's model (eleven_multilingual_v2, same voice + settings) with the text fixes
  *   C  — eleven_v4, same voice, same text fixes, v4 pause tags, at v4's natural pace
- *   C2 — C slowed to 0.90 after rendering (v4 has no speed setting; ffmpeg atempo,
+ *   C2 — (opt-in: VARIANTS includes C2) C slowed to 0.90 after rendering (v4 has no speed setting; ffmpeg atempo,
  *        pitch-preserving, timestamps scaled to match) — 0 credits
  * B vs A = what the text fixes are worth; B vs C = the model difference on identical text.
  *
@@ -24,7 +24,7 @@
  *
  * Env:
  *   ELEVENLABS_API_KEY (unless DRY_RUN)   RESOURCES_PATH (default ../Noble-Imprint-Resources)
- *   CHAPTERS   "NUM:1,ACT:27"             VARIANTS "B,C" (A and C2 are free, always made)
+ *   CHAPTERS   "NUM:1,ACT:27"             VARIANTS "B,C" (A is free + automatic; add C2 for the slowed copy)
  *   DRY_RUN=true  print the spoken text of every version, no TTS/upload
  *   FORCE=true    re-render variants whose MP3 already exists in GCS
  */
@@ -52,6 +52,8 @@ const CHAPTERS = (process.env.CHAPTERS || 'NUM:1,ACT:27').split(',').map(s => {
 });
 const VARIANTS = (process.env.VARIANTS || 'B,C').split(',').map(s => s.trim().toUpperCase());
 const SLOW_TEMPO = 0.9;   // C2: the Bible's v2 speed setting, applied after rendering
+// C2 is opt-in (VARIANTS includes "C2"): Steve dropped it from the pages 2026-10-15.
+const SLOWED = VARIANTS.includes('C2');
 
 const FIXES = { spell_numbers: true, clean_terminal_punctuation: true };
 
@@ -140,8 +142,9 @@ function slowDown(inPath, outPath, ts) {
 function displayBlocks(bookName, ch, blocks) {
   const note = '<span style="display:block;font-size:0.85rem;opacity:0.8;font-family:\'DM Sans\',sans-serif;' +
     'padding:0.55rem 0.8rem;background:rgba(200,160,74,0.10);border-left:3px solid #c8a04a;border-radius:0 5px 5px 0;">' +
-    '<b>A</b> is the audio live today. <b>B</b> is the same model with the text fixes. <b>C</b> is Eleven v4 with the same fixes; ' +
-    '<b>C2</b> is C slowed to the Bible’s usual 0.90 pace. Listen for the large numbers, the slowing toward the end of long sections, and the pauses at headings.</span>';
+    '<b>A</b> is the audio live today. <b>B</b> is the same model with the text fixes. <b>C</b> is Eleven v4 with the same fixes' +
+    (SLOWED ? '; <b>C2</b> is C slowed to the Bible’s usual 0.90 pace' : '') +
+    '. Listen for the large numbers, the slowing toward the end of long sections, and the pauses at headings.</span>';
   const out = [{ type: 'h1', text: `${bookName} ${ch}` }, { type: 'p', text: note }];
   for (const b of blocks) out.push({ type: b.type === 'p' ? 'p' : 'h2', text: b.text });
   return out;
@@ -180,7 +183,7 @@ async function main() {
       console.log('  [A] copied live audio');
     }
 
-    for (const key of VARIANTS) {
+    for (const key of VARIANTS.filter(k => k !== 'C2')) {
       const v = configs[key];
       if (!v) throw new Error(`unknown variant ${key}`);
       if (!FORCE && await exists(v.file)) { console.log(`  [${key}] exists — skipped (FORCE=true to re-render)`); continue; }
@@ -195,7 +198,7 @@ async function main() {
       const tsPath = join(tmpDir, v.file.replace('.mp3', '.timestamps.json'));
       writeFileSync(tsPath, serializeTimestamps(r.ts));
       await bucket.upload(tsPath, { destination: `${gcsDir}/${v.file.replace('.mp3', '.timestamps.json')}` });
-      if (key === 'C') {
+      if (key === 'C' && SLOWED) {
         const c2 = join(tmpDir, 'c2-v4-slowed.mp3');
         const ts2 = slowDown(outPath, c2, r.ts);
         await bucket.upload(c2, { destination: `${gcsDir}/c2-v4-slowed.mp3` });
@@ -226,7 +229,10 @@ async function main() {
       { name: 'C2 — Eleven v4, slowed to 0.90', accent: 'C2', blurb: 'C slowed after rendering to the Bible’s usual 0.90 pace (v4 has no speed setting; pitch is preserved).', file: 'c2-v4-slowed.mp3' },
     ];
     const present = [];
-    for (const vv of voices) if ((await bucket.file(`${gcsDir}/${vv.file}`).exists())[0]) present.push(vv);
+    for (const vv of voices) {
+      if (vv.accent === 'C2' && !SLOWED) continue;
+      if ((await bucket.file(`${gcsDir}/${vv.file}`).exists())[0]) present.push(vv);
+    }
     const manifest = { slug, title: `${parsed.bookName} ${ch} — narration A/B`, translation: 'Berean Standard Bible',
       blocks: displayBlocks(parsed.bookName, ch, chap.blocks), voices: present };
     const manPath = join(tmpDir, 'manifest.json');
