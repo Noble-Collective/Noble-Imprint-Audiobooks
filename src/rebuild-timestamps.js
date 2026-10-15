@@ -181,9 +181,24 @@ async function processSession(src, bookSlugPath, s, workDir) {
   const gaps = built.chunks.length === 1 ? built.chunks.map(() => 0)
     : built.chunkGaps.map((g, i) => (i > 0 && g > 0 ? g : 0));
   const sentences = buildSentenceIndex(tts.blocks);
-
-  const oldSentences = sentences.map(({ matchText, ...rest }) => rest);
   const pubSegs = published.segments || [];
+
+  // Which algorithm made the published file: the OLD one (headings matched by display text,
+  // everything before 2026-09-27) or the CURRENT one (matchText — every session generated
+  // since, incl. Eleven v4 with spelled-out numbers). Try old first, so the sessions this
+  // tool was written for behave exactly as before; a session that only the current
+  // algorithm reproduces has nothing to change and reports "unchanged".
+  const durs0 = durs.slice();
+  const reasons = [];
+  for (const candidate of [sentences.map(({ matchText, ...rest }) => rest), sentences]) {
+    durs.splice(0, durs.length, ...durs0);
+    const res = reproduce(candidate);
+    if (res.ok) return finish(res.reproduced, res.calib);
+    reasons.push(res.reason);
+  }
+  return { ...r, status: 'skip', reason: `old algorithm: ${reasons[0]}; current algorithm: ${reasons[1]}` };
+
+  function reproduce(oldSentences) {
 
   // Chunk offsets. ffprobe's MP3 duration can differ by a frame (~0.026 s) between ffmpeg
   // builds, which shifts every later chunk. So each chunk's start is SOLVED from the
@@ -205,30 +220,34 @@ async function processSession(src, bookSlugPath, s, workDir) {
     for (let c = 0; c < n; c++) { acc += gaps[c]; expected.push(acc); acc += durs[c]; }
     const offs = []; let carry = 0, worst = 0;
     for (let c = 0; c < n; c++) {
-      if (lo[c] > hi[c]) return { ...r, status: 'skip', reason: `chunk ${c} offsets inconsistent with published` };
+      if (lo[c] > hi[c]) return { ok: false, reason: `chunk ${c} offsets inconsistent with published` };
       let off = expected[c] + carry;
       if (c === 0) off = 0;
       else if (Number.isFinite(lo[c])) off = Math.min(Math.max(off, lo[c]), hi[c]);
-      if (c === 0 && (lo[0] > E || hi[0] < -E)) return { ...r, status: 'skip', reason: 'chunk 0 does not start at 0' };
+      if (c === 0 && (lo[0] > E || hi[0] < -E)) return { ok: false, reason: 'chunk 0 does not start at 0' };
       // Per-chunk correction (this chunk's duration vs ffprobe's) — a frame or two at most.
       worst = Math.max(worst, Math.abs((off - expected[c]) - carry));
       carry = off - expected[c];
       offs.push(off);
     }
-    if (worst > 0.06) return { ...r, status: 'skip', reason: `a solved chunk duration differs from ffprobe by ${worst.toFixed(3)} s` };
+    if (worst > 0.06) return { ok: false, reason: `a solved chunk duration differs from ffprobe by ${worst.toFixed(3)} s` };
     for (let c = 0; c + 1 < n; c++) durs[c] = offs[c + 1] - offs[c] - gaps[c + 1];
     calib = worst;
-  } catch (e) { return { ...r, status: 'skip', reason: `rebuild threw: ${e.message}` }; }
+  } catch (e) { return { ok: false, reason: `rebuild threw: ${e.message}` }; }
 
   // 2. The OLD algorithm (headings matched by display text) must reproduce what's published.
   let reproduced;
   try { reproduced = quiet(() => buildTimestampsFromAlignments(aligns, built.chunks, durs, oldSentences, gaps)).segments; }
-  catch (e) { return { ...r, status: 'skip', reason: `rebuild threw: ${e.message}` }; }
+  catch (e) { return { ok: false, reason: `rebuild threw: ${e.message}` }; }
   const cleanedPub = pubSegs.map(p => ({ ...p })); // compare times + indices; text below
   const d1 = firstDiff(reproduced, cleanedPub, true);
-  if (d1) return { ...r, status: 'skip', reason: `does not reproduce published: ${d1}` };
+  if (d1) return { ok: false, reason: `does not reproduce published: ${d1}` };
   const textMismatch = pubSegs.findIndex((p, i) => p.text !== oldSentences[i].text);
-  if (textMismatch >= 0) return { ...r, status: 'skip', reason: `published text differs from sentence index at #${textMismatch}` };
+  if (textMismatch >= 0) return { ok: false, reason: `published text differs from sentence index at #${textMismatch}` };
+  return { ok: true, reproduced, calib };
+  }
+
+  async function finish(reproduced, calib) {
 
   // 3. NEW result: time changes only on headings read differently.
   const next = quiet(() => buildTimestampsFromAlignments(aligns, built.chunks, durs, sentences, gaps, { words: bible })).segments;
@@ -248,7 +267,9 @@ async function processSession(src, bookSlugPath, s, workDir) {
   const withWords = next.filter(n => n.words).length;
 
   const body = serializeTimestamps({ segments: next });
-  const changed = timeChanges.length > 0 || textChanges.length > 0 || withWords > 0;
+  // Word timings count as a change only where the published file lacks them (the
+  // 2026-09-27 rebuild added them); a file that already has them is left as it is.
+  const changed = timeChanges.length > 0 || textChanges.length > 0 || withWords > pubSegs.filter(p => p.words).length;
   const out = {
     ...r, status: changed ? 'change' : 'unchanged', strategy: built.strategy, chunks: built.chunks.length, calib,
     segments: next.length, timeChanges, textChanges, withWords, overlapsBefore, overlapsAfter,
@@ -266,6 +287,7 @@ async function processSession(src, bookSlugPath, s, workDir) {
     out.written = true;
   }
   return out;
+  }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────────────
