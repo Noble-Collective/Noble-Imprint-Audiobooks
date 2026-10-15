@@ -19,6 +19,7 @@ import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
+import { pause, stripPauses, pauseMarkupLengthAt, pauseStyleForModel, PAUSES, HEADING_PAUSE } from './pauses.js';
 
 const API_BASE = 'https://api.elevenlabs.io/v1';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
@@ -32,7 +33,7 @@ const bucket = storage.bucket(GCS_BUCKET);
  * Query ElevenLabs subscription for credit usage.
  * Returns { character_count, character_limit } or null on failure.
  */
-async function getCredits() {
+export async function getCredits() {
   try {
     const res = await fetch(`${API_BASE}/user/subscription`, {
       headers: { 'xi-api-key': API_KEY },
@@ -73,8 +74,7 @@ const FORCE_SPLIT_TYPES = new Set(['h1', 'h2', 'h3']); // structural heading lev
 // MAX_GENERATION is packed into sub-generations at verse/sentence boundaries, separated by a
 // LIGHT seam (a breath, not a section pause). See plans/2026-08-12-audiobook-pipeline-
 // reconciliation.md for the dry-run that fixed 2000 (2 Timothy splits 0; Proverbs tail ~31%).
-const MAX_GENERATION = 2000;
-const LIGHT_SEAM_SECONDS = 0.4;
+const MAX_GENERATION = 2000;   // cap-split silence = PAUSES.breath (0.4s, pauses.js)
 
 // Bumped when generation LOGIC changes in a way that would alter re-render output. Stamped
 // into each book's manifest so staleness (shipped audio vs current logic) is queryable.
@@ -204,7 +204,8 @@ export function splitLongBlocks(blocks, target) {
 // (preprocess-tts: h1=2s, h2=1.5s, h3-h6=1s). In the section strategy these are delivered as a
 // mix of real concat silence (before a section) + <break> tags (after an in-generation heading),
 // so they're reliable at any stability. Tunable "pause around headings, at will" knobs.
-const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
+const HEADING_GAP = Object.fromEntries(
+  Object.entries(HEADING_PAUSE).map(([h, kind]) => [h, PAUSES[kind].seconds]));   // pauses.js
 
 // SECTION-strategy generations + per-boundary silence (Bible). A "section" is a heading-SPAN:
 // a boundary heading (h1/h2/h3) + the blocks under it, up to the next boundary heading. Each
@@ -218,7 +219,7 @@ const HEADING_GAP = { h1: 2.0, h2: 1.5, h3: 1.0, h4: 1.0, h5: 1.0, h6: 1.0 };
 // timestamps; never a timestamp-only gap — see the CHUNK_GAP warning). Returns per generation:
 //   texts[], gaps[] (silence before it), continuations[] (true = mid-section cap split, so it
 //   flows continuously from the previous generation → keep prev/next_text there).
-export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) {
+export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION, pauseStyle = 'ssml') {
   const isHeading = b => HEADING_GAP[b.sub_type] !== undefined;   // any heading h1–h6 (break-after)
   const isBoundary = b => FORCE_SPLIT_TYPES.has(b.sub_type);      // section boundary h1–h3 only
 
@@ -236,11 +237,11 @@ export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) 
   if (cur.length) sections.push(cur);
 
   const renderBlocks = group => group.map(b => {
-    let t = b.nodes[0].text.replace(/<break[^>]*\/>/g, '').trim();
+    let t = stripPauses(b.nodes[0].text).trim();
     if (!t) return '';
     if (isHeading(b)) {
       if (!/[.!?:…—]$/.test(t)) t += '.';                       // period → clean read
-      t += `<break time="${HEADING_GAP[b.sub_type]}s"/>`;       // after-heading pause, in-generation
+      t += pause(HEADING_PAUSE[b.sub_type], pauseStyle);         // after-heading pause, in-generation
     }
     return t;
   }).filter(Boolean).join('\n\n');
@@ -270,7 +271,7 @@ export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) 
       const txt = renderBlocks(sub);
       if (!txt) return;
       texts.push(txt);
-      gaps.push(subi === 0 ? sectionGap : LIGHT_SEAM_SECONDS);
+      gaps.push(subi === 0 ? sectionGap : PAUSES.breath.seconds);
       continuations.push(subi > 0);   // later sub-gens flow from the previous generation
     });
   });
@@ -282,10 +283,10 @@ export function buildNaturalGenerations(blocks, maxGeneration = MAX_GENERATION) 
 // texts + real silence before each + which ones continue mid-section. Pure — shared with
 // the timestamps-only rebuild (src/rebuild-timestamps.js), which re-derives the chunks from a
 // stored .tts.json and checks their hashes against the manifest before trusting them.
-export function buildChunks(ttsBlocks, plainText, strategy, maxGeneration = MAX_GENERATION) {
+export function buildChunks(ttsBlocks, plainText, strategy, maxGeneration = MAX_GENERATION, pauseStyle = 'ssml') {
   let chunks, chunkGaps, continuations;
   if (strategy === 'section') {
-    const gen = buildNaturalGenerations(ttsBlocks, maxGeneration);
+    const gen = buildNaturalGenerations(ttsBlocks, maxGeneration, pauseStyle);
     chunks = gen.texts;
     chunkGaps = gen.gaps;
     continuations = gen.continuations;
@@ -302,10 +303,10 @@ export function buildChunks(ttsBlocks, plainText, strategy, maxGeneration = MAX_
     // use CHUNK_GAP — see its warning). Trailing breaks get trimmed at a generation's
     // end; leading breaks render. Skip heading-led chunks (already have a break).
     // Differentiated: 0.5s at real paragraph/section seams, 0.3s at mid-paragraph splits.
-    const SEAM_BREAK = '<break time="0.5s"/>';
-    const MID_SEAM_BREAK = '<break time="0.3s"/>';
+    const SEAM_BREAK = pause('seam', pauseStyle);
+    const MID_SEAM_BREAK = pause('midSeam', pauseStyle);
     for (let i = 1; i < chunks.length; i++) {
-      if (chunks[i].startsWith('<break')) continue; // heading-led chunk already has its break
+      if (pauseMarkupLengthAt(chunks[i], 0)) continue; // heading-led chunk already has its break
       const firstBlock = chunks[i].split('\n\n')[0];
       chunks[i] = (contTexts.has(firstBlock) ? MID_SEAM_BREAK : SEAM_BREAK) + chunks[i];
     }
@@ -364,7 +365,7 @@ async function generateChunk(text, voiceId, modelId, voiceSettings, outputFormat
   };
 }
 
-async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, previousRequestIds, retries = 5) {
+export async function generateWithRetry(text, voiceId, modelId, voiceSettings, outputFormat, previousText, nextText, previousRequestIds, retries = 5) {
   const RETRYABLE_STATUS = new Set([429, 500, 502, 503]);
   for (let i = 0; i < retries; i++) {
     try {
@@ -482,7 +483,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
   // 2. flatTextClean/flatCleanLower: stripped of break tags — used for matching
   //    sentence text which doesn't contain SSML tags
   const flatText = chunkTexts.join('');
-  const flatTextClean = flatText.replace(/<break[^>]*\/>/g, '');
+  const flatTextClean = stripPauses(flatText);
   const flatCleanLower = flatTextClean.toLowerCase();
 
   // Build a mapping from clean text positions back to original flatText positions
@@ -490,12 +491,9 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
   const cleanToOriginal = [];
   let origIdx = 0;
   for (let ci = 0; ci < flatTextClean.length; ci++) {
-    // Skip past any SSML tag characters in the original
-    while (origIdx < flatText.length && flatText[origIdx] === '<' && flatText.substring(origIdx).startsWith('<break')) {
-      const tagEnd = flatText.indexOf('/>', origIdx);
-      if (tagEnd >= 0) origIdx = tagEnd + 2;
-      else break;
-    }
+    // Skip past any pause markup (<break …/> or [long pause]) in the original
+    let skip;
+    while (origIdx < flatText.length && (skip = pauseMarkupLengthAt(flatText, origIdx))) origIdx += skip;
     cleanToOriginal.push(origIdx);
     origIdx++;
   }
@@ -534,7 +532,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
     // SAID (`matchText` — a heading read differently from its display text), falling back
     // to the display text. Defense-in-depth: strip any SSML break tags from the needle too,
     // so a leaked tag can never break matching even if upstream sentence-cleaning regresses.
-    const spokenText = (sent.matchText || sent.text).replace(/<break[^>]*\/>/g, '');
+    const spokenText = stripPauses(sent.matchText || sent.text);
     const needle = spokenText.toLowerCase();
     let cleanIdx = flatCleanLower.indexOf(needle, searchFrom);
 
@@ -550,6 +548,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
       if (earlier >= 0 && earlier < cleanIdx) cleanIdx = earlier;
     }
 
+    if (opts.stats) opts.stats[cleanIdx < 0 ? 'estimated' : 'matched']++;
     if (cleanIdx < 0) {
       // Sentence not found — use proportional estimate
       const proportion = segments.length / Math.max(sentences.length, 1);
@@ -607,7 +606,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
   //   2. non-monotonic / overlapping segment start times
   // A bare '<' that is NOT one of our tags (e.g. a literal "<https://…>" URL in
   // front-matter) is a non-fatal warning, not a failure.
-  const LEFTOVER_TAG = /<\s*\/?\s*(break|sup|br|Question|Callout|ChapterNum)\b/i;
+  const LEFTOVER_TAG = /<\s*\/?\s*(break|sup|br|Question|Callout|ChapterNum)\b|\[(?:short |long )?pause\]/i;
   const fatal = [];
   for (let i = 0; i < segments.length; i++) {
     const t = segments[i].text || '';
@@ -655,7 +654,7 @@ const LOUDNESS_TOLERANCE = 2; // LUFS
 // one, everything fast"). The filter decodes everything → inserts sample-exact silence →
 // encodes ONE clean stream. Returns the (exact) gap per chunk so timestamps use the same
 // numbers as the audio. gaps[i] = seconds of silence before chunk i (gaps[0] ignored).
-function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
+export function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
   gaps = gaps || chunkPaths.map(() => 0);
   if (chunkPaths.length === 1) { copyFileSync(chunkPaths[0], outputPath); return chunkPaths.map(() => 0); }
   // Match the chunk audio format so the concat filter's silence lines up.
@@ -707,7 +706,7 @@ function measureLoudness(path) {
 // Normalize a chapter MP3 to TARGET_LUFS in place — but ONLY if it's outside the ±tolerance
 // band. Gain-only (two-pass linear loudnorm) so duration is preserved and the sentence
 // timestamps (built from per-chunk alignments, not this file) stay valid.
-function normalizeLoudness(path) {
+export function normalizeLoudness(path) {
   const m = measureLoudness(path);
   if (!m || !isFinite(m.input_i)) {
     console.log(`    Loudness: unmeasured — left as-is`);
@@ -859,8 +858,10 @@ async function main() {
       // ~TARGET_CHUNK_SIZE with heading-led chunks + in-audio leading-break seams. Back-compat:
       // legacy `natural_mode: true` maps to "section". Both feed the same concat + timestamp core.
       const strategy = meta.chunking_strategy || (meta.natural_mode === true ? 'section' : 'linear');
+      // Pause markup the model understands (pauses.js): <break> for v2, [long pause] tags for v4.
+      const pauseStyle = meta.pause_style || pauseStyleForModel(meta.model_id);
       const { chunks, chunkGaps, continuations } = buildChunks(
-        item.ttsBlocks, item.plainText, strategy, meta.max_generation || MAX_GENERATION);
+        item.ttsBlocks, item.plainText, strategy, meta.max_generation || MAX_GENERATION, pauseStyle);
       if (strategy === 'section') {
         const capSplits = continuations.filter(Boolean).length;
         console.log(`    SECTION strategy: ${chunks.length} generation(s)${capSplits ? `, ${capSplits} cap-split` : ''}, silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);

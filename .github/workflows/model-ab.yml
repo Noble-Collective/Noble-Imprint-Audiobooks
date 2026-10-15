@@ -1,0 +1,84 @@
+name: Narration A/B (publish to website)
+
+# Whole-chapter A/B of the Bible narration: A = live audio, B = today's model with the text
+# fixes, C = Eleven v4 with the same fixes, C2 = C slowed to 0.90. Published to GCS
+# voice-test/ab-{book}-{ch}/ and served at /voice-test/ab-{book}-{ch}. Writes nothing else.
+# See src/model-ab.js. DRY_RUN prints every version's spoken text without spending credits.
+
+on:
+  workflow_dispatch:
+    inputs:
+      chapters:
+        description: 'Chapters, BOOKCODE:chapter, comma-separated'
+        required: false
+        default: 'NUM:1,ACT:27'
+      variants:
+        description: 'Rendered variants (A and C2 are free and automatic)'
+        required: false
+        default: 'B,C'
+      dry_run:
+        description: 'Print spoken text only, no TTS spend'
+        required: false
+        default: 'true'
+      force:
+        description: 'Re-render variants that already exist in GCS'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: model-ab
+  cancel-in-progress: false
+
+jobs:
+  model-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout audiobook tooling
+        uses: actions/checkout@v5
+
+      - name: Checkout resources content
+        uses: actions/checkout@v5
+        with:
+          repository: Noble-Collective/Noble-Imprint-Resources
+          token: ${{ secrets.RESOURCES_TOKEN }}
+          path: resources
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'   # same @google-cloud/storage pin as generate.yml
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Render and publish
+        run: node src/model-ab.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GCS_BUCKET: noble-imprint-audiobooks
+          RESOURCES_PATH: resources
+          CHAPTERS: ${{ github.event.inputs.chapters }}
+          VARIANTS: ${{ github.event.inputs.variants }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          FORCE: ${{ github.event.inputs.force }}
+
+      - name: Refresh website audio cache
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+        run: |
+          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://resources.noblecollective.org/api/refresh-audio || true

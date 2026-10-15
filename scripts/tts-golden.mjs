@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, existsSync, writeFileSync, statSync } from '
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
-import { preprocessSession } from '../src/preprocess-tts.js';
+import { preprocessSession, narrationOptions } from '../src/preprocess-tts.js';
 import { usfmBookToChapters } from '../src/usfm-to-markdown.js';
 
 export const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
@@ -39,7 +39,7 @@ export function computeGolden(root = RESOURCES_PATH) {
   const ab = bmeta.audiobook || {};
   for (const f of readdirSync(bibleDir).filter(f => /\.(SFM|usfm)$/i.test(f)).sort()) {
     for (const ch of usfmBookToChapters(readFileSync(join(bibleDir, f), 'utf-8'))) {
-      const pre = preprocessSession(ch.markdown, ab.voice_id || 'default', bmeta.language || 'en', ab.language_normalization === true);
+      const pre = preprocessSession(ch.markdown, ab.voice_id || 'default', bmeta.language || 'en', ab.language_normalization === true, narrationOptions(ab));
       out[`bible/${f}/${ch.chapter}`] = fingerprint(pre);
     }
   }
@@ -50,7 +50,7 @@ export function computeGolden(root = RESOURCES_PATH) {
     const sd = join(seriesDir, book, 'sessions');
     for (const file of readdirSync(sd).filter(f => f.endsWith('.md')).sort()) {
       const pre = preprocessSession(readFileSync(join(sd, file), 'utf-8'), meta.audiobook.voice_id || 'default',
-        meta.language || 'en', meta.audiobook.language_normalization === true);
+        meta.language || 'en', meta.audiobook.language_normalization === true, narrationOptions(meta.audiobook));
       out[`series/${book}/${file}`] = fingerprint(pre);
     }
   }

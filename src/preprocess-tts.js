@@ -7,7 +7,25 @@
  */
 
 import { convertBibleRef } from './bible-refs.js';
-import { normalizeSpoken, convertReference, spokenChapterTitle } from './languages.js';
+import { normalizeSpoken, convertReference, spokenChapterTitle, spellNumbers } from './languages.js';
+import { pause, pauseStyleForModel, stripPauses, pauseSecondsOf } from './pauses.js';
+
+/**
+ * Narration options a book opts into from its `meta.audiobook` block. Every one defaults
+ * OFF, which reproduces the deployed narration exactly (tests/tts-stability.test.mjs).
+ *   spell_numbers               → numerals read as words ("46,500" → "forty-six thousand,
+ *                                 five hundred"); the display/highlight text keeps the digits.
+ *   clean_terminal_punctuation  → a paragraph ending in ; , or a closing quote is treated as
+ *                                 already ended (no stray period: "Shedeur;." / "Enan.”.").
+ *   pause style                 → from model_id (see pauses.js); `pause_style` overrides.
+ */
+export function narrationOptions(ab = {}) {
+  return {
+    spellNumbers: ab.spell_numbers === true,
+    cleanTerminalPunctuation: ab.clean_terminal_punctuation === true,
+    pauseStyle: ab.pause_style || pauseStyleForModel(ab.model_id),
+  };
+}
 
 /**
  * Removes print page markers — `<!-- page 27 -->` / `<!-- page xii -->`, where a
@@ -36,11 +54,14 @@ const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
  * @param {boolean} languageNormalization - opt-in per-book switch (meta.audiobook.language_normalization).
  *   When false (default) behavior is IDENTICAL to before: no normalizeSpoken, legacy convertBibleRef.
  *   When true, scripture refs / numeric ranges are expanded to natural speech per `language`.
+ * @param {object} opts - narrationOptions(meta.audiobook); all off by default
  * @returns {{ name: string, blocks: Array, plainText: string }}
  */
-export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false) {
+export function preprocessSession(markdown, voiceId, language = 'en', languageNormalization = false, opts = {}) {
   // Pass-through when the switch is off \u2014 preserves the exact deployed output.
   const norm = languageNormalization ? (t) => normalizeSpoken(t, language) : (t) => t;
+  const style = opts.pauseStyle || 'ssml';
+  const ended = opts.cleanTerminalPunctuation ? /[.!?:;,\u2026\u2014]["'\u201d\u2019)\]]*$/ : /[.!?:\u2026\u2014]$/;
   const lines = stripPageMarkers(markdown).split('\n');
   const blocks = [];
   let chapterName = '';
@@ -61,15 +82,21 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
     text = text.replace(/^(\d{1,3}\.)\s+/, '$1\n\n');
     if (text) {
       // Add period to paragraphs lacking terminal punctuation for a natural TTS pause
-      if (!/[.!?:…—]$/.test(text)) text += '.';
+      if (!ended.test(text)) text += '.';
+      // What the reader sees (digits) vs what the narrator says (words): the sentence
+      // index pairs them up so the highlight text keeps the digits.
+      const shown = text;
+      if (opts.spellNumbers) text = spellNumbers(text);
       // Seneca (On the Shortness of Life) uses blockquote summaries before each section's
       // body text. Without a break, the summary flows directly into the paragraph with no
       // audible transition. Only triggers when a blockquote is followed by body text — not
       // when followed by a << attribution (HomeStead scripture quotes) or a heading.
       if (lastFlushedWasBlockquote && !currentParaIsBlockquote && !currentParaIsAttribution) {
-        text = '<break time="2s"/>' + text;
+        text = pause('transition', style) + text;
       }
-      blocks.push(makeBlock('p', text, voiceId));
+      const block = makeBlock('p', text, voiceId);
+      if (shown !== stripPauses(text)) block.shownText = shown;
+      blocks.push(block);
     }
     lastFlushedWasBlockquote = currentParaIsBlockquote;
     currentParaIsBlockquote = false;
@@ -114,27 +141,21 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
       // Original text is stored as displayText for web reader highlighting.
       // Scripture chapter titles ("2 Timothy 1") are spelled out for the narrator
       // ("Second Timothy, Chapter 1") — displayText stays the original either way.
-      const spoken = spokenChapterTitle(text, language) || sentenceCaseHeading(norm(text));
+      let spoken = spokenChapterTitle(text, language) || sentenceCaseHeading(norm(text));
+      if (opts.spellNumbers && level > 1) spoken = spellNumbers(spoken);
       if (level === 1) {
         chapterName = text;
-        const block = makeBlock('h1',
-          `<break time="2s"/>${spoken}<break time="2s"/>`, voiceId);
+        const p = pause('title', style);
+        const block = makeBlock('h1', `${p}${spoken}${p}`, voiceId);
         block.displayText = text;
         blocks.push(block);
         continue;
       }
 
       const subType = `h${Math.min(level, 3)}`;
-      let block;
-      if (level === 2) {
-        // H2 = major section — clear structural transition
-        block = makeBlock(subType,
-          `<break time="1.5s"/>${spoken}<break time="1.5s"/>`, voiceId);
-      } else {
-        // H3-H6 = subsections — 1s pause before, 1s after
-        block = makeBlock(subType,
-          `<break time="1s"/>${spoken}<break time="1s"/>`, voiceId);
-      }
+      // H2 = major section — clear structural transition; H3-H6 = subsections.
+      const p = pause(level === 2 ? 'section' : 'subsection', style);
+      const block = makeBlock(subType, `${p}${spoken}${p}`, voiceId);
       block.displayText = text;
       blocks.push(block);
       continue;
@@ -177,10 +198,10 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
   const dropTrailing = new Set();
   for (let i = 0; i < blocks.length - 1; i++) {
     if (HEADING_TYPES.has(blocks[i].sub_type) && HEADING_TYPES.has(blocks[i + 1].sub_type)) {
-      const trailMatch = blocks[i].nodes[0].text.match(/<break time="([0-9.]+)s"\/>\s*$/);
-      const leadMatch = blocks[i + 1].nodes[0].text.match(/^<break time="([0-9.]+)s"\/>/);
-      const trailTime = trailMatch ? parseFloat(trailMatch[1]) : 0;
-      const leadTime = leadMatch ? parseFloat(leadMatch[1]) : 0;
+      const trailMatch = blocks[i].nodes[0].text.match(/(?:<break[^>]*\/>|\[(?:short |long )?pause\])\s*$/);
+      const leadMatch = blocks[i + 1].nodes[0].text.match(/^(?:<break[^>]*\/>|\[(?:short |long )?pause\])/);
+      const trailTime = trailMatch ? pauseSecondsOf(trailMatch[0].trim()) : 0;
+      const leadTime = leadMatch ? pauseSecondsOf(leadMatch[0]) : 0;
       if (trailTime >= leadTime) {
         dropLeading.add(i + 1);
       } else {
@@ -189,10 +210,10 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
     }
   }
   for (const i of dropLeading) {
-    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/^<break[^>]*\/>/, '');
+    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/^(?:<break[^>]*\/>|\[(?:short |long )?pause\])/, '');
   }
   for (const i of dropTrailing) {
-    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/<break[^>]*\/>\s*$/, '');
+    blocks[i].nodes[0].text = blocks[i].nodes[0].text.replace(/(?:<break[^>]*\/>|\[(?:short |long )?pause\])\s*$/, '');
   }
 
   // Build plain text for hashing (all block text concatenated)
@@ -222,20 +243,32 @@ export function buildSentenceIndex(blocks) {
     const block = blocks[bi];
     if (block.displayText) {
       // Heading block — use original text for matching
-      const spoken = block.nodes[0].text.replace(/<break[^>]*\/>/g, '').replace(/\s+/g, ' ').trim();
+      const spoken = stripPauses(block.nodes[0].text).replace(/\s+/g, ' ').trim();
       const s = { blockIndex: bi, sentenceIndex: 0, text: block.displayText };
       if (spoken && spoken !== block.displayText) s.matchText = spoken;
       sentences.push(s);
     } else {
       const sents = splitSentences(block.nodes[0].text);
+      // A paragraph whose spoken text differs from what's shown (numbers read as words)
+      // keeps the SHOWN sentence as `text` (what the readers match on the page) and the
+      // spoken one as `matchText` (what the timestamp builder finds in the alignment).
+      // Only when the two split into the same sentences; otherwise spoken text, as before.
+      const shown = block.shownText ? splitSentences(block.shownText) : null;
+      const paired = shown && shown.length === sents.length;
       for (let si = 0; si < sents.length; si++) {
-        // Strip any SSML break tags from the sentence text. Break tags live in the
+        // Strip any pause markup from the sentence text. Pauses live in the
         // TTS/plainText (they create the audio pauses) but must NOT appear in the
         // sentence list — that text is the needle for timestamp matching and the
         // web reader's DOM highlighting. A leaked <break .../> makes the sentence
         // fail to match its audio position, producing out-of-order timestamps.
-        const clean = sents[si].replace(/<break[^>]*\/>/g, '').replace(/\s+/g, ' ').trim();
-        if (clean) sentences.push({ blockIndex: bi, sentenceIndex: si, text: clean });
+        const clean = stripPauses(sents[si]).replace(/\s+/g, ' ').trim();
+        if (!clean) continue;
+        const s = { blockIndex: bi, sentenceIndex: si, text: clean };
+        if (paired) {
+          const display = shown[si].replace(/\s+/g, ' ').trim();
+          if (display !== clean) { s.text = display; s.matchText = clean; }
+        }
+        sentences.push(s);
       }
     }
   }

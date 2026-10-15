@@ -20,7 +20,7 @@ import { readFileSync, readdirSync, existsSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
-import { preprocessSession } from './preprocess-tts.js';
+import { preprocessSession, narrationOptions } from './preprocess-tts.js';
 import { usfmBookToChapters, findBookFile, parseChapterRange } from './usfm-to-markdown.js';
 
 const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
@@ -143,7 +143,7 @@ async function findBibleWorkItems(tx, code, chaptersOverride) {
   for (const ch of selected) {
     const sessionFile = `${String(ch.chapter).padStart(3, '0')}.md`;
     if (SESSION_FILTER && sessionFile !== SESSION_FILTER) continue;
-    const pre = preprocessSession(ch.markdown, voiceId, meta.language || 'en', ab.language_normalization === true);
+    const pre = preprocessSession(ch.markdown, voiceId, meta.language || 'en', ab.language_normalization === true, narrationOptions(ab));
     const hash = `sha256:${createHash('sha256').update(pre.plainText).digest('hex')}`;
     if (FORCE || hash !== existingHashes[sessionFile]) {
       console.log(`  ${sessionFile} (ch ${ch.chapter}) — needs regeneration (${FORCE ? 'forced' : existingHashes[sessionFile] ? 'content changed' : 'new'})`);
@@ -213,7 +213,7 @@ async function main() {
 
     for (const file of sessionFiles) {
       const content = readFileSync(join(sessionsDir, file), 'utf-8');
-      const chapter = preprocessSession(content, voiceId, meta.language || 'en', meta.audiobook?.language_normalization === true);
+      const chapter = preprocessSession(content, voiceId, meta.language || 'en', meta.audiobook?.language_normalization === true, narrationOptions(meta.audiobook));
       const hash = `sha256:${createHash('sha256').update(chapter.plainText).digest('hex')}`;
 
       if (FORCE || hash !== existingHashes[file]) {

@@ -174,3 +174,46 @@ export function spokenChapterTitle(text, code = 'en') {
   const Chapter = L.chapter.charAt(0).toUpperCase() + L.chapter.slice(1);
   return `${name}, ${Chapter} ${num}`;
 }
+
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen',
+  'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const SCALES = ['', 'thousand', 'million', 'billion'];
+
+function underThousand(n) {
+  const out = [];
+  if (n >= 100) { out.push(`${ONES[Math.floor(n / 100)]} hundred`); n %= 100; }
+  if (n >= 20) out.push(TENS[Math.floor(n / 10)] + (n % 10 ? `-${ONES[n % 10]}` : ''));
+  else if (n > 0) out.push(ONES[n]);
+  return out.join(' ');
+}
+
+/**
+ * An integer in words, American style without "and", a comma after each scale word
+ * that has more after it, so a long count gets a breath where a reader would take one:
+ *   46500  → "forty-six thousand, five hundred"
+ *   603550 → "six hundred three thousand, five hundred fifty"
+ *   930    → "nine hundred thirty"
+ */
+export function numberToWords(n) {
+  if (!Number.isSafeInteger(n) || n < 0) throw new Error(`numberToWords: unsupported ${n}`);
+  if (n < 1000) return n === 0 ? ONES[0] : underThousand(n);
+  const groups = [];
+  for (let s = 0; n > 0; s++, n = Math.floor(n / 1000)) groups.unshift([n % 1000, s]);
+  const parts = groups.filter(([g]) => g > 0).map(([g, s]) => underThousand(g) + (s ? ` ${SCALES[s]}` : ''));
+  return parts.join(', ');
+}
+
+/**
+ * Spell out numerals for the narrator (English): "numbered 46,500" → "numbered forty-six
+ * thousand, five hundred". ElevenLabs reads raw digits unreliably and rushes them; words
+ * are read at the narration's own pace. Only whole numerals (optionally comma-grouped) are
+ * touched; anything with a colon/decimal point/letter attached (a reference, "1.5", "3rd")
+ * is left alone, and so is a book number in a reference ("2 Timothy 1:15" — normally already
+ * expanded by normalizeSpoken). Used on the SPOKEN text only — the display text keeps its digits.
+ */
+export function spellNumbers(text) {
+  return text.replace(/(?<![\d:.,])\b(\d{1,3}(?:,\d{3})+|\d+)\b(?![\d:]|[.,]\d|[A-Za-z]|\s+[A-Z][a-z]+\s+\d)/g,
+    m => numberToWords(Number(m.replace(/,/g, ''))));
+}
