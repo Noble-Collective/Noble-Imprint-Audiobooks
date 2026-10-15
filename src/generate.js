@@ -671,9 +671,11 @@ const LOUDNESS_TOLERANCE = 2; // LUFS
 // one, everything fast"). The filter decodes everything → inserts sample-exact silence →
 // encodes ONE clean stream. Returns the (exact) gap per chunk so timestamps use the same
 // numbers as the audio. gaps[i] = seconds of silence before chunk i (gaps[0] ignored).
-export function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
+// `tailSeconds` = silence appended after the last chunk (PAUSES.chapterEnd), in the same
+// single encode. Timestamps are unaffected (measured from the start).
+export function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps, tailSeconds = 0) {
   gaps = gaps || chunkPaths.map(() => 0);
-  if (chunkPaths.length === 1) { copyFileSync(chunkPaths[0], outputPath); return chunkPaths.map(() => 0); }
+  if (chunkPaths.length === 1 && !(tailSeconds > 0)) { copyFileSync(chunkPaths[0], outputPath); return chunkPaths.map(() => 0); }
   // Match the chunk audio format so the concat filter's silence lines up.
   let sr = 44100, chn = 1;
   try {
@@ -694,6 +696,10 @@ export function concatenateChunks(chunkPaths, outputPath, tmpDir, gaps) {
       actualGaps[i] = g; // sample-exact from the filter
     }
     inputs.push(`-i "${chunkPaths[i]}"`);
+    labels.push(`[${idx}:a]`); idx++;
+  }
+  if (tailSeconds > 0) {
+    inputs.push(`-f lavfi -t ${tailSeconds} -i anullsrc=r=${sr}:cl=${cl}`);
     labels.push(`[${idx}:a]`); idx++;
   }
   const filter = `${labels.join('')}concat=n=${labels.length}:v=0:a=1[out]`;
@@ -988,13 +994,16 @@ async function main() {
       // Concatenate all chunks into final chapter MP3. actualGaps = real silence (probed)
       // placed before each chunk — fed to the timestamp builder so audio + timestamps agree.
       const outputPath = join(tmpDir, `${slug}.mp3`);
+      // Chapter-end silence (opt-in, pauses.js chapterEnd) so auto-advance doesn't start the
+      // next chapter on the heels of this one. Appended in the same encode; no timestamp moves.
+      const tailSeconds = meta.chapter_end_pause === true ? PAUSES.chapterEnd.seconds : 0;
       let actualGaps = chunkPaths.map(() => 0);
-      if (chunkPaths.length === 1) {
+      if (chunkPaths.length === 1 && !tailSeconds) {
         copyFileSync(chunkPaths[0], outputPath);
       } else {
         const totalGap = chunkGaps.reduce((a, b) => a + b, 0);
-        console.log(`    Concatenating ${chunkPaths.length} chunks (${totalGap.toFixed(1)}s total silence at boundaries)...`);
-        actualGaps = concatenateChunks(chunkPaths, outputPath, tmpDir, chunkGaps);
+        console.log(`    Concatenating ${chunkPaths.length} chunks (${totalGap.toFixed(1)}s total silence at boundaries${tailSeconds ? `, ${tailSeconds}s after the last word` : ''})...`);
+        actualGaps = concatenateChunks(chunkPaths, outputPath, tmpDir, chunkGaps, tailSeconds);
       }
 
       // Level the final MP3 to the library loudness (only if out of band). Gain-only, so
@@ -1072,6 +1081,7 @@ async function main() {
         modelId: meta.model_id || LEGACY_MODEL,   // which ElevenLabs model narrated it
         pauseStyle,                               // pause markup in its chunks (pauses.js)
         ...(key ? { chunkKey: key } : {}),        // cache-key prefix (non-v2 models)
+        ...(tailSeconds ? { tailSilenceSeconds: tailSeconds } : {}),   // chapter-end silence
       });
     }
 

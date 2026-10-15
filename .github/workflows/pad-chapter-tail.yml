@@ -1,0 +1,46 @@
+name: Pad chapter-end silence (0 credits)
+
+# Adds the 2 s chapter-end silence (pauses.js chapterEnd) to already-rendered chapters by
+# rebuilding each MP3 from its stored chunks. No ElevenLabs calls; timestamps untouched.
+# dry-run reports only; write backs up originals to audio/_backup/2026-10-15-pre-tail/ first.
+# See scripts/pad-chapter-tail.mjs.
+on:
+  workflow_dispatch:
+    inputs:
+      book:
+        description: 'Book slug path, e.g. bible/bsb/matthew'
+        required: true
+      mode:
+        description: 'dry-run or write'
+        required: false
+        default: 'dry-run'
+
+jobs:
+  pad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'   # same @google-cloud/storage pin as generate.yml
+      - run: npm ci
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Pad
+        run: node scripts/pad-chapter-tail.mjs
+        env:
+          BOOK: ${{ github.event.inputs.book }}
+          MODE: ${{ github.event.inputs.mode }}
+          GCS_BUCKET: noble-imprint-audiobooks
+      - name: Refresh website audio cache
+        if: ${{ github.event.inputs.mode == 'write' }}
+        env:
+          REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+        run: |
+          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://resources.noblecollective.org/api/refresh-audio || true

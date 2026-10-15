@@ -26,6 +26,11 @@ export const PAUSES = {
   seam:       { seconds: 0.5, tag: '[short pause]' },  // linear chunk seam at a paragraph
   midSeam:    { seconds: 0.3, tag: '[short pause]' },  // linear chunk seam inside a paragraph
   breath:     { seconds: 0.4, tag: null },             // section strategy cap-split (concat silence only)
+  // Silence after the last word of a chapter file (concat silence only). ElevenLabs trims
+  // generation edges to ~0.1s, so without it the next chapter starts almost at once when a
+  // player auto-advances. Tail only: every timestamp is measured from the start, so none move.
+  // Opt-in per book: meta.audiobook.chapter_end_pause (on in the BSB "v4" profile).
+  chapterEnd: { seconds: 2.0, tag: null },
 };
 
 // Heading level → pause kind.
