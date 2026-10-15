@@ -126,6 +126,28 @@ Consumers map their own book names to it (resolved 2026-09-27, see §8.1): the r
 
 Find a book's `CODE` from its filename (`562TIBSB.SFM` → `2TI`) or its `\id` line.
 
+### Per-book profiles — the Eleven v4 migration (2026-10)
+
+The block above applies to every book. A book can name a **profile** that overrides it
+(`src/audiobook-config.js`; merge order block → profile → book keys; a profile's
+`voice_settings` replaces the block's wholesale):
+
+```json
+"profiles": {
+  "v4": { "model_id": "eleven_v4", "spell_numbers": true, "clean_terminal_punctuation": true,
+          "voice_settings": { "stability": 0.50, "similarity_boost": 0.5 } }
+},
+"books": { "MAT": { "enabled": true, "profile": "v4" }, "MRK": { "enabled": true } }
+```
+
+To move a book to v4: add `"profile": "v4"` to its entry, push Resources, run
+`generate.yml -f bible_book=CODE` (every chapter re-renders — the v4 chunk key never matches
+v2 audio). The v2 originals are backed up at `audio/_backup/2026-10-15-bible-v2/bsb/`.
+Each manifest session records `modelId` / `pauseStyle` / `chunkKey`, so a session without
+`modelId: "eleven_v4"` is still v2 audio. When all 66 are
+converted, move the profile's keys into the block and drop the per-book `profile`s.
+Background + A/B results: `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
+
 ---
 
 ## 5. The converter (`usfm-to-markdown.js`)
