@@ -78,7 +78,8 @@ const MAX_GENERATION = 2000;   // cap-split silence = PAUSES.breath (0.4s, pause
 
 // Bumped when generation LOGIC changes in a way that would alter re-render output. Stamped
 // into each book's manifest so staleness (shipped audio vs current logic) is queryable.
-const PIPELINE_VERSION = '2026-08-12-section-cap-v1';
+// 2026-10-15: pause kinds (pauses.js), opt-in text fixes, model-aware chunk key.
+const PIPELINE_VERSION = '2026-10-15-pause-kinds-v1';
 
 export function chunkText(plainText, maxChars = CHUNK_SIZE, blocks = null) {
   // If no blocks provided, fall back to paragraph splitting
@@ -316,8 +317,24 @@ export function buildChunks(ttsBlocks, plainText, strategy, maxGeneration = MAX_
   return { chunks, chunkGaps, continuations };
 }
 
-export function hashChunk(text) {
-  return createHash('sha256').update(text).digest('hex').slice(0, 16);
+// Chunk cache key. Historically the text alone — which silently reused audio across a model/
+// voice/settings change whenever a chunk's text was identical (ELEVENLABS-MODELS.md §1). Any
+// model OTHER than multilingual_v2 now folds model + voice + settings into the key, so its
+// chunks can never collide with v2 audio; v2 keeps the text-only key, so every shipped hash
+// (and so every cached v2 chunk) is unchanged. The key is stamped on the manifest session
+// (`chunkKey`) so the timestamps-only rebuild can recompute the same hashes.
+const LEGACY_MODEL = 'eleven_multilingual_v2';
+export function chunkKey(meta, voiceId) {
+  const model = meta?.model_id || LEGACY_MODEL;
+  if (model === LEGACY_MODEL) return '';
+  return `${model}|${voiceId}|${JSON.stringify(meta.voice_settings || {})}\n`;
+}
+
+export function hashChunk(text, key = '') {
+  // A non-string key (e.g. the array index from `chunks.map(hashChunk)`) must never change
+  // the hash — that idiom predates the key and would silently re-key every chunk.
+  if (typeof key !== 'string') key = '';
+  return createHash('sha256').update(key + text).digest('hex').slice(0, 16);
 }
 
 /**
@@ -866,7 +883,8 @@ async function main() {
         const capSplits = continuations.filter(Boolean).length;
         console.log(`    SECTION strategy: ${chunks.length} generation(s)${capSplits ? `, ${capSplits} cap-split` : ''}, silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
       }
-      const chunkHashes = chunks.map(c => hashChunk(c));
+      const key = chunkKey(meta, voiceId);
+      const chunkHashes = chunks.map(c => hashChunk(c, key));
 
       // Build hash→file map from existing manifest (supports old and new format)
       const existingHashMap = getExistingHashMap(existingManifest, item.sessionFile);
@@ -1051,6 +1069,9 @@ async function main() {
         generatedAt: new Date().toISOString(),
         pipelineVersion: PIPELINE_VERSION,   // which generation LOGIC rendered this session
         chunkingStrategy: strategy,
+        modelId: meta.model_id || LEGACY_MODEL,   // which ElevenLabs model narrated it
+        pauseStyle,                               // pause markup in its chunks (pauses.js)
+        ...(key ? { chunkKey: key } : {}),        // cache-key prefix (non-v2 models)
       });
     }
 

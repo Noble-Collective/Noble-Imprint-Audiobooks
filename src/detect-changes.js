@@ -21,6 +21,7 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
 import { preprocessSession, narrationOptions } from './preprocess-tts.js';
+import { bookAudiobookConfig } from './audiobook-config.js';
 import { usfmBookToChapters, findBookFile, parseChapterRange } from './usfm-to-markdown.js';
 
 const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
@@ -138,18 +139,22 @@ async function findBibleWorkItems(tx, code, chaptersOverride) {
   const existingHashes = {};
   if (manifest) for (const s of manifest.sessions) existingHashes[s.sessionFile] = s.contentHash;
 
-  const voiceId = ab.voice_id || 'default';
+  // This book's effective config: the translation block, overridden by its profile (e.g.
+  // "v4" during the model migration) — see audiobook-config.js.
+  const bookAb = bookAudiobookConfig(ab, code);
+  console.log(`  model ${bookAb.model_id || 'eleven_multilingual_v2'}${bookAb.profile ? ` (profile ${bookAb.profile})` : ''}`);
+  const voiceId = bookAb.voice_id || 'default';
   const items = [];
   for (const ch of selected) {
     const sessionFile = `${String(ch.chapter).padStart(3, '0')}.md`;
     if (SESSION_FILTER && sessionFile !== SESSION_FILTER) continue;
-    const pre = preprocessSession(ch.markdown, voiceId, meta.language || 'en', ab.language_normalization === true, narrationOptions(ab));
+    const pre = preprocessSession(ch.markdown, voiceId, meta.language || 'en', bookAb.language_normalization === true, narrationOptions(bookAb));
     const hash = `sha256:${createHash('sha256').update(pre.plainText).digest('hex')}`;
     if (FORCE || hash !== existingHashes[sessionFile]) {
       console.log(`  ${sessionFile} (ch ${ch.chapter}) — needs regeneration (${FORCE ? 'forced' : existingHashes[sessionFile] ? 'content changed' : 'new'})`);
       items.push({
         bookRepoPath, bookSlugPath, sessionFile,
-        contentHash: hash, meta: ab,
+        contentHash: hash, meta: bookAb,
         ttsBlocks: pre.blocks, sentences: pre.sentences,
         chapterName: pre.name, plainText: pre.plainText,
       });

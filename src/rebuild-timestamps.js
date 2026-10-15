@@ -158,8 +158,9 @@ async function processSession(src, bookSlugPath, s, workDir) {
   const want = new Set(Object.keys(s.hashToFile));
   let built = null;
   for (const strategy of [...new Set([s.chunkingStrategy, 'section', 'linear'].filter(Boolean))]) {
-    const b = buildChunks(tts.blocks, tts.plainText, strategy);
-    const hs = b.chunks.map(hashChunk);
+    // Same pause markup + cache key the session was narrated with (v4: tags + model key).
+    const b = buildChunks(tts.blocks, tts.plainText, strategy, undefined, s.pauseStyle || 'ssml');
+    const hs = b.chunks.map(c => hashChunk(c, s.chunkKey || ''));
     if (hs.length === (s.chunkCount ?? hs.length) && hs.every(h => want.has(h)) && new Set(hs).size === want.size) {
       built = { ...b, hashes: hs, strategy }; break;
     }

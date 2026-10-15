@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
 import { preprocessSession, narrationOptions } from '../src/preprocess-tts.js';
+import { bookAudiobookConfig } from '../src/audiobook-config.js';
 import { usfmBookToChapters } from '../src/usfm-to-markdown.js';
 
 export const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
@@ -38,8 +39,11 @@ export function computeGolden(root = RESOURCES_PATH) {
   const bmeta = JSON.parse(readFileSync(join(root, 'bibles', 'bsb', 'meta.json'), 'utf-8'));
   const ab = bmeta.audiobook || {};
   for (const f of readdirSync(bibleDir).filter(f => /\.(SFM|usfm)$/i.test(f)).sort()) {
-    for (const ch of usfmBookToChapters(readFileSync(join(bibleDir, f), 'utf-8'))) {
-      const pre = preprocessSession(ch.markdown, ab.voice_id || 'default', bmeta.language || 'en', ab.language_normalization === true, narrationOptions(ab));
+    const usfm = readFileSync(join(bibleDir, f), 'utf-8');
+    const code = (usfm.match(/\\id\s+(\S+)/) || [])[1] || f;
+    const bab = bookAudiobookConfig(ab, code);   // per-book profile (v4 migration)
+    for (const ch of usfmBookToChapters(usfm)) {
+      const pre = preprocessSession(ch.markdown, bab.voice_id || 'default', bmeta.language || 'en', bab.language_normalization === true, narrationOptions(bab));
       out[`bible/${f}/${ch.chapter}`] = fingerprint(pre);
     }
   }
