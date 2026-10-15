@@ -2,7 +2,7 @@
 
 Learning doc covering what our pipeline relies on from the ElevenLabs API, and how newer models compare against it. Read this before changing `model_id` for any book.
 
-**Status (2026-09-28):** all books use `eleven_multilingual_v2`. Eleven v3 was evaluated and declined (2026-08-28). Eleven v4 was researched and **not adopted**. An optional low-cost probe is described below; it has not been run.
+**Status (2026-10-15):** all books use `eleven_multilingual_v2`. Eleven v3 was evaluated and declined (2026-08-28). Eleven v4 was researched (2026-09-28), **probed** and **A/B-rendered on Numbers 1 + Acts 27** (2026-10-15, §3) — decision pending Steve's listen.
 
 ---
 
@@ -85,14 +85,27 @@ New knobs v4 adds: descriptive inline direction tags (`[Quiet, measured narratio
 
 Best v4 candidates: **new series books** or a deliberate full re-record of a series book (HomeStead, Oration), where expressiveness adds value. Not the Bible.
 
-### Probe (not run — needs Steve's approval, < $1)
+### Probe — RUN 2026-10-15 (`v4-probe.yml`, `src/v4-probe.js`, run 38746809091)
 
-A few hundred characters on `eleven_v4` via `/with-timestamps` to answer the unknowns:
+Six short `/with-timestamps` calls on `eleven_v4` with the Ali voice. Verified:
 
-- Is character alignment returned, and do `[pause]` tags appear in it?
-- Are `speed`/`style` rejected or silently ignored?
-- What type does stability take?
-- Are `previous_text`/`next_text` accepted?
-- What is the actual credit delta?
+| Question | Answer |
+|---|---|
+| `/v1/models` | `eleven_v4`: 10,000 chars/request, `can_use_style: false`, `character_cost_multiplier: 1` (same rate as v2). `eleven_v4_turbo`: multiplier 0.5 |
+| Character alignment | ✅ Returned. `alignment.characters` equals the input text exactly, **pause tags included** — so the same strip-and-map timestamp matching works (`pauses.js`, `PAUSE_MARKUP_RE`) |
+| `[long pause]` / `[short pause]` | ✅ Real silence: ≈ **1.8 s** / ≈ **0.7 s**. No duration control |
+| SSML `<break>` | Accepted, **ignored** (0 s, not spoken) |
+| `speed` / `style` | Accepted (HTTP 200), **ignored** (speed 0.9 run was not slower) |
+| Pace | ≈ 20 letters/s articulation — faster than v2 Ali at speed 0.90 |
+| Float stability, `previous_text`/`next_text`, `previous_request_ids` | ✅ all accepted |
+| Digits | "46,500" read in ~1.9 s, same as the spelled-out words |
 
-Then an A/B listen of v2 vs v4 on a Bible prose chapter, a poetry passage, and a HomeStead excerpt through the `/voice-test` page (see `VOICE-COMPARE.md`; note `voice-compare.js` hard-codes `MODEL_ID`, so it would need a model override).
+What we built from it (2026-10-15): pauses by **kind** (`src/pauses.js`) rendered per model —
+`<break>` for v2 (byte-identical to before), `[long pause]`/`[short pause]` for v4 — chosen from
+`model_id` (`pause_style` overrides). Speed for v4 = post-render `atempo` (`model-ab.js` C2).
+
+### Whole-chapter A/B — `model-ab.yml` / `src/model-ab.js`
+
+A = live audio, B = v2 + text fixes, C = v4 + same fixes, C2 = C slowed to 0.90. Published to
+`/voice-test/ab-{book}-{ch}` with a `metrics.json` (duration, per-generation pacing, timestamp
+coverage). First run: Numbers 1 + Acts 27 — results in `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
