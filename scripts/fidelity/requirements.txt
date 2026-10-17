@@ -1,0 +1,4 @@
+faster-whisper==1.2.1
+vosk==0.3.45
+jiwer==4.0.0
+whisper-normalizer==0.1.15

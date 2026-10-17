@@ -1,0 +1,142 @@
+name: Audio fidelity audit (Whisper + Vosk)
+
+# Does the narration say exactly the text? Pass 1 transcribes every chapter with Whisper
+# (sharded across runners); pass 2 re-checks the chapters Whisper flags with Vosk; the report
+# keeps only places where BOTH disagree with the text. 0 ElevenLabs credits, no secrets —
+# audio + text come through the resources site's public signed-URL API.
+# Method + history: plans/2026-09-14-audio-fidelity-validation.md; code: scripts/fidelity/.
+
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'Limit to books/chapters, e.g. "obadiah,numbers/001" (empty = whole Bible)'
+        required: false
+        default: ''
+      shards:
+        description: 'Pass 1 (Whisper) parallel runners'
+        required: false
+        default: '40'
+      shards2:
+        description: 'Pass 2 (Vosk) parallel runners'
+        required: false
+        default: '30'
+
+concurrency:
+  group: fidelity-audit
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: scripts/fidelity
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q jiwer==4.0.0 whisper-normalizer==0.1.15
+      - run: python selftest.py
+      - id: plan
+        run: python plan.py --filter "${{ inputs.filter }}" --shards ${{ inputs.shards }} --out chapters.json
+      - uses: actions/upload-artifact@v6
+        with: { name: chapters, path: scripts/fidelity/chapters.json }
+
+  pass1:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q -r requirements.txt
+      - uses: actions/cache@v4
+        with: { path: ~/.cache/huggingface, key: whisper-small.en-v1 }
+      - uses: actions/download-artifact@v5
+        with: { name: chapters, path: scripts/fidelity }
+      - run: python transcribe.py --engine whisper --chapters chapters.json --shard ${{ matrix.shard }} --of ${{ strategy.job-total }} --out pass1
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with: { name: 'pass1-${{ matrix.shard }}', path: scripts/fidelity/pass1, if-no-files-found: ignore }
+
+  plan2:
+    needs: [plan, pass1]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q jiwer==4.0.0 whisper-normalizer==0.1.15
+      - uses: actions/download-artifact@v5
+        with: { name: chapters, path: scripts/fidelity }
+      - uses: actions/download-artifact@v5
+        with: { pattern: 'pass1-*', merge-multiple: true, path: scripts/fidelity/pass1 }
+      - id: plan
+        run: python plan.py --flagged-from pass1 --chapters chapters.json --shards ${{ inputs.shards2 }} --out chapters2.json
+      - uses: actions/upload-artifact@v6
+        with: { name: chapters2, path: scripts/fidelity/chapters2.json }
+
+  pass2:
+    needs: plan2
+    if: always() && needs.plan2.result == 'success' && needs.plan2.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: ${{ fromJSON(needs.plan2.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q vosk==0.3.45 jiwer==4.0.0 whisper-normalizer==0.1.15
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg unzip
+      - uses: actions/cache@v4
+        id: vosk
+        with: { path: ~/vosk-model-en-us-0.22, key: vosk-model-en-us-0.22 }
+      - if: steps.vosk.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL -o /tmp/vosk.zip https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip
+          unzip -q /tmp/vosk.zip -d ~
+      - uses: actions/download-artifact@v5
+        with: { name: chapters2, path: scripts/fidelity }
+      - run: python transcribe.py --engine vosk --chapters chapters2.json --shard ${{ matrix.shard }} --of ${{ strategy.job-total }} --out pass2
+        env: { VOSK_MODEL: '/home/runner/vosk-model-en-us-0.22' }
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with: { name: 'pass2-${{ matrix.shard }}', path: scripts/fidelity/pass2, if-no-files-found: ignore }
+
+  report:
+    needs: [pass1, pass2]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q jiwer==4.0.0 whisper-normalizer==0.1.15
+      - uses: actions/download-artifact@v5
+        with: { pattern: 'pass1-*', merge-multiple: true, path: scripts/fidelity/pass1 }
+      - uses: actions/download-artifact@v5
+        continue-on-error: true
+        with: { pattern: 'pass2-*', merge-multiple: true, path: scripts/fidelity/pass2 }
+      - run: python report.py --pass1 pass1 --pass2 pass2 --out report
+      - run: cat report/audit.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v6
+        with: { name: fidelity-report, path: scripts/fidelity/report }
