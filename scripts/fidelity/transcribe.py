@@ -14,7 +14,7 @@ import sys
 import tempfile
 import time
 
-from common import download, fetch_json, normalize, reference_text, score, shard
+from common import chapter_record, download, fetch_json, normalize, reference_text, shard
 
 
 def whisper_engine():
@@ -27,8 +27,11 @@ def whisper_engine():
                                    condition_on_previous_text=False)
         words, times = [], []
         for s in segs:
-            # Silence hallucinations: low confidence + likely-no-speech, or a looping segment.
-            if (s.no_speech_prob > 0.6 and s.avg_logprob < -1.0) or s.compression_ratio > 2.4:
+            # Silence hallucinations: low confidence AND likely no speech. No compression-ratio
+            # test — scripture is legitimately repetitive (the Numbers 1 census compresses well),
+            # and dropping those segments manufactured 84 "missing" words in the pilot. Loops are
+            # already handled by faster-whisper's own temperature fallback.
+            if s.no_speech_prob > 0.6 and s.avg_logprob < -1.0:
                 continue
             w = normalize(s.text)
             words += w
@@ -88,12 +91,8 @@ def main():
             tts = fetch_json(c['tts'])
             ref_raw = reference_text(tts)
             words, times = run(mp3)
-            align, m = score(normalize(ref_raw), words)
-            out = {'id': c['id'], 'slug': c['slug'], 'book': c['book'], 'chapter': c['chapter'],
-                   'duration': c['duration'], 'engine': a.engine, **m,
-                   'ok': ''.join('1' if x else '0' for x in align['ok']),
-                   'dels': align['dels'], 'ins': align['ins'], 'subs': align['subs'],
-                   'hyp_at': align['hyp_at'], 'hyp': words, 'hyp_times': times, 'ref_raw': ref_raw}
+            out = chapter_record(c, a.engine, ref_raw, words, times)
+            m = out
             with open(os.path.join(a.out, c['id'].replace('/', '__') + '.json'), 'w') as f:
                 json.dump(out, f)
             done_audio += c['duration']

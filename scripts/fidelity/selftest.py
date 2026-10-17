@@ -8,20 +8,23 @@ import subprocess
 import sys
 import tempfile
 
-from common import normalize, score
+from common import chapter_record, normalize
+from plan import flagged
 
 RAW = ('Then Elizur son of Shedeur said, The LORD did not forsake us in the land of Egypt. '
        'And Moses went up the mountain alone. They numbered forty-six thousand, five hundred.')
 
 
+CHAPTER = {'id': 'test/001', 'slug': 'test', 'book': 'Test', 'chapter': 1, 'duration': 10}
+
+
 def record(d, engine, hyp):
-    ref = normalize(RAW)
-    a, m = score(ref, normalize(hyp))
     h = normalize(hyp)
-    json.dump({'id': 'test/001', 'slug': 'test', 'book': 'Test', 'chapter': 1, 'duration': 10, 'engine': engine, **m,
-               'ok': ''.join('1' if x else '0' for x in a['ok']), 'dels': a['dels'], 'ins': a['ins'], 'subs': a['subs'],
-               'hyp_at': a['hyp_at'], 'hyp': h, 'hyp_times': [float(i) for i in range(len(h))], 'ref_raw': RAW},
-              open(os.path.join(d, 't.json'), 'w'))
+    r = chapter_record(CHAPTER, engine, RAW, h, [float(i) for i in range(len(h))])
+    # Counts must stay numbers (a run list once overwrote `ins` and broke the Vosk planning).
+    assert all(isinstance(r[k], int) for k in ('del', 'ins', 'sub')), r
+    json.dump(r, open(os.path.join(d, 't.json'), 'w'))
+    return r
 
 
 def main():
@@ -30,8 +33,9 @@ def main():
         os.makedirs(p1); os.makedirs(p2)
         # Both engines garble the names and miss "not"; both hear two extra words at the end;
         # only Whisper misses "alone" (single-engine → must NOT be reported); digits vs words agree.
-        record(p1, 'whisper', 'then elisa son of shadow said the lord did forsake us in the land of egypt and moses '
-                              'went up the mountain they numbered 46,500 and then')
+        r1 = record(p1, 'whisper', 'then elisa son of shadow said the lord did forsake us in the land of egypt and moses '
+                                   'went up the mountain they numbered 46,500 and then')
+        assert flagged(r1), 'a chapter with dropped/added words must go to the Vosk pass'
         record(p2, 'vosk', 'then eliza son of shed or said the lord did forsake us in the land of egypt and moses '
                            'went up the mountain alone they numbered forty six thousand five hundred and then')
         subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), 'report.py'),

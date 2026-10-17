@@ -102,6 +102,17 @@ def score(ref, hyp):
     return a, {'wer': round(wer, 5), 'n_ref': len(ref), 'del': n_del, 'ins': n_ins, 'sub': n_sub}
 
 
+def chapter_record(chapter, engine, ref_raw, words, times):
+    """One chapter's result, exactly as transcribe.py writes it (and selftest.py checks it).
+    `del`/`ins`/`sub` are word COUNTS; the alignment runs are `*_runs`."""
+    a, m = score(normalize(ref_raw), words)
+    return {'id': chapter['id'], 'slug': chapter['slug'], 'book': chapter['book'], 'chapter': chapter['chapter'],
+            'duration': chapter['duration'], 'engine': engine, **m,
+            'ok': ''.join('1' if x else '0' for x in a['ok']),
+            'del_runs': a['dels'], 'ins_runs': a['ins'], 'sub_runs': a['subs'],
+            'hyp_at': a['hyp_at'], 'hyp': words, 'hyp_times': times, 'ref_raw': ref_raw}
+
+
 def shard(items, n, k, weight):
     """Deterministic duration-balanced split: longest first, onto the lightest shard."""
     loads = [[0.0, []] for _ in range(n)]

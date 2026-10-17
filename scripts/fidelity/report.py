@@ -116,9 +116,9 @@ def main():
                           'tier': tier, 'why': why, 'words': ' '.join(words), 'n': len(words),
                           'time': time_at(w, run[0]), 'context': ctx})
         vins = {}
-        for x in v['ins']:
+        for x in v['ins_runs']:
             vins.setdefault(x['after_ref'], []).extend(x['words'])
-        for x in w['ins']:
+        for x in w['ins_runs']:
             g = x['after_ref']
             vw = vins.get(g) or vins.get(g - 1) or vins.get(g + 1)
             if not vw:
