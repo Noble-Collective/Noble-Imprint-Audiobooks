@@ -24,7 +24,11 @@ VOCAB = {'ephah', 'ephahs', 'seah', 'seahs', 'cor', 'cors', 'homer', 'homers', '
          'gerah', 'gerahs', 'log', 'cubit', 'cubits', 'shekel', 'shekels', 'talent', 'talents', 'mina', 'minas',
          'freewill', 'firstfruits', 'firstborn', 'menservants', 'maidservants', 'facedown', 'manservant',
          'maidservant', 'ephod', 'ephods', 'teraphim', 'asherah', 'asherim', 'selah', 'hallelujah', 'shiggaion',
-         'miktam', 'maskil', 'gittith', 'sheminith', 'alamoth', 'mahalath', 'jeduthun', 'lo', 'behold'}
+         'miktam', 'maskil', 'gittith', 'sheminith', 'alamoth', 'mahalath', 'jeduthun', 'lo', 'behold',
+         # Psalm 119 acrostic letters (read as headings)
+         'aleph', 'beth', 'gimel', 'daleth', 'he', 'waw', 'zayin', 'heth', 'teth', 'yodh', 'kaph', 'lamedh',
+         'mem', 'nun', 'samekh', 'ayin', 'pe', 'tsadhe', 'qoph', 'resh', 'sin', 'shin', 'taw'}
+FOLD = re.compile(r'\w+fold$')   # thirtyfold / hundredfold: recognisers write "30 fold"
 V2_BASELINE = {'mean_wer': 0.0183, 'median_wer': 0.0116, 'tier1': 22, 'confirmed': 0,
                'source': 'plans/2026-09-14-audio-fidelity-validation.md (Sept 2026, multilingual v2)'}
 
@@ -40,7 +44,8 @@ def load(d):
 def proper_nouns(raw):
     """Lower-cased capitalised words that aren't sentence-initial — names, places."""
     names = set()
-    for m in re.finditer(r'(?<![.!?:;“"]\s)(?<!^)\b([A-Z][a-z’\'-]+)', raw):
+    # Sentence-initial words are excluded; list items after ; or , (genealogies) are not.
+    for m in re.finditer(r'(?<![.!?“"]\s)(?<!^)\b([A-Z][a-z’\'-]+)', raw):
         names.add(m.group(1).lower().replace('’', "'"))
         for part in re.split(r'[-’\']', m.group(1).lower()):
             if part:
@@ -64,7 +69,7 @@ def classify_missing(words, names):
     if any(w in NEG for w in words):
         return 'tier1', 'dropped negation'
     named = sum(1 for w in words if w in names)
-    vocab = sum(1 for w in words if w in VOCAB or re.fullmatch(r'\d+(st|nd|rd|th)?', w))
+    vocab = sum(1 for w in words if w in VOCAB or FOLD.match(w) or re.fullmatch(r'\d+(st|nd|rd|th)?', w))
     if named * 2 >= len(words):
         return 'name', 'proper noun(s)'
     if vocab * 2 >= len(words):
@@ -110,6 +115,12 @@ def main():
         for run in runs(both_miss):
             words = [ref[i] for i in run]
             tier, why = classify_missing(words, names)
+            # Both engines heard SOMETHING here (substituted words), so the audio isn't silent:
+            # a sound-alike ("theirs are the" → "there is other"), not a skip. A real skip leaves
+            # at least one engine with nothing aligned. Negations stay tier 1 regardless.
+            heard = lambda r: sum(1 for i in run if r['hyp_at'][i] is not None)  # noqa: E731
+            if tier == 'tier1' and why != 'dropped negation' and heard(w) * 2 >= len(run) and heard(v) * 2 >= len(run):
+                tier, why = 'tier2', 'misheard (both engines heard other words here)'
             lo, hi = max(0, run[0] - 8), min(len(ref), run[-1] + 9)
             ctx = ' '.join(ref[lo:run[0]] + ['[[' + ' '.join(words) + ']]'] + ref[run[-1] + 1:hi])
             items.append({'id': cid, 'book': w['book'], 'chapter': w['chapter'], 'kind': 'missing',
@@ -125,6 +136,12 @@ def main():
                 continue
             n_add = min(len(x['words']), len(vw))
             tier = 'tier1' if n_add >= 2 else 'tier2'
+            near = ref[max(0, g - 1):g + 3]
+            if tier == 'tier1' and all(re.fullmatch(r'\d+|fold', t) for t in x['words']) \
+                    and any(re.fullmatch(r'\d+', t) or FOLD.match(t) for t in near):
+                tier = 'vocab'   # number formatting ("72; 30,500" vs "72 30000", "30 fold" vs "thirtyfold")
+            elif tier == 'tier1' and sum(1 for i in range(max(0, g - 1), min(len(ref), g + 6)) if ref[i] in names) >= 2:
+                tier = 'name'    # a list of names re-spelled by both recognisers
             lo, hi = max(0, g - 7), min(len(ref), g + 9)
             ctx = ' '.join(ref[lo:g + 1] + ['++' + ' '.join(x['words']) + '++'] + ref[g + 1:hi])
             items.append({'id': cid, 'book': w['book'], 'chapter': w['chapter'], 'kind': 'added',
