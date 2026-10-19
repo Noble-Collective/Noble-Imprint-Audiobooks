@@ -1,8 +1,11 @@
 # Bible Audiobooks — Architecture & Runbook
 
 How narrated audiobooks of individual Bible books are produced and served in the
-`/bible` reader. Built 2026-07-29; first two books live: **Proverbs** and **2 Timothy**
-(BSB, "Ali" voice). This is the doc to read before adding another book.
+`/bible` reader. Built 2026-07-29 (Proverbs + 2 Timothy first); **the whole BSB Bible —
+66 books, 1,189 chapters, ~77 h — has audio**, narrated by the "Ali" voice on **Eleven v4**
+since 2026-10-16 (it was on `eleven_multilingual_v2` until then). Fidelity-audited: 0 defects
+(`plans/2026-10-18-v4-fidelity-audit.md`). This is the doc to read before changing or
+re-rendering any of it.
 
 ---
 
@@ -98,55 +101,65 @@ Consumers map their own book names to it (resolved 2026-09-27, see §8.1): the r
   "audiobook": {
     "enabled": true,
     "language_normalization": true,
-    "voice_id": "MI88rOZjXbH22N8KHXUo",
-    "model_id": "eleven_multilingual_v2",
-    "quality_preset": "high",
+    "request_stitching": true,
     "chunking_strategy": "section",
-    "voice_settings": { "stability": 0.50, "similarity_boost": 0.5, "style": 0.0, "speed": 0.90 },
-    "books": {
-      "PRO": { "enabled": true },
-      "2TI": { "enabled": true }
-    }
+    "voice_id": "MI88rOZjXbH22N8KHXUo",
+    "model_id": "eleven_v4",
+    "spell_numbers": true,
+    "clean_terminal_punctuation": true,
+    "chapter_end_pause": true,
+    "quality_preset": "high",
+    "voice_settings": { "stability": 0.50, "similarity_boost": 0.5 },
+    "books": { "GEN": { "enabled": true }, …, "REV": { "enabled": true } }
   }
 }
 ```
 
+(The live BSB block, 2026-10-18 — all 66 books enabled.)
+
 - `books.{CODE}` — **opt-in per book** (3-letter USFM code). `{ "enabled": true }`, optional
   `"chapters": "1-4"` to limit range. This is how "one book at a time" is enforced and how
   the website knows a book has audio.
-- `voice_id` — current: **Ali** `MI88rOZjXbH22N8KHXUo` (Saudi-Arabic-accented English narrator,
-  chosen via `/voice-test`). `speed: 0.90` is the scripture read profile. **`stability: 0.50`** —
-  chosen by ear for this voice; note that at 0.50 `<break>` tags at generation edges are unreliable,
-  which is why the Bible uses the **section** chunking strategy (concat silence for edge pauses).
-- `chunking_strategy: "section"` — heading-span generations, capped at 2000, with concat-silence +
-  after-heading `<break>` pauses. **This is the authoritative behavior — see
-  docs/CHUNKING-AND-PAUSES.md.** (Regular books use `"linear"`.)
+- `model_id: "eleven_v4"` — the whole Bible since 2026-10-16 (was `eleven_multilingual_v2`).
+  v4 takes only `stability` + `similarity_boost`: it has **no speed or style** (sent values are
+  ignored) and **no SSML** — pauses are `[long pause]`/`[short pause]` tags, chosen
+  automatically from the model (`src/pauses.js`). See docs/ELEVENLABS-MODELS.md.
+- `voice_id` — **Ali** `MI88rOZjXbH22N8KHXUo` (Saudi-Arabic-accented English narrator, chosen via
+  `/voice-test`). **`stability: 0.50`** — chosen by ear for this voice.
+- `spell_numbers: true` — numerals are spoken as words ("46,500" → "forty-six thousand, five
+  hundred"); the highlight text keeps the digits. Fixed the rushed census totals (Numbers 1).
+- `clean_terminal_punctuation: true` — no stray "." after a list line ending `;`/`,` or a quote
+  ending `.”`.
+- `chapter_end_pause: true` — 2 s of silence after each chapter's last word, so auto-advance
+  doesn't start the next chapter on its heels (ElevenLabs trims edge silence to ~0.1 s).
+- `chunking_strategy: "section"` — heading-span generations, capped at 2000, with concat silence
+  before a section + an after-heading pause in the text. **This is the authoritative behavior —
+  see docs/CHUNKING-AND-PAUSES.md.** (Regular books use `"linear"`.)
 - `language_normalization: true` — expands scripture refs / numeric ranges in verse text.
   Harmless for the current books; see §8 for the caveat.
 
 Find a book's `CODE` from its filename (`562TIBSB.SFM` → `2TI`) or its `\id` line.
 
-### Per-book profiles — the Eleven v4 migration (2026-10)
+### Per-book profiles — for a future model/voice migration
 
 The block above applies to every book. A book can name a **profile** that overrides it
 (`src/audiobook-config.js`; merge order block → profile → book keys; a profile's
-`voice_settings` replaces the block's wholesale):
+`voice_settings` replaces the block's wholesale). This is how the v4 migration ran
+(2026-10-15 → 16) — book by book, the rest staying on v2 — before the v4 keys became the
+block default and the profiles were removed (Resources `dc5d883`). To do it again:
 
 ```json
-"profiles": {
-  "v4": { "model_id": "eleven_v4", "spell_numbers": true, "clean_terminal_punctuation": true,
-          "voice_settings": { "stability": 0.50, "similarity_boost": 0.5 } }
-},
-"books": { "MAT": { "enabled": true, "profile": "v4" }, "MRK": { "enabled": true } }
+"profiles": { "next": { "model_id": "…", "voice_settings": { … } } },
+"books": { "MAT": { "enabled": true, "profile": "next" }, "MRK": { "enabled": true } }
 ```
 
-To move a book to v4: add `"profile": "v4"` to its entry, push Resources, run
-`generate.yml -f bible_book=CODE` (every chapter re-renders — the v4 chunk key never matches
-v2 audio). The v2 originals are backed up at `audio/_backup/2026-10-15-bible-v2/bsb/`.
-Each manifest session records `modelId` / `pauseStyle` / `chunkKey`, so a session without
-`modelId: "eleven_v4"` is still v2 audio. When all 66 are
-converted, move the profile's keys into the block and drop the per-book `profile`s.
-Background + A/B results: `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
+Add `"profile"` to a book, push Resources, run `generate.yml -f bible_book=CODE`. A changed model,
+voice or voice settings changes the chunk cache key (non-v2 models), so every chapter
+re-renders instead of reusing old audio. Each manifest session records `modelId` /
+`pauseStyle` / `chunkKey`, so which chapters are on which model is queryable. Back up
+`audio/bible/{tx}/` first if you may want to roll back (`gcloud storage cp -r`) — the v4
+migration's v2 backup was deleted 2026-10-18. When every book is converted, fold the profile
+into the block. Background + A/B results: `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
 
 ---
 
@@ -309,12 +322,19 @@ generated before normalization existed.
 
 ## 9. Cost model
 
-Credits ≈ generated (billed) characters; **$1.65 / 10,000**. Unchanged chunks reuse cached
-audio at 0 credits. `--print` prints an estimate before you spend.
+Pay-as-you-go top-ups are **$1.65 / 10,000 credits**. Unchanged chunks reuse cached audio at
+0 credits. `--print` and `scripts/estimate-all-bible.mjs` count **characters**; billed credits
+are a fraction of that, measured from the account balance (trust only large runs — the usage
+counter lags on small ones):
 
-Actuals (2026-07-29): 2 Timothy (4 ch) + Proverbs (31 ch) initial generation ≈ **52,000
-credits (~$8.6)**; the heading-pronunciation regen ≈ **18,000 credits (~$3)**. Whole project
-~$11.7. Balance after: 742,390 / 896,039 this cycle.
+| Model | Credits per counted character | Measured on |
+|---|---|---|
+| `eleven_v4` (current) | **~0.475** | Matthew + the whole NT, 2026-10-15 (462,178 credits) |
+| `eleven_multilingual_v2` | ~0.587 | the NT batch, 2026-09-01 (572,654 / 976,076) |
+
+Whole-Bible v4 re-render (2026-10-15 → 16): **≈ 1.95M credits** — NT 462K, Genesis–2 Kings 695K,
+1 Chronicles–Malachi ~791K (7 auto top-ups of ~121K credits / $20 each). A single chapter is
+typically 1–5K credits. Earlier v2 history: 2 Timothy + Proverbs ≈ 52K credits (2026-07-29).
 
 ---
 
@@ -325,12 +345,17 @@ credits (~$8.6)**; the heading-pronunciation regen ≈ **18,000 credits (~$3)**.
 - [ ] Live page shows the player + paragraph rendering; signed MP3/timestamps URLs resolve.
 - [ ] Highlight tracks narration (spot-check by ear on 1–2 chapters).
 - [ ] Chapter title reads correctly (spelled-out ordinal for numbered books).
+- [ ] After a large re-render: run **`fidelity-audit.yml`** (Whisper + Vosk, both-engine
+      consensus; free, ~2–3 h for the whole Bible, `filter` for a book). Tier 1 = listen.
 
 ---
 
 ## Related docs
 - **`docs/CHUNKING-AND-PAUSES.md`** — authoritative reference for the section strategy, the cap,
   and the pause model the Bible depends on.
+- `plans/2026-10-15-v4-ab-and-narration-fixes.md` — why v4: the A/B, the text fixes, rollout + costs.
+- `plans/2026-10-18-v4-fidelity-audit.md` — the v4 audit result; `scripts/fidelity/` + `fidelity-audit.yml`.
+- `docs/ELEVENLABS-MODELS.md` — what the pipeline needs from a model; v3/v4 evaluations.
 - `plans/2026-08-12-audiobook-pipeline-reconciliation.md` — the two-strategy reconciliation + cap decision.
 - `plans/2026-08-12-poetry-couplet-fix.md` — per-couplet poetry fix: **evaluated and declined** (decision record; work on the `poetry-couplet-ab` branch).
 - `plans/2026-07-29-bible-audiobooks.md` — the original plan + build history/decisions.

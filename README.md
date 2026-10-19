@@ -70,20 +70,37 @@ All `meta.json` `audiobook` fields:
 | `pronunciation_dictionary_id` | No | ElevenLabs pronunciation dictionary ID |
 | `output_format` | No | Audio format string (default: `mp3_44100_128`) |
 | `language_normalization` | No | When `true`, speak scripture refs/numeric ranges naturally per the book's top-level `language` (`en`/`fr`); default `false` speaks them literally. Toggling it changes the spoken text, so affected sessions regenerate on the next run. |
+| `spell_numbers` | No | When `true`, numerals are spoken as words; the highlight text keeps the digits. (BSB: on) |
+| `clean_terminal_punctuation` | No | When `true`, no stray "." is added after a paragraph ending `;`, `,` or a closing quote. (BSB: on) |
+| `chapter_end_pause` | No | When `true`, 2 s of silence after each chapter's last word (no timestamp moves). (BSB: on) |
+| `pause_style` | No | `ssml` or `tags`; default from `model_id` (`eleven_v4` → `[long pause]` tags). See `src/pauses.js` |
+| `request_stitching` | No | Default on: send `previous_request_ids` for tempo continuity across chunks |
+| `chunking_strategy` | No | `linear` (default) or `section` (Bible). See docs/CHUNKING-AND-PAUSES.md |
 | `project_id` | No | Legacy field, unused |
 
 ## Repo structure
 
 ```
 .github/workflows/
-  generate.yml         -- main generation workflow (dispatch + manual)
+  generate.yml         -- main generation workflow (manual dispatch; bible_book for Bible books)
+  rebuild-timestamps.yml -- rebuild .timestamps.json from stored chunk alignments (0 credits)
+  pad-chapter-tail.yml -- add the 2 s chapter-end silence to already-rendered chapters (0 credits)
+  fidelity-audit.yml   -- Whisper + Vosk check that the audio says the text (free; scripts/fidelity/)
+  model-ab.yml         -- whole-chapter model/text-fix A/B published to /voice-test/ab-*
+  v4-probe.yml         -- short Eleven v4 API probe (kept for re-checking model behaviour)
+  voice-compare.yml    -- render one passage in many voices for /voice-test
   find-voices.yml      -- utility to search ElevenLabs voice library
   voice-test.yml       -- A/B voice testing (short samples with different voices)
 src/
   preprocess-tts.js    -- markdown -> clean spoken text for TTS (+ per-language normalization, gated)
   detect-changes.js    -- chunk-level content hash comparison against GCS manifest
   generate.js          -- ElevenLabs TTS with timestamps + chunk-level caching + GCS upload
-  languages.js         -- per-language spoken-text normalization (scripture refs, numeric ranges)
+  languages.js         -- per-language spoken-text normalization (scripture refs, numeric ranges, spellNumbers)
+  pauses.js            -- pause kinds (title/section/…/chapterEnd) → <break> (v2) or [long pause] (v4)
+  audiobook-config.js  -- effective per-book config for a Bible book (block + optional profile)
+  usfm-to-markdown.js  -- Bible USFM -> per-chapter session markdown
+  rebuild-timestamps.js -- timestamps-only rebuild (see rebuild-timestamps.yml)
+  model-ab.js / v4-probe.js -- model evaluation tools (2026-10)
   bible-refs.js        -- legacy English scripture-ref -> spoken form (fallback when language_normalization is off)
   preprocess-test.js   -- local testing utility (runs against Resources repo)
   find-voices.js       -- voice search utility
@@ -129,7 +146,7 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
 
 Chunks target ~800 characters each, produced by a linear block walk that force-splits at H1/H2/H3 headings (250-char minimum guard). Each chunk file is named by a content hash of its text; only chunks whose hash changes are regenerated, and unchanged chunks are downloaded from GCS and reused. Chunks are concatenated directly with no silence gaps — ElevenLabs handles paragraph pacing naturally.
 
-To rebuild only the sentence-level timestamps without spending ElevenLabs credits (e.g. after a timestamp-matching fix), run **`rebuild-timestamps.yml`** (`src/rebuild-timestamps.js`): it re-derives each session's chunks from the stored `.tts.json`, checks them against the manifest's chunk hashes, reuses the cached `.align.json` alignments, and rewrites only `.timestamps.json` — never ElevenLabs, never audio. `mode=dry-run` (default) only reports; `mode=write` backs each original up under `audio/_backup/…` first. A session is rewritten only if the old algorithm reproduces its published file exactly and the new one differs only where intended; anything else is skipped and listed.
+To rebuild only the sentence-level timestamps without spending ElevenLabs credits (e.g. after a timestamp-matching fix), run **`rebuild-timestamps.yml`** (`src/rebuild-timestamps.js`): it re-derives each session's chunks from the stored `.tts.json`, checks them against the manifest's chunk hashes, reuses the cached `.align.json` alignments, and rewrites only `.timestamps.json` — never ElevenLabs, never audio. `mode=dry-run` (default) only reports; `mode=write` backs each original up under `audio/_backup/…` first. A session is rewritten only if the old (pre-2026-09-27) or current algorithm reproduces its published file exactly and the new result differs only where intended; anything else is skipped and listed. It handles v4 chapters (pause tags, model-aware chunk key) via the manifest's `pauseStyle` / `chunkKey`.
 
 ⚠️ Do **not** use `generate.yml` with `force_regenerate=true` for this — a forced run bypasses the chunk cache and re-narrates every chunk (full credit cost).
 

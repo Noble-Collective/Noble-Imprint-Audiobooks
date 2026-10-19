@@ -17,7 +17,7 @@ Each book selects one via `meta.audiobook.chunking_strategy`:
 | generation shape | many small (~200–800) | few large (a heading + its verses) |
 | heading levels that split | h1/h2/h3 | h1/h2/h3 (h4–h6 read inline) |
 | pauses | `<break>` tags (both sides) + leading-break seams | concat silence before a section + `<break>` after in-generation headings + light seam at cap-splits |
-| used by | Oration II, On the Shortness of Life, HomeStead, … | `bibles/bsb` (2 Timothy, Proverbs) |
+| used by | Oration II, On the Shortness of Life, HomeStead, … | `bibles/bsb` (all 66 books, Eleven v4) |
 
 Every audiobook `meta.json` declares its strategy explicitly. Legacy `natural_mode: true` maps to
 `"section"` for back-compat. Default (absent) is `"linear"`.
@@ -64,6 +64,23 @@ leading breaks render only ~85% and variably). So:
 
 Heading durations (`HEADING_GAP`): h1 = 2.0s, h2 = 1.5s, h3–h6 = 1.0s.
 
+**Pauses are named by kind (`src/pauses.js`, 2026-10-15).** Code asks for `title`, `section`,
+`subsection`, `transition`, `seam`, `midSeam`, `breath` or `chapterEnd`; the table holds each
+kind's seconds and its v4 tag. How a kind is written depends on the model (`pauseStyleForModel`,
+override `meta.pause_style`):
+
+| style | model | in-text pause | notes |
+|---|---|---|---|
+| `ssml` | `eleven_multilingual_v2` | `<break time="Xs"/>` | byte-identical to the pre-2026-10 markup |
+| `tags` | `eleven_v4` (the Bible) | `[long pause]` ≈ 1.8 s / `[short pause]` ≈ 0.7 s | no duration control; SSML is ignored by v4 |
+
+Concat silence (section boundaries `gaps[]`, cap-split `breath` 0.4 s, `chapterEnd` 2 s) is exact
+on every model. **`chapterEnd`** (opt-in `meta.chapter_end_pause`, on for the BSB): 2 s appended
+after the chapter's last word in the same encode — ElevenLabs trims a generation's trailing
+silence to ~0.1 s, so without it auto-advance starts the next chapter immediately. It's after
+the last segment, so no timestamp moves. Existing chapters can be padded from their stored
+chunks at 0 credits: `pad-chapter-tail.yml` (dry-run first).
+
 **Sync safety.** Both mechanisms are safe for the web highlighter:
 - `<break>` silence is captured by ElevenLabs' returned alignment, so timestamps built from that
   alignment include it automatically.
@@ -99,11 +116,13 @@ single clean stream, and the inserted silence is sample-exact, so the returned g
 Each manifest session records `pipelineVersion` (bumped when generation LOGIC changes) and
 `chunkingStrategy`. This makes staleness queryable — which shipped books would change on re-render.
 
-**Caveat:** the chunk cache is keyed on chunk **text** only (`hashChunk = sha256(text)`). A **text**
-edit correctly re-renders the affected generation(s). A **logic/settings** change that alters audio
-but not chunk text (voice settings, concat method, loudness) does **not** invalidate the cache —
-those need `force_regenerate`. So a normal (push-triggered) regen after a pipeline change refreshes
-only text-changed parts; to fully adopt a logic change, force a re-render per book.
+**Caveat:** for `eleven_multilingual_v2` the chunk cache is keyed on chunk **text** only
+(`hashChunk = sha256(text)`); for any other model the key also folds in model + voice + voice
+settings (`chunkKey`, stamped on the manifest — see ELEVENLABS-MODELS.md §1). A **text** edit
+correctly re-renders the affected generation(s). A **logic** change that alters audio but not
+chunk text (concat method, loudness, a v2 settings change) does **not** invalidate the cache —
+those need `force_regenerate`. The chapter-end pause is applied at concat, not in a chunk, so
+it never needs a re-render.
 
 ---
 

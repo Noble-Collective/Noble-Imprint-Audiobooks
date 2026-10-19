@@ -120,9 +120,14 @@ Audiobook generation is enabled per-book via `meta.json` in the Resources repo:
 | `project_id` | Reserved (unused). |
 | `voice_id` | Default ElevenLabs voice for all sessions. |
 | `voice_test_map` | Per-session voice overrides for A/B testing. |
-| `model_id` | ElevenLabs model. `eleven_multilingual_v2` is current — see [ELEVENLABS-MODELS.md](ELEVENLABS-MODELS.md) before changing (v3/v4 evaluations, cache-key gap). |
+| `model_id` | ElevenLabs model. Series books: `eleven_multilingual_v2`; the BSB Bible: `eleven_v4` (since 2026-10-16). See [ELEVENLABS-MODELS.md](ELEVENLABS-MODELS.md) before changing. |
 | `quality_preset` | ElevenLabs quality setting (`high`). |
-| `voice_settings` | Stability, similarity boost, style, and speed parameters. |
+| `voice_settings` | v2: stability, similarity boost, style, speed. v4: stability + similarity only (speed/style ignored). |
+| `pause_style` | Optional override of how pauses are written: `ssml` (`<break>`) or `tags` (`[long pause]`). Default comes from `model_id` (`src/pauses.js`). |
+| `spell_numbers` | Opt-in. Numerals spoken as words; highlight text keeps the digits (`matchText`). On for the BSB. |
+| `clean_terminal_punctuation` | Opt-in. No stray "." after a paragraph ending `;`, `,` or a closing quote. On for the BSB. |
+| `chapter_end_pause` | Opt-in. 2 s of silence after each chapter's last word (concat; no timestamp moves). On for the BSB. |
+| `profiles` / `books.{CODE}.profile` | Bible only (`src/audiobook-config.js`): per-book override block, for moving books to a new model one at a time. Unused since the v4 migration finished. |
 | `skip_sessions` | Session files to exclude from generation (front matter, bibliography, etc.). |
 | `pronunciation_dictionary_id` | Optional ElevenLabs pronunciation dictionary. |
 
@@ -136,7 +141,7 @@ Transforms markdown into clean spoken text suitable for TTS:
 
 | Markdown construct | Transformation |
 |---|---|
-| Headings (`# ...`) | Sentence-cased for TTS (proper noun whitelist). SSML `<break>` tags added (H1: 2s, H2: 1.5s, H3-H6: 1s before/after) — used by the **linear** strategy. The **section** strategy strips these and builds its own pauses (concat silence + after-heading break); see CHUNKING-AND-PAUSES.md. Original display text preserved in `block.displayText`. |
+| Headings (`# ...`) | Sentence-cased for TTS (proper noun whitelist). Pause markup added by kind (`src/pauses.js`: `<break>` for v2, `[long pause]`/`[short pause]` for v4) (H1: 2s, H2: 1.5s, H3-H6: 1s before/after) — used by the **linear** strategy. The **section** strategy strips these and builds its own pauses (concat silence + after-heading break); see CHUNKING-AND-PAUSES.md. Original display text preserved in `block.displayText`. |
 | Bold/italic markers (`**`, `*`, `_`) | Stripped. |
 | `<Question>` tags | Tags stripped, inner content kept (read aloud). |
 | `<Callout>` tags | Tags stripped, inner content kept. |
@@ -184,8 +189,10 @@ On subsequent runs:
 
 **Re-render granularity differs by strategy** (see CHUNKING-AND-PAUSES.md): a linear typo fix usually
 re-renders one ~800-char chunk (cascade bounded by the next heading); a section fix re-renders the
-whole heading-span generation. **Note:** the cache keys on chunk *text* only — a logic/settings
-change that doesn't alter chunk text needs `force_regenerate` to take effect.
+whole heading-span generation. **Note:** for multilingual_v2 the cache keys on chunk *text* only;
+for any other model the key also includes model + voice + settings (`chunkKey`, stamped on the
+manifest). A logic change that doesn't alter chunk text (or a v2 settings change) needs
+`force_regenerate` to take effect.
 
 ---
 
@@ -269,13 +276,19 @@ noble-imprint-audiobooks/audio/{slugified-book-path}/
       "durationSeconds": 1158,
       "characterCount": 14824,
       "generatedAt": "2026-05-17T...",
-      "pipelineVersion": "2026-08-12-section-cap-v1",
-      "chunkingStrategy": "section"
+      "pipelineVersion": "2026-10-15-pause-kinds-v1",
+      "chunkingStrategy": "section",
+      "modelId": "eleven_v4",
+      "pauseStyle": "tags",
+      "chunkKey": "eleven_v4|<voice>|{…voice_settings}\n",
+      "tailSilenceSeconds": 2
     }
   ],
   "totalDurationSeconds": 11358
 }
 ```
+
+`modelId`, `pauseStyle`, `chunkKey` (non-v2 models only) and `tailSilenceSeconds` (books with `chapter_end_pause`) were added 2026-10-15; older sessions lack them.
 
 ### Timestamps Format
 

@@ -1,5 +1,7 @@
 # Eleven v4 evaluation + Bible narration fixes (2026-10-15)
 
+**Status: CLOSED 2026-10-18 — the whole BSB Bible is on Eleven v4.** See "Outcome" at the end.
+
 Steve's ask: evaluate Eleven v4 against today's pipeline on the Bible, which still has issues —
 **Numbers 1's large numbers** read poorly, and the narration **gets slow at times** — and replace
 the hard-coded pause durations with kinds of pause that each model can render.
@@ -59,15 +61,44 @@ Reading of the numbers (the ear decides):
 
 Spend: probe ~69+ credits; A/B **11,090 credits measured (≈ $1.83)**.
 
-## Open decisions (Steve)
+## Decisions (as they were open on 2026-10-15)
 
-1. Listen: A vs B (are the fixes worth it on today's model?) and B vs C/C2 (v4 or not; at
-   which pace?).
-2. If v4: it is a new voice rendering — partial adoption means the voice changes mid-Bible,
-   so it's all-66-books (~1.4M chars; at our measured ~0.48–0.59 credits/char ≈ $110–140) or
-   nothing. Before any rollout: fix the chunk-cache key to include model/voice/settings
-   (ELEVENLABS-MODELS.md §1), make atempo + timestamp scaling a pipeline option if C2 wins,
-   and re-run the dual-engine fidelity audit on the v4 output.
-3. If staying on v2: turn on `spell_numbers` + `clean_terminal_punctuation` for the BSB.
-   The punctuation fix changes the text of most chapters → effectively a whole-Bible
-   re-render on v2 too. `spell_numbers` alone touches only the 71+ chapters with numerals.
+1. Listen: A vs B and B vs C/C2. → **Steve: "we really like C"** (v4, natural pace). C2 was
+   dropped from the pages.
+2. v4 is all-66-books or nothing. → **All 66**, prerequisites done first (below).
+3. Staying on v2 with the fixes. → Not needed; the fixes ship with v4.
+
+## Outcome — the whole Bible on v4 (2026-10-15 → 18) — CLOSED
+
+**Prerequisites (0 credits)**, audiobooks commits 68ce2d2 + follow-ups: model-aware chunk cache
+key (v2 hashes unchanged, 0/5,749 changed); per-book `profile` config (`src/audiobook-config.js`)
+so books could move one at a time; manifest sessions stamped `modelId` / `pauseStyle` /
+`chunkKey`; `rebuild-timestamps` handles v4 + current-algorithm files; v2 audio backed up.
+
+**Chapter-end pause** (Steve noticed Matthew 2 starting right after Matthew 1): ElevenLabs trims
+edge silence to ~0.1 s on both models. Added `chapterEnd` = 2 s after the last word (tail only,
+so no timestamp moves; all three players advance on the audio's real end). New renders get it via
+`chapter_end_pause`; Matthew was padded from its stored chunks at 0 credits (`pad-chapter-tail.yml`).
+
+**Rollout** (all `generate.yml` runs succeeded, verified per batch: every chapter `modelId:
+eleven_v4` + `tailSilenceSeconds: 2`):
+
+| Batch | Books / chapters | Credits (balance-measured) |
+|---|---|---|
+| Matthew (pilot) | 1 / 28 | 59,634 |
+| Mark – Revelation | 26 / 232 | 402,544 |
+| Genesis – 2 Kings | 12 / 338 | 694,822 |
+| 1 Chronicles – Malachi | 27 / 591 | ≈ 791,000 (7 auto top-ups ≈ $140) |
+| **Whole Bible** | **66 / 1,189 (77.4 h)** | **≈ 1.95M** |
+
+v4 bills **~0.475 credits per counted character** (v2: ~0.587); estimates were within ~1%.
+
+**Verification:** `fidelity-audit.yml` (Whisper + Vosk) — **0 confirmed defects**; mean WER 1.84%
+vs v2's 1.83% (`plans/2026-10-18-v4-fidelity-audit.md`).
+
+**Tidy-up (2026-10-18):** the v4 settings are the BSB block default and the profiles are gone
+(Resources dc5d883, effective config identical for all 66 books); every `audio/_backup/` folder
+deleted on Steve's go — rolling back to v2 would now be a paid re-render.
+
+**Left open:** a check of highlighting on a v4 chapter in the mobile app (Steve, on device).
+Series audiobooks remain on multilingual v2.

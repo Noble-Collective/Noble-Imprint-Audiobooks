@@ -1,8 +1,8 @@
-# ElevenLabs Models — What We Depend On & Why We Stay on multilingual_v2
+# ElevenLabs Models — What We Depend On, and Which Model Each Book Uses
 
 Learning doc covering what our pipeline relies on from the ElevenLabs API, and how newer models compare against it. Read this before changing `model_id` for any book.
 
-**Status (2026-10-15):** all books use `eleven_multilingual_v2`. Eleven v3 was evaluated and declined (2026-08-28). Eleven v4 was researched (2026-09-28), **probed** and **A/B-rendered on Numbers 1 + Acts 27** (2026-10-15, §3) — decision pending Steve's listen.
+**Status (2026-10-18):** **the BSB Bible is on `eleven_v4`** — all 66 books re-rendered 2026-10-15 → 16 after Steve preferred the v4 A/B ("C"), fidelity-audited with 0 defects. **Series audiobooks stay on `eleven_multilingual_v2`.** Eleven v3 was evaluated and declined (2026-08-28). §1 describes the v2 contract the pipeline was built on; §3 how v4 differs and what was built to support it.
 
 ---
 
@@ -33,9 +33,9 @@ Response: `audio_base64` plus `alignment` (**not** `normalized_alignment`). Alig
 5. **Float `stability`** and **`speed`** tuning. The BSB pace depends on speed 0.90, and the section strategy exists *because of* stability 0.50.
 6. **Deterministic-enough re-renders.** The hash cache re-renders single chunks (e.g. a pronunciation fix) and splices them between old ones.
 
-### ⚠ Cache-key gap (fix before any model experiment)
+### Cache key — fixed 2026-10-15
 
-The chunk hash is `sha256(chunkText)` only. **`model_id`, `voice_id`, `voice_settings` and `output_format` are NOT in the key.** Changing the model without `force_regenerate` silently reuses old-model chunks and mixes them with new ones. Fix: fold model, voice and settings into the chunk hash (this invalidates the whole cache once, so plan the rollout) or make a model change force regeneration.
+The chunk hash used to be `sha256(chunkText)` only, so changing the model, voice or settings silently reused old chunks. Now (`generate.js chunkKey`) **any model other than multilingual_v2 folds `model_id` + `voice_id` + `voice_settings` into the hash**; v2 keeps the text-only key so every shipped v2 chunk still matches (proved: 0 of 5,749 hashes changed). The key is stamped on each manifest session as `chunkKey`. Still not in the key: `output_format`, and a v2 settings change (needs `force_regenerate`).
 
 ---
 
@@ -45,7 +45,13 @@ Base `eleven_v3` has no SSML breaks (it uses `[pause]` tags instead), no request
 
 ---
 
-## 3. Eleven v4 — researched 2026-09-28, not adopted
+## 3. Eleven v4 — researched 2026-09-28, adopted for the Bible 2026-10-16
+
+> The research below is kept as written (2026-09-28). What changed the decision: the A/B showed
+> v4 holds its pace through long sections where v2 slows (the "gets slow" complaint); pauses
+> became model-aware kinds (`src/pauses.js`), so losing SSML no longer mattered; and v4's natural
+> pace (no `speed`) was preferred over a slowed copy. "Why we're not switching" below is the
+> pre-A/B reasoning.
 
 Released ~Sept 2026. Sources: elevenlabs.io `/docs/overview/capabilities/text-to-speech/eleven-v4`, `/v4` FAQ, `/blog/eleven-v4`, `/pricing/api`, request-stitching and pronunciation-dictionary guides. Treat the details as point-in-time; ElevenLabs says v4 is under active development.
 
@@ -69,13 +75,13 @@ Released ~Sept 2026. Sources: elevenlabs.io `/docs/overview/capabilities/text-to
 
 New knobs v4 adds: descriptive inline direction tags (`[Quiet, measured narration]`, `[lower, thoughtful]`, `[measured]`), SFX tags, better IVC/PVC cloning (PVCs made before v4 must be retrained), and 90+ languages.
 
-### Why we're not switching (the Bible especially)
+### (Pre-A/B, 2026-09-28) Why we were not switching
 
 - The full 66-book BSB Bible is rendered, audited (0 defects, Whisper+Vosk), and consistent. A v4 voice sounds different, so partial adoption means an audible voice change mid-Bible. Full adoption means re-rendering the whole Bible.
 - It loses both pacing levers we tuned (breaks + speed), and drift over time undermines single-chunk fixes.
 - The gains that matter less for steady narration are expressiveness and emotion. The one we'd actually want is **IPA phonemes**, which only helps if the whole book is on v4.
 
-### If we revisit — engineering path
+### Engineering path (2026-09-28 plan) — status 2026-10-18: 1 cache key ✓ · 2 pauses ✓ (tags + concat silence) · 3 speed stretch built, unused · 4 IPA pronunciation not done · 5 fidelity audit ✓
 
 1. Fix the cache-key gap (above).
 2. **Pauses → real silence:** split generations at every heading and insert ffmpeg `anullsrc` gaps (the section strategy already does this between generations). Remove all `<break>` tags from text sent to v4. Re-check the "drawn-out lone heading" behaviour when a heading is its own generation.
@@ -109,3 +115,23 @@ What we built from it (2026-10-15): pauses by **kind** (`src/pauses.js`) rendere
 A = live audio, B = v2 + text fixes, C = v4 + same fixes, C2 = C slowed to 0.90. Published to
 `/voice-test/ab-{book}-{ch}` with a `metrics.json` (duration, per-generation pacing, timestamp
 coverage). First run: Numbers 1 + Acts 27 — results in `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
+
+The page shows A, B and C (C2 was removed from the pages at Steve's request; `model-ab.js`
+makes it only when `VARIANTS` includes `C2`). Steve chose **C** (v4, natural pace).
+
+### Rollout + what to know when running v4 (2026-10-15 → 18)
+
+- **Rollout:** Matthew pilot → rest of NT → Genesis–2 Kings → 1 Chronicles–Malachi, via a
+  per-book `profile` (`src/audiobook-config.js`); now the BSB block default. 1,189 chapters,
+  ≈ 1.95M credits. Details: `plans/2026-10-15-v4-ab-and-narration-fixes.md`.
+- **Billing:** v4 bills **~0.475 credits per counted character** (v2: ~0.587) — about 19%
+  cheaper per chapter, despite `character_cost_multiplier: 1`.
+- **Pauses:** `[long pause]` ≈ 1.8 s, `[short pause]` ≈ 0.7 s (`src/pauses.js` maps kinds →
+  tags); section boundaries are exact concat silence; 2 s chapter-end silence (`chapter_end_pause`).
+- **Timestamps:** alignment includes the tag characters, so the existing builder works; spelled
+  numbers match via `matchText`. `rebuild-timestamps.yml` reproduces v4 chapters (reads
+  `pauseStyle` / `chunkKey` from the manifest).
+- **Drift:** ElevenLabs says v4 "may shift over time". A chapter re-rendered months later may
+  sound slightly different from its neighbours; re-render a whole book if that matters.
+- **Fidelity:** `fidelity-audit.yml` after any large render. v4 Bible: 0 defects
+  (`plans/2026-10-18-v4-fidelity-audit.md`).

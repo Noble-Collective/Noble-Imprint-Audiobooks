@@ -687,7 +687,7 @@ URL-encode spaces: `A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20I
 
 ---
 
-## Recent Additions (Addendum, updated 2026-09-02)
+## Recent Additions (Addendum, updated 2026-10-18)
 
 Platform changes from roughly the last three months (mid-June → early September 2026) that affect **audio** integration. New items are added here rather than interleaved above, so the original guide stays stable.
 
@@ -748,8 +748,8 @@ The player and text-sync approach are the same; only the discovery path and cont
   §6d). Omitted where a word's time isn't exact (a chunk without alignment) and on headings
   read differently. Readers that don't know the field ignore it.
 - **File layout**: one segment per line (compact JSON inside). Same JSON.
-- Existing files were rebuilt timestamps-only by `rebuild-timestamps.yml` (no TTS); originals
-  are under `audio/_backup/2026-09-27-timestamps/`.
+- Existing files were rebuilt timestamps-only by `rebuild-timestamps.yml` (no TTS). (The
+  originals' backup was deleted 2026-10-18; every Bible chapter has since been re-rendered.)
 
 ### 6. One highlight engine for every reader (2026-09-27)
 
@@ -760,3 +760,27 @@ Plan + outcome: `Collective-Shared/plans/2026-09-27-audio-highlight-parity.md`.
 - **Measured:** the resource site lights 98.6–99.8 % of listening time per book (the rest is spoken list numbers, never lit by design) and 100 % of the Bible; Coram Deo 602/602 verse sentences exactly on the live DOM.
 - **Pipeline implications:** consumers now tolerate the spoken form, so paragraph `text` does NOT need a display-text field. Still open for the pipeline: `@include` support before any Essentials book gets audio (it would narrate the raw directive and skip the shared content).
 
+
+### 7. The Bible is narrated by Eleven v4 (2026-10-16)
+
+All 66 BSB books (1,189 chapters) were re-rendered on `eleven_v4` (same "Ali" voice). Background,
+A/B and costs: `plans/2026-10-15-v4-ab-and-narration-fixes.md`; fidelity audit (0 defects):
+`plans/2026-10-18-v4-fidelity-audit.md`. Series audiobooks are unchanged (multilingual v2).
+What consumers see:
+
+- **Every Bible chapter MP3 ends with 2 s of silence** after the last word (`tailSilenceSeconds: 2`
+  on the manifest session). Timestamps are unchanged by it (it's after the last segment), so the
+  last segment ends ~2 s before the audio does. **Advance to the next chapter on the audio's own
+  end** (`ended` / `ProcessingState.completed`) — never at the last segment's `end` — or the pause
+  is lost. The site, Coram Deo and the app all already do this.
+- **New manifest session fields** (additive; ignore if unused): `modelId` (`"eleven_v4"`),
+  `pauseStyle` (`"tags"`), `chunkKey` (pipeline cache key), `tailSilenceSeconds`, and
+  `pipelineVersion: "2026-10-15-pause-kinds-v1"`. Every Bible chapter's `generatedAt` changed,
+  so caches keyed on it refresh by themselves.
+- **Numbers are spoken as words** ("forty-six thousand, five hundred") but `segment.text` keeps
+  the digits as shown on the page ("46,500"), so text matching is unaffected. Those sentences
+  carry **no `words`** (spoken words ≠ shown words) — the A–B loop falls back to its estimate
+  there, as it already does for headings read differently.
+- **No stray periods**: list lines ending `;` or `,` and quotes ending `.”` are no longer given
+  an extra "." — `segment.text` matches the page text more closely than before.
+- Pace is faster than the old v2 audio (v4 has no speed setting); timing data is the same shape.
