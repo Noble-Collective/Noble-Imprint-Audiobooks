@@ -4,3 +4,5 @@ test-output/
 *.wav
 *.zip
 .env
+accent-exp-output/
+scripts/accent-check/.models/

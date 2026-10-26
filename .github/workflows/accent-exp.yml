@@ -1,0 +1,89 @@
+name: Accent-drift experiment
+
+# Re-renders Bible sections that drifted to a North American voice on Eleven v4, several takes
+# per variant (live settings / similarity / accent tag / stability), then scores every take with
+# scripts/accent-check/score.py. Output = an Actions artifact (MP3s + runs.json + scores.json).
+# Writes nothing to GCS or the live audio. See src/accent-exp.js. DRY_RUN prints the texts + cost.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sections:
+        description: 'Sections, BOOKCODE:chapter:generation (1-based), comma-separated'
+        required: false
+        default: 'COL:3:1,PSA:24:1,1CO:13:1,GEN:1:7,ISA:53:1'
+      variants:
+        description: 'Variants: base,sim,tag,tagsim,stabsim'
+        required: false
+        default: 'base,sim,tag,tagsim,stabsim'
+      takes:
+        description: 'Takes per section × variant'
+        required: false
+        default: '3'
+      accent_tag:
+        description: 'Audio tag put before the text in the tag variants'
+        required: false
+        default: '[Saudi Arabic accent]'
+      dry_run:
+        description: 'Print texts + planned spend only'
+        required: false
+        default: 'true'
+
+concurrency:
+  group: accent-exp
+  cancel-in-progress: false
+
+jobs:
+  accent-exp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Checkout resources content
+        uses: actions/checkout@v5
+        with:
+          repository: Noble-Collective/Noble-Imprint-Resources
+          token: ${{ secrets.RESOURCES_TOKEN }}
+          path: resources
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Render takes
+        run: node src/accent-exp.js
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          RESOURCES_PATH: resources
+          SECTIONS: ${{ github.event.inputs.sections }}
+          VARIANTS: ${{ github.event.inputs.variants }}
+          TAKES: ${{ github.event.inputs.takes }}
+          ACCENT_TAG: ${{ github.event.inputs.accent_tag }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          OUT_DIR: accent-exp-output
+
+      - uses: actions/setup-python@v6
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        with:
+          python-version: '3.12'
+
+      - name: Score takes
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q speechbrain soundfile numpy
+          python scripts/accent-check/score.py accent-exp-output
+
+      - name: Upload results
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: accent-exp
+          path: accent-exp-output/
