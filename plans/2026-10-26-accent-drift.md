@@ -51,15 +51,31 @@ American when the accent model hears US/Canada in ≥ 25% of its pieces.
 - Re-rolling alone is unreliable, because COL 3 drifted 3 times out of 3.
 - Results page: https://claude.ai/artifact/Uzyo4kArYcuw1GXiJacEX7
 
+## Experiment 2 — tag only, live settings (run 40339023942, 19,776 credits)
+
+Steve asked for a bigger check of the tag alone, with no other setting changes. It covered 14 new sections with 2 takes
+each:
+
+- 10 sections that drifted in the live audio: JOS 1 g1, 1SA 6 g2, JOB 28 g1, PSA 46 g1, ISA 6 g1, JON 3 g1, 1TH 1 g1,
+  JHN 7 g3, REV 7 g2, 2CO 4 g2;
+- 4 that never drifted: PSA 23 g1, ACT 2 g2, PRO 3 g2, EPH 1 g2.
+
+**Result: 1 of 28 takes was American.** 1SA 6 take 1 was 100% American; take 2 was fine. All 8 takes of the
+never-drifted sections still sound like Ali (match 0.79–0.84, 0–8% American), so the tag does no harm there.
+
+A check of the speech activity confirmed the tag is not spoken: Job 28's 0.44 s tag timing is the same "Job, …
+Chapter 28" shape as its other take.
+
+**Combined: 1 drift in 43 tagged takes (~2%), against 9 in 15 untagged (~60%).** The tag alone isn't a guarantee,
+so the pipeline needs the tag plus a QC re-render of any section that still drifts.
+
 ## Next (awaiting Steve)
 
 1. Steve listens to tag takes to check that the accent isn't overdone and still sounds like the Ali he chose.
-2. Confirmation run, tag only: more sections, including never-drifted prose and poetry as a no-harm check, and more
-   takes (~10–15K credits).
-3. Pipeline changes:
+2. Pipeline changes:
    - put the tag before each generation's text;
    - make the timestamp builder skip it, as `PAUSE_MARKUP_RE` does for the pause tags;
    - fold it into the chunk key;
    - add a drift QC gate built on `score.py` that re-renders a generation that still comes back American.
-4. Re-render only the drifted sections of the flagged chapters. This needs per-generation targeting, because whole
+3. Re-render only the drifted sections of the flagged chapters. This needs per-generation targeting, because whole
    chapters would be wasteful.
