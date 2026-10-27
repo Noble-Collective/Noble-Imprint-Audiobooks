@@ -1,5 +1,7 @@
 # Audiobook Integration Guide for App Developers
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 This document provides everything needed to implement audiobook playback with sentence-level text synchronization in the Noble Imprint mobile/desktop app. The audio generation pipeline already exists — your job is to consume the generated files and build the playback experience.
 
 ---

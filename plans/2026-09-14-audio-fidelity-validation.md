@@ -1,5 +1,7 @@
 # Validating That the Bible Audio Is Faithful to the Text
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 > **2026-10-17 — productionized.** The dual-engine audit (Whisper small.en + Vosk en-us-0.22,
 > both-engine consensus, tiering) built in Sept 2026 lived only in a session scratchpad and was
 > lost. It is now committed as `scripts/fidelity/` + `.github/workflows/fidelity-audit.yml`

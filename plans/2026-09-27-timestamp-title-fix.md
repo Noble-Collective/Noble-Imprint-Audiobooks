@@ -1,5 +1,7 @@
 # Timestamp pipeline fixes — deep dive (2026-09-27)
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 **Status: BUILT (Steve approved 2026-09-27 "yes lets build this and do it")**, then used by all readers: the Bible `words` now drive the verse split on the resource site and Coram Deo too (shared narration engine, `Collective-Shared/plans/2026-09-27-audio-highlight-parity.md`) — both websites moved off the consumer rules in the table below., scope widened
 to include Bible word timings (the app's A–B loop, Noble-Imprint-App docs/AUDIOBOOKS.md §6d).
 - Code: `preprocess-tts.js` `buildSentenceIndex` (heading `matchText` = spoken text);

@@ -1,5 +1,7 @@
 # Audiobook Pipeline Reconciliation — Chunking + Pauses
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 **Date:** 2026-08-12
 **Status:** Proposed (not yet implemented)
 **Context:** After the 2 Timothy 1 work landed a new, well-liked chunking + pause

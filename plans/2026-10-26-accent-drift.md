@@ -1,5 +1,7 @@
 # Ali accent drift on Eleven v4 (2026-10-26)
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 ## Problem
 
 Steve heard Colossians 1 in Ali's voice, but Colossians 3 in what sounded like an American version of him. Ali

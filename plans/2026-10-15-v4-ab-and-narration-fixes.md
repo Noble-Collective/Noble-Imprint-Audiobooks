@@ -1,5 +1,7 @@
 # Eleven v4 evaluation + Bible narration fixes (2026-10-15)
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 **Status: CLOSED 2026-10-18 — the whole BSB Bible is on Eleven v4.** See "Outcome" at the end.
 
 Steve's ask: evaluate Eleven v4 against today's pipeline on the Bible, which still has issues —

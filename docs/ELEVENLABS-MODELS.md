@@ -1,5 +1,7 @@
 # ElevenLabs Models — What We Depend On, and Which Model Each Book Uses
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 Learning doc covering what our pipeline relies on from the ElevenLabs API, and how newer models compare against it. Read this before changing `model_id` for any book.
 
 **Status (2026-10-18):** **the BSB Bible is on `eleven_v4`** — all 66 books re-rendered 2026-10-15 → 16 after Steve preferred the v4 A/B ("C"), fidelity-audited with 0 defects. **Series audiobooks stay on `eleven_multilingual_v2`.** Eleven v3 was evaluated and declined (2026-08-28). §1 describes the v2 contract the pipeline was built on; §3 how v4 differs and what was built to support it.

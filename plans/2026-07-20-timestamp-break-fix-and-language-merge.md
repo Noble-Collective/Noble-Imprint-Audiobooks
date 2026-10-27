@@ -1,5 +1,7 @@
 # Plan: Fix audiobook timestamp overlaps + unify `main` with the language layer (gated)
 
+> **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
+
 **Date:** 2026-07-20
 **Author:** Claude (with Steve)
 **Repo:** `Noble-Collective/Noble-Imprint-Audiobooks`
