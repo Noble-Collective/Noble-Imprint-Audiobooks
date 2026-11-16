@@ -9,7 +9,7 @@ This is separate from the main audiobook pipeline (`generate.yml`): it doesn't
 touch `series/` content, book `meta.json`, existing audiobooks, or timestamps.
 It only writes under the GCS prefix `voice-test/{slug}/`.
 
-- **Live page:** https://resources.noblecollective.org/voice-test
+- **Live page:** https://nobleimprint.com/voice-test
 - **Per-passage pages:** `/voice-test/<slug>` (default slug `psalm-1-2`)
 
 ## How to run it

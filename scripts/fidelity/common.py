@@ -19,7 +19,7 @@ import urllib.request
 import jiwer
 from whisper_normalizer.english import EnglishTextNormalizer
 
-API = os.environ.get('AUDIO_API', 'https://resources.noblecollective.org/api/audio/url/')
+API = os.environ.get('AUDIO_API', 'https://nobleimprint.com/api/audio/url/')
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOOKS = json.load(open(os.path.join(HERE, 'books.json')))   # [[slug, display name], …] canonical order
 

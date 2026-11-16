@@ -73,4 +73,4 @@ jobs:
         # Block scalar: a plain `run:` value containing "key: value" is invalid YAML (it
         # broke this whole file from e386697 — every push filed a failed run).
         run: |
-          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://resources.noblecollective.org/api/refresh-audio || true
+          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://nobleimprint.com/api/refresh-audio || true

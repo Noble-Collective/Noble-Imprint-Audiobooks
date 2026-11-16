@@ -219,7 +219,7 @@ Example: adding **Ruth** (code `RUT`), BSB.
    Watch it (`gh run watch <id>`). Confirm it uploaded to `audio/bible/bsb/ruth/` and the
    timestamp guard passed.
 
-5. **Verify the chapter live** — `https://resources.noblecollective.org/bible/bsb/Ruth?chapter=1`
+5. **Verify the chapter live** — `https://nobleimprint.com/bible/bsb/Ruth?chapter=1`
    should show the audio player + paragraph rendering, and the signed URL should resolve:
    `curl -s .../api/audio/url/bible/bsb/ruth/001.mp3`.
 

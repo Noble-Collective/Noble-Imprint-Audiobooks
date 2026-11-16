@@ -103,4 +103,4 @@ jobs:
         env:
           REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
         run: |
-          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://resources.noblecollective.org/api/refresh-audio || true
+          curl -s -X POST -H "x-refresh-key: $REFRESH_SECRET" https://nobleimprint.com/api/refresh-audio || true

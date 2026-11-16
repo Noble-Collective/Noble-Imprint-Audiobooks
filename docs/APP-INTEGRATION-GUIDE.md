@@ -149,24 +149,24 @@ The website exposes two endpoints that handle GCS authentication and return sign
 
 **Get the manifest:**
 ```
-GET https://resources.noblecollective.org/api/audio/manifest/{bookPath}
+GET https://nobleimprint.com/api/audio/manifest/{bookPath}
 ```
 
 Example:
 ```
-GET https://resources.noblecollective.org/api/audio/manifest/A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20II
+GET https://nobleimprint.com/api/audio/manifest/A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20II
 ```
 
 Returns the full manifest JSON (see format below).
 
 **Get a signed URL for any file:**
 ```
-GET https://resources.noblecollective.org/api/audio/url/{bookPath}/{filename}
+GET https://nobleimprint.com/api/audio/url/{bookPath}/{filename}
 ```
 
 Example:
 ```
-GET https://resources.noblecollective.org/api/audio/url/A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20II/02-chapterone.mp3
+GET https://nobleimprint.com/api/audio/url/A%20Library%20of%20Classics/A%20Pastoral%20Shelf/Oration%20II/02-chapterone.mp3
 ```
 
 Returns:
@@ -654,7 +654,7 @@ The website player:
 | GCP project | `noble-imprint-website` |
 | Region | `us-central1` |
 | Access control | Uniform bucket-level (not public) |
-| CORS | Configured for `resources.noblecollective.org` and `localhost:8080` |
+| CORS | Configured for `nobleimprint.com`, `www.nobleimprint.com`, `resources.noblecollective.org` (old host; still serves installed apps) and `localhost:8080` |
 
 **Path pattern:**
 ```

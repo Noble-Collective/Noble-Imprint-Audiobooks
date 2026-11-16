@@ -243,7 +243,7 @@ This blocks the class of bug where a `<break>` tag leaked into the sentence list
 **GCP project:** `noble-imprint-website`
 **Region:** `us-central1`
 **Access:** Uniform bucket-level IAM. NOT public. Served via 1-hour signed URLs.
-**CORS:** Configured for `resources.noblecollective.org` and `localhost:8080`.
+**CORS:** Configured for `nobleimprint.com`, `www.nobleimprint.com`, `resources.noblecollective.org` (old host; still serves installed apps) and `localhost:8080`.
 
 ### Directory Structure
 
