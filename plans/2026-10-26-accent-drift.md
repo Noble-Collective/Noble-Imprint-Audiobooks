@@ -71,6 +71,30 @@ Chapter 28" shape as its other take.
 **Combined: 1 drift in 43 tagged takes (~2%), against 9 in 15 untagged (~60%).** The tag alone isn't a guarantee,
 so the pipeline needs the tag plus a QC re-render of any section that still drifts.
 
+## Build + full scan (2026-11-17)
+
+Steve: re-render everything questionable, check it with the scorer. Built (commit 16c7fbe):
+src/accent.js (tag for Ali on v4, reuse stored takes, tagged preferred), generate.js
+`ACCENT_REDO_FILE` / `DRY_RUN` / `ACCENT_QC` (drift check, up to 3 takes) / backup of replaced
+chunks to `audio/_backup/2026-11-accent-redo`, `accent-scan.yml` (every stored generation, whole).
+
+Scan run 44009801527 scored all 3,711 generations in full (not sampled). Results in
+`data/accent/scan-2026-11-17.json`. Drift is two-humped: a drifted section is ≥ 80% American at
+match 0.60–0.70; normal Ali sits at match 0.74–0.84. The old "likely" rule (≥ 50% pieces < 0.78)
+mostly caught normal Ali's low tail, so the re-render list uses:
+
+| Kind | Rule | Sections |
+|---|---|---|
+| clear | ≥ 25% of pieces US/Canada | 177 |
+| low-match | match < 0.72 | 15 |
+| mixed | ≥ 10% US and match < 0.76 | 22 |
+| borderline | match 0.72–0.74 | 25 |
+| **Total** (`data/accent/redo-full.json`) | | **239 sections, 196 chapters, 46 books** |
+
+Dry run 44015576585: 239 chunks, 257,264 spoken chars ≈ **122K credits** before retries; every
+listed chunk found, nothing unlisted would render. Balance then 776K. Pilot list
+`data/accent/redo-pilot.json` = the 5 experiment sections + 6 others (~5K credits).
+
 ## Next (awaiting Steve)
 
 1. Steve listens to tag takes to check that the accent isn't overdone and still sounds like the Ali he chose.
