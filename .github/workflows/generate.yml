@@ -39,6 +39,10 @@ on:
         description: 'Score each new take for accent drift; re-render a take that still sounds American (up to 3 takes)'
         required: false
         default: 'false'
+      accent_qc_max_takes:
+        description: 'With the drift check: most takes per section before keeping the best one'
+        required: false
+        default: '3'
 
 concurrency:
   group: audiobook-generate
@@ -124,6 +128,7 @@ jobs:
           ACCENT_REDO_FILE: ${{ github.event.inputs.accent_redo_file || '' }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           ACCENT_QC: ${{ github.event.inputs.accent_qc || 'false' }}
+          ACCENT_QC_MAX_TAKES: ${{ github.event.inputs.accent_qc_max_takes || '3' }}
           ACCENT_BACKUP_PREFIX: ${{ github.event.inputs.accent_redo_file && 'audio/_backup/2026-11-accent-redo' || '' }}
 
       - name: Upload accent reports

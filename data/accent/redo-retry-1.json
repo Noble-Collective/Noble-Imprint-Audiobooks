@@ -1,0 +1,33 @@
+{
+ "note": "Sections still American after 3 tagged takes in the full run (2026-11-17); file = the kept tagged take",
+ "chunks": [
+  {
+   "book": "bible/bsb/leviticus",
+   "session": "015.md",
+   "code": "LEV",
+   "chapter": 15,
+   "chunk": 1,
+   "of": 4,
+   "file": "6848636a44629ff2",
+   "chars": 1567,
+   "redo": "retry-still-american",
+   "americanShare": 0.96,
+   "meanSim": 0.637,
+   "start": "Leviticus, Chapter 15. The uncleanness of men. And the LORD said to Mo"
+  },
+  {
+   "book": "bible/bsb/numbers",
+   "session": "003.md",
+   "code": "NUM",
+   "chapter": 3,
+   "chunk": 7,
+   "of": 8,
+   "file": "dfee0b44e042b750",
+   "chars": 467,
+   "redo": "retry-still-american",
+   "americanShare": 1,
+   "meanSim": 0.667,
+   "start": "Moses and aaron. Moses, Aaron, and Aaron’s sons were to camp to the ea"
+  }
+ ]
+}
