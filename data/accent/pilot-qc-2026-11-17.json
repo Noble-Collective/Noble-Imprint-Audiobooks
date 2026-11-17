@@ -1,0 +1,218 @@
+[
+ {
+  "book": "bible/bsb/colossians",
+  "session": "003.md",
+  "chunk": 1,
+  "of": 3,
+  "file": "99a1b7613ce2b6fd",
+  "chars": 1853,
+  "kept": 2,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0.97,
+    "lowShare": 1,
+    "meanSim": 0.646,
+    "pieces": 31
+   },
+   {
+    "take": 2,
+    "americanShare": 0.03,
+    "lowShare": 0.13,
+    "meanSim": 0.819,
+    "pieces": 31
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/psalms",
+  "session": "024.md",
+  "chunk": 1,
+  "of": 1,
+  "file": "b39b1e541ad4fa4c",
+  "chars": 917,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0.06,
+    "lowShare": 0.39,
+    "meanSim": 0.776,
+    "pieces": 18
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/1-corinthians",
+  "session": "013.md",
+  "chunk": 1,
+  "of": 1,
+  "file": "13a31aa3df95c045",
+  "chars": 1393,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 0.23,
+    "meanSim": 0.799,
+    "pieces": 26
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/isaiah",
+  "session": "053.md",
+  "chunk": 1,
+  "of": 2,
+  "file": "467299948bdf3a64",
+  "chars": 1231,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 0.19,
+    "meanSim": 0.8,
+    "pieces": 21
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/genesis",
+  "session": "001.md",
+  "chunk": 7,
+  "of": 7,
+  "file": "4ae7ad8dca8af413",
+  "chars": 1417,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 0.04,
+    "meanSim": 0.825,
+    "pieces": 23
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/1-samuel",
+  "session": "021.md",
+  "chunk": 1,
+  "of": 2,
+  "file": "1b2bd092b2ffef1d",
+  "chars": 1175,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 0.21,
+    "meanSim": 0.797,
+    "pieces": 19
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/mark",
+  "session": "009.md",
+  "chunk": 6,
+  "of": 6,
+  "file": "74996ca1e97dbce4",
+  "chars": 195,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 0.5,
+    "meanSim": 0.715,
+    "pieces": 4
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/song",
+  "session": "001.md",
+  "chunk": 9,
+  "of": 11,
+  "file": "7cc0bc9e2ca38bd9",
+  "chars": 101,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0,
+    "lowShare": 1,
+    "meanSim": 0.643,
+    "pieces": 2
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/joshua",
+  "session": "015.md",
+  "chunk": 3,
+  "of": 4,
+  "file": "837025dca0a25809",
+  "chars": 1892,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0.03,
+    "lowShare": 0.82,
+    "meanSim": 0.676,
+    "pieces": 38
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/1-chronicles",
+  "session": "001.md",
+  "chunk": 3,
+  "of": 5,
+  "file": "c42ebb8f28ddd209",
+  "chars": 223,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0.17,
+    "lowShare": 0.67,
+    "meanSim": 0.73,
+    "pieces": 6
+   }
+  ]
+ },
+ {
+  "book": "bible/bsb/1-chronicles",
+  "session": "001.md",
+  "chunk": 4,
+  "of": 5,
+  "file": "101f57310a030109",
+  "chars": 421,
+  "kept": 1,
+  "stillAmerican": false,
+  "takes": [
+   {
+    "take": 1,
+    "americanShare": 0.1,
+    "lowShare": 0.8,
+    "meanSim": 0.71,
+    "pieces": 10
+   }
+  ]
+ }
+]

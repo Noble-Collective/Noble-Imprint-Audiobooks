@@ -95,6 +95,16 @@ Dry run 44015576585: 239 chunks, 257,264 spoken chars ≈ **122K credits** befor
 listed chunk found, nothing unlisted would render. Balance then 776K. Pilot list
 `data/accent/redo-pilot.json` = the 5 experiment sections + 6 others (~5K credits).
 
+### Pilot (run 44070540096, 2026-11-17, ~5.1K credits + 1 retry)
+
+11 sections re-rendered with the tag and drift check, published live (website notified), every
+chapter's timestamps from the alignment. Report `data/accent/pilot-qc-2026-11-17.json`.
+COL 3 #1 drifted AGAIN even tagged (97% US, match 0.65); the check caught it and take 2 was fine
+(3% US, 0.82) — the QC gate earns its keep. The other 10 passed first take (0–17% US).
+Note: the name-list sections (JOS 15 #3 0.68, 1CH 1 #3/#4 0.71–0.73, SNG 1 #9 0.64 on 2 pieces)
+still score low match with ~0% US — low match there is the content (place/person names, very
+short), not drift. So the low-match/borderline tiers are largely scorer noise; ear check decides.
+
 ## Next (awaiting Steve)
 
 1. Steve listens to tag takes to check that the accent isn't overdone and still sounds like the Ali he chose.
