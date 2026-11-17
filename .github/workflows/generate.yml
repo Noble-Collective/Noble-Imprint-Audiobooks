@@ -27,6 +27,18 @@ on:
       bible_chapters:
         description: 'Chapter range for the bible book, e.g. 1 or 1-4 (default: all enabled)'
         required: false
+      accent_redo_file:
+        description: 'Accent re-render list in this repo (e.g. data/accent/redo-pilot.json): re-render ONLY those stored chunks, with the accent tag. Overrides the other filters.'
+        required: false
+        default: ''
+      dry_run:
+        description: 'With accent_redo_file: print what would be rendered + credits, render nothing'
+        required: false
+        default: 'true'
+      accent_qc:
+        description: 'Score each new take for accent drift; re-render a take that still sounds American (up to 3 takes)'
+        required: false
+        default: 'false'
 
 concurrency:
   group: audiobook-generate
@@ -36,7 +48,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 350
 
     steps:
       - name: Checkout audiobook tooling
@@ -73,10 +85,22 @@ jobs:
       - name: Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
+      - uses: actions/setup-python@v6
+        if: ${{ github.event.inputs.accent_qc == 'true' }}
+        with:
+          python-version: '3.12'
+
+      - name: Install accent drift check
+        if: ${{ github.event.inputs.accent_qc == 'true' }}
+        run: |
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q speechbrain soundfile numpy
+
       - name: Detect changes
         id: detect
         run: node src/detect-changes.js
         env:
+          ACCENT_REDO_FILE: ${{ github.event.inputs.accent_redo_file || '' }}
           RESOURCES_PATH: resources
           GCS_BUCKET: noble-imprint-audiobooks
           FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
@@ -97,9 +121,23 @@ jobs:
           WORK_FILE: ${{ steps.detect.outputs.work_file }}
           BOOK_PATH_FILTER: ${{ github.event.inputs.book_path || '' }}
           FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
+          ACCENT_REDO_FILE: ${{ github.event.inputs.accent_redo_file || '' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          ACCENT_QC: ${{ github.event.inputs.accent_qc || 'false' }}
+          ACCENT_BACKUP_PREFIX: ${{ github.event.inputs.accent_redo_file && 'audio/_backup/2026-11-accent-redo' || '' }}
+
+      - name: Upload accent reports
+        if: ${{ always() && github.event.inputs.accent_redo_file != '' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: accent-redo-reports
+          path: |
+            accent-qc-report.json
+            accent-redo-plan.json
+          if-no-files-found: ignore
 
       - name: Notify website
-        if: steps.detect.outputs.has_work == 'true'
+        if: steps.detect.outputs.has_work == 'true' && !(github.event.inputs.accent_redo_file != '' && github.event.inputs.dry_run == 'true')
         env:
           REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
         run: |

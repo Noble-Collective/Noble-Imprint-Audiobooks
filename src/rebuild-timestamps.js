@@ -32,7 +32,8 @@ import { writeFileSync, mkdirSync, rmSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
-import { buildChunks, hashChunk, buildTimestampsFromAlignments, serializeTimestamps } from './generate.js';
+import { buildChunks, buildTimestampsFromAlignments, serializeTimestamps } from './generate.js';
+import { resolveChunkHashes } from './accent.js';
 import { buildSentenceIndex } from './preprocess-tts.js';
 
 const MODE = process.env.MODE || 'dry-run';
@@ -160,9 +161,12 @@ async function processSession(src, bookSlugPath, s, workDir) {
   for (const strategy of [...new Set([s.chunkingStrategy, 'section', 'linear'].filter(Boolean))]) {
     // Same pause markup + cache key the session was narrated with (v4: tags + model key).
     const b = buildChunks(tts.blocks, tts.plainText, strategy, undefined, s.pauseStyle || 'ssml');
-    const hs = b.chunks.map(c => hashChunk(c, s.chunkKey || ''));
-    if (hs.length === (s.chunkCount ?? hs.length) && hs.every(h => want.has(h)) && new Set(hs).size === want.size) {
-      built = { ...b, hashes: hs, strategy }; break;
+    // Each chunk as narrated: plain, or with the accent tag where it was re-rendered (accent.js).
+    const r = resolveChunkHashes(b.chunks, s.chunkKey || '', want, s.accentTag || '');
+    if (!r) continue;
+    const hs = r.hashes;
+    if (hs.length === (s.chunkCount ?? hs.length) && new Set(hs).size === want.size) {
+      built = { ...b, chunks: r.chunks, hashes: hs, strategy }; break;
     }
   }
   if (!built) return { ...r, status: 'skip', reason: 'chunks rebuilt from tts.json do not hash to the manifest' };

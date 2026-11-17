@@ -39,9 +39,11 @@ export const HEADING_PAUSE = { h1: 'title', h2: 'section', h3: 'subsection', h4:
 // Measured tag lengths (see header) — used where code compares two adjacent pauses.
 const TAG_SECONDS = { '[long pause]': 1.8, '[short pause]': 0.7, '[pause]': 1.0 };
 
-export const PAUSE_MARKUP_RE = /<break[^>]*\/>|\[(?:short |long )?pause\]/g;
+// Also the accent tag ("[Saudi Arabic accent] " — accent.js), with its trailing space: not
+// spoken, but in the alignment like a pause tag, so the timestamp builder skips it the same way.
+export const PAUSE_MARKUP_RE = /<break[^>]*\/>|\[(?:short |long )?pause\]|\[[A-Z][A-Za-z ]* accent\] ?/g;
 // Same, anchored for "is there pause markup at this exact position" scans.
-const PAUSE_AT_RE = /<break[^>]*\/>|\[(?:short |long )?pause\]/y;
+const PAUSE_AT_RE = /<break[^>]*\/>|\[(?:short |long )?pause\]|\[[A-Z][A-Za-z ]* accent\] ?/y;
 
 /** Which markup a model understands. */
 export function pauseStyleForModel(modelId) {

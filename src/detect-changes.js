@@ -23,6 +23,7 @@ import { Storage } from '@google-cloud/storage';
 import { preprocessSession, narrationOptions } from './preprocess-tts.js';
 import { bookAudiobookConfig } from './audiobook-config.js';
 import { usfmBookToChapters, findBookFile, parseChapterRange } from './usfm-to-markdown.js';
+import { loadRedo } from './accent-redo.js';
 
 const RESOURCES_PATH = process.env.RESOURCES_PATH || '../Noble-Imprint-Resources';
 const GCS_BUCKET = process.env.GCS_BUCKET || 'noble-imprint-audiobooks';
@@ -109,7 +110,7 @@ async function loadManifest(bookSlugPath) {
  * Slug layout: bookSlugPath = "bible/{tx}/{book-slug}" → GCS audio/bible/{tx}/{book-slug}/.
  * Each chapter is a "session" file "NNN.md" (zero-padded chapter number) → slug "NNN".
  */
-async function findBibleWorkItems(tx, code, chaptersOverride) {
+async function findBibleWorkItems(tx, code, chaptersOverride, onlyChapters = null) {
   const metaPath = join(RESOURCES_PATH, 'bibles', tx, 'meta.json');
   if (!existsSync(metaPath)) { console.warn(`[bible] no meta.json for ${tx}`); return []; }
   const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
@@ -131,7 +132,10 @@ async function findBibleWorkItems(tx, code, chaptersOverride) {
   const bookSlugPath = `bible/${tx}/${bookSlug}`;
 
   const range = parseChapterRange(chaptersOverride || cfg.chapters || 'true');
-  const selected = range ? chapters.filter(c => c.chapter >= range.lo && c.chapter <= range.hi) : chapters;
+  let selected = range ? chapters.filter(c => c.chapter >= range.lo && c.chapter <= range.hi) : chapters;
+  // Accent re-render: exactly the listed chapters, included whatever their content hash
+  // (generate.js then renders only the listed chunks and reuses the rest).
+  if (onlyChapters) selected = chapters.filter(c => onlyChapters.has(c.chapter));
 
   console.log(`Checking bible book: ${bookRepoPath} (${bookName}) — ${selected.length} chapter(s) → ${bookSlugPath}`);
 
@@ -150,8 +154,8 @@ async function findBibleWorkItems(tx, code, chaptersOverride) {
     if (SESSION_FILTER && sessionFile !== SESSION_FILTER) continue;
     const pre = preprocessSession(ch.markdown, voiceId, meta.language || 'en', bookAb.language_normalization === true, narrationOptions(bookAb));
     const hash = `sha256:${createHash('sha256').update(pre.plainText).digest('hex')}`;
-    if (FORCE || hash !== existingHashes[sessionFile]) {
-      console.log(`  ${sessionFile} (ch ${ch.chapter}) — needs regeneration (${FORCE ? 'forced' : existingHashes[sessionFile] ? 'content changed' : 'new'})`);
+    if (FORCE || onlyChapters || hash !== existingHashes[sessionFile]) {
+      console.log(`  ${sessionFile} (ch ${ch.chapter}) — needs regeneration (${onlyChapters ? 'accent re-render list' : FORCE ? 'forced' : existingHashes[sessionFile] ? 'content changed' : 'new'})`);
       items.push({
         bookRepoPath, bookSlugPath, sessionFile,
         contentHash: hash, meta: bookAb,
@@ -167,6 +171,17 @@ async function findBibleWorkItems(tx, code, chaptersOverride) {
 
 async function main() {
   const workItems = [];
+
+  // Accent re-render run: every chapter on the list (any number of Bible books), nothing else.
+  const redo = loadRedo();
+  if (redo) {
+    const byCode = redo.chaptersByCode();
+    console.log(`Accent re-render: ${redo.count} chunk(s) in ${Object.values(byCode).reduce((n, s) => n + s.size, 0)} chapter(s) of ${Object.keys(byCode).length} book(s)`);
+    for (const [code, chs] of Object.entries(byCode)) {
+      workItems.push(...await findBibleWorkItems(BIBLE_TRANSLATION, code, '', chs));
+    }
+    return finish(workItems);
+  }
 
   // Bible-only run: generate a single scripture book, skip the series scan entirely.
   if (BIBLE_BOOK) {

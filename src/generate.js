@@ -12,6 +12,16 @@
  *   RESOURCES_PATH - path to checked-out Resources repo
  *   RESOURCES_TOKEN - GitHub PAT for committing back
  *   WORK_FILE - path to changed_sessions.json from detect-changes.js
+ *
+ * Accent re-render (plans/2026-10-26-accent-drift.md, src/accent.js, src/accent-redo.js):
+ *   ACCENT_REDO_FILE - JSON list of stored chunk files to render again with the accent tag;
+ *                      every other chunk must come from storage (else the run stops: no
+ *                      unplanned spend) unless ACCENT_REDO_STRICT=false
+ *   DRY_RUN=true     - (with ACCENT_REDO_FILE) print what would be rendered + its cost; no TTS,
+ *                      no writes
+ *   ACCENT_QC=true   - score every new take (scripts/accent-check/score.py); a take that still
+ *                      sounds American is rendered again, up to ACCENT_QC_MAX_TAKES
+ *   ACCENT_BACKUP_PREFIX - copy each replaced chunk here before it is deleted
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, renameSync } from 'node:fs';
@@ -20,6 +30,8 @@ import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
 import { pause, stripPauses, pauseMarkupLengthAt, pauseStyleForModel, PAUSES, HEADING_PAUSE } from './pauses.js';
+import { accentTagFor, pickChunk } from './accent.js';
+import { loadRedo, startScorer, ACCENT_QC_MAX_TAKES, isAmerican } from './accent-redo.js';
 
 const API_BASE = 'https://api.elevenlabs.io/v1';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
@@ -848,6 +860,16 @@ async function main() {
 
   let grandTotalChars = 0, grandTotalDuration = 0, grandTotalRegen = 0, grandTotalReused = 0, grandTotalSessions = 0;
 
+  // Accent re-render: which stored chunks to render again; dry run; the drift check.
+  const REDO = loadRedo();
+  const dryRun = !!REDO && process.env.DRY_RUN === 'true';
+  const strictRedo = process.env.ACCENT_REDO_STRICT !== 'false';
+  const scorer = !dryRun && process.env.ACCENT_QC === 'true' ? startScorer() : null;
+  const backupPrefix = process.env.ACCENT_BACKUP_PREFIX || '';
+  const qcReport = [];
+  const dry = { chunks: 0, chars: 0, unexpected: 0, unmatched: 0 };
+  if (REDO) console.log(`[REDO] ${REDO.count} stored chunk(s) listed for re-render${dryRun ? ' — DRY RUN (no TTS, no writes)' : ''}${scorer ? ', drift check ON' : ''}`);
+
   for (const [bookRepoPath, items] of Object.entries(bookGroups)) {
     const bookSlugPath = items[0].bookSlugPath;
     const meta = items[0].meta;
@@ -890,11 +912,42 @@ async function main() {
         console.log(`    SECTION strategy: ${chunks.length} generation(s)${capSplits ? `, ${capSplits} cap-split` : ''}, silences ${chunkGaps.filter(g => g > 0).map(g => g + 's').join('/')}`);
       }
       const key = chunkKey(meta, voiceId);
-      const chunkHashes = chunks.map(c => hashChunk(c, key));
 
       // Build hash→file map from existing manifest (supports old and new format)
       const existingHashMap = getExistingHashMap(existingManifest, item.sessionFile);
       const gcsChunksDir = `audio/${bookSlugPath}/chunks/${slug}`;
+
+      // Per chunk: reuse the stored take (tagged preferred), or render — with the accent tag
+      // where the voice needs one (accent.js). chunks[] becomes the NARRATED text (tag
+      // included) because the alignment, the hash and the timestamps all index by it.
+      const accentTag = accentTagFor(meta, voiceId);
+      const redoSet = REDO ? REDO.forSession(bookSlugPath, item.sessionFile) : new Set();
+      const baseChunks = chunks.slice();
+      const picks = baseChunks.map(text => pickChunk({ text, key, tag: accentTag, existing: existingHashMap, redo: redoSet, force: forceRegen }));
+      picks.forEach((p, c) => { chunks[c] = p.text; });
+      const chunkHashes = picks.map(p => p.hash);
+      if (REDO) {
+        const listedHere = new Set();
+        picks.forEach((p, c) => {
+          const f0 = existingHashMap[hashChunk(baseChunks[c], key)], f1 = existingHashMap[p.hash];
+          if (redoSet.has(f0)) listedHere.add(f0);
+          if (redoSet.has(f1)) listedHere.add(f1);
+          if (p.reuse) return;
+          const planned = redoSet.has(f0) || redoSet.has(f1);
+          const spoken = stripPauses(p.text).length;
+          console.log(`    [REDO] chunk ${c + 1}/${chunks.length} ${planned ? 're-render' : 'NOT LISTED, not in storage'} (${spoken} spoken chars)${accentTag ? ' tagged' : ''}`);
+          if (!planned) {
+            dry.unexpected++;
+            if (strictRedo && !dryRun) throw new Error(`${bookSlugPath} ${item.sessionFile} chunk ${c + 1} is not on the re-render list and not in storage — stopping before unplanned spend (ACCENT_REDO_STRICT=false to allow)`);
+          }
+          dry.chunks++; dry.chars += spoken;
+        });
+        for (const f of redoSet) if (!listedHere.has(f)) {
+          dry.unmatched++;
+          console.log(`    [REDO] listed file ${f} is not a chunk of this chapter any more (content changed?) — skipped`);
+        }
+        if (dryRun) continue;
+      }
 
       let regeneratedCount = 0;
       let reusedCount = 0;
@@ -916,7 +969,7 @@ async function main() {
         // Check if this chunk's content hash exists in any previous chunk (regardless of index).
         // force_regenerate bypasses chunk-level reuse too, so a forced run truly re-does TTS
         // even when the chunk text is unchanged (e.g. after a generation-code change).
-        const existingFile = forceRegen ? undefined : existingHashMap[hash];
+        const existingFile = picks[c].reuse;
         if (existingFile) {
           try {
             await downloadFromGCS(`${gcsChunksDir}/${existingFile}.mp3`, chunkPath);
@@ -957,13 +1010,34 @@ async function main() {
         // doesn't bleed words.
         const flowsFromPrev = strategy === 'section' ? !!continuations[c] : c > 0;
         const flowsIntoNext = strategy === 'section' ? !!continuations[c + 1] : c < chunks.length - 1;
-        const prevText = (flowsFromPrev && c > 0) ? chunks[c - 1].slice(-200) : undefined;
-        const nextChunkText = (flowsIntoNext && c < chunks.length - 1) ? chunks[c + 1].slice(0, 200) : undefined;
-        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
-        const result = await generateWithRetry(
+        // Context text without the accent tag (it isn't narration).
+        const prevText = (flowsFromPrev && c > 0) ? baseChunks[c - 1].slice(-200) : undefined;
+        const nextChunkText = (flowsIntoNext && c < chunks.length - 1) ? baseChunks[c + 1].slice(0, 200) : undefined;
+        console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${chunks[c] !== baseChunks[c] ? ' [accent tag]' : ''}${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
+        const render = () => generateWithRetry(
           chunks[c], voiceId, meta.model_id, meta.voice_settings,
           meta.output_format || 'mp3_44100_128', prevText, nextChunkText, prevIds
         );
+        let result = await render();
+        // Drift check: score the take; one that still sounds American is rendered again
+        // (kept: the least American take). Tagged takes drifted ~1 in 43 in the experiments.
+        if (scorer && accentTag) {
+          const takes = [];
+          for (let t = 1; ; t++) {
+            writeFileSync(chunkPath, result.audio);
+            const s = await scorer.score(chunkPath);
+            takes.push({ take: t, result, score: s });
+            console.log(`      drift check take ${t}: american ${Math.round(s.americanShare * 100)}%, match ${s.meanSim} → ${isAmerican(s) ? 'AMERICAN' : 'ok'}`);
+            if (!isAmerican(s) || t >= ACCENT_QC_MAX_TAKES) break;
+            result = await render();
+          }
+          const best = takes.reduce((a, b) => (b.score.americanShare < a.score.americanShare
+            || (b.score.americanShare === a.score.americanShare && b.score.meanSim > a.score.meanSim) ? b : a));
+          result = best.result;
+          qcReport.push({ book: bookSlugPath, session: item.sessionFile, chunk: c + 1, of: chunks.length, file: gcsName,
+            chars: stripPauses(chunks[c]).length, kept: best.take, stillAmerican: isAmerican(best.score),
+            takes: takes.map(x => ({ take: x.take, americanShare: x.score.americanShare, lowShare: x.score.lowShare, meanSim: x.score.meanSim, pieces: x.score.pieces })) });
+        }
         if (result.requestId) generatedRequestIds.push(result.requestId);
         writeFileSync(chunkPath, result.audio);
         chunkAlignments.push(result.alignment);
@@ -986,6 +1060,11 @@ async function main() {
       const activeHashes = new Set(Object.values(newHashToFile));
       for (const [oldHash, oldFile] of Object.entries(existingHashMap)) {
         if (!activeHashes.has(oldFile)) {
+          if (backupPrefix) {
+            for (const ext of ['mp3', 'align.json']) {
+              try { await bucket.file(`${gcsChunksDir}/${oldFile}.${ext}`).copy(bucket.file(`${backupPrefix}/${bookSlugPath}/chunks/${slug}/${oldFile}.${ext}`)); } catch { /* none */ }
+            }
+          }
           try { await bucket.file(`${gcsChunksDir}/${oldFile}.mp3`).delete(); } catch { /* already gone */ }
           try { await bucket.file(`${gcsChunksDir}/${oldFile}.align.json`).delete(); } catch { /* already gone */ }
         }
@@ -1081,10 +1160,12 @@ async function main() {
         modelId: meta.model_id || LEGACY_MODEL,   // which ElevenLabs model narrated it
         pauseStyle,                               // pause markup in its chunks (pauses.js)
         ...(key ? { chunkKey: key } : {}),        // cache-key prefix (non-v2 models)
+        ...(accentTag ? { accentTag } : {}),      // tag on new/re-rendered chunks (accent.js)
         ...(tailSeconds ? { tailSilenceSeconds: tailSeconds } : {}),   // chapter-end silence
       });
     }
 
+    if (dryRun) continue;
     await updateManifest(bookSlugPath, bookRepoPath, sessionResults);
 
     const totalDuration = sessionResults.reduce((s, r) => s + r.durationSeconds, 0);
@@ -1117,6 +1198,23 @@ async function main() {
   console.log(`[AUDIT] Sessions: ${grandTotalSessions} | Characters: ${grandTotalChars.toLocaleString()} | Audio: ${Math.floor(grandTotalDuration / 60)}m ${grandTotalDuration % 60}s`);
   console.log(`[AUDIT] Chunks: ${grandTotalRegen} generated, ${grandTotalReused} reused`);
   console.log('[AUDIT] ═══════════════════════════════════════════');
+
+  if (REDO) {
+    // v4 bills ~0.475 credits per spoken character (docs/ELEVENLABS-MODELS.md).
+    console.log(`[REDO] ${dry.chunks} chunk(s) to render, ${dry.chars.toLocaleString()} spoken chars ≈ ${Math.round(dry.chars * 0.475).toLocaleString()} credits before drift-check retries`
+      + `${dry.unexpected ? ` | ${dry.unexpected} NOT LISTED (not in storage)` : ''}${dry.unmatched ? ` | ${dry.unmatched} listed file(s) no longer in their chapter` : ''}`);
+    if (dryRun) {
+      writeFileSync(process.env.ACCENT_REDO_PLAN || 'accent-redo-plan.json', JSON.stringify(dry, null, 2));
+      if (dry.unexpected && strictRedo) { console.error('[REDO] dry run found chunks that would be rendered without being listed'); process.exitCode = 1; }
+    }
+  }
+  if (scorer) {
+    await scorer.close();
+    const reportPath = process.env.ACCENT_QC_REPORT || 'accent-qc-report.json';
+    writeFileSync(reportPath, JSON.stringify(qcReport, null, 1));
+    const retaken = qcReport.filter(r => r.takes.length > 1).length, still = qcReport.filter(r => r.stillAmerican).length;
+    console.log(`[QC] ${qcReport.length} new take(s) checked; ${retaken} needed another take; ${still} still American after ${ACCENT_QC_MAX_TAKES} takes → ${reportPath}`);
+  }
 
   console.log('\nGeneration complete!');
 }

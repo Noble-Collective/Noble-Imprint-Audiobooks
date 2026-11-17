@@ -56,6 +56,37 @@ def score(path):
     return {"file": os.path.basename(path), "pieces": len(rows), "meanSim": round(float(sims.mean()), 3),
             "lowShare": round(low, 2), "americanShare": round(na, 2), "drifted": na >= NA_SHARE or low >= LOW_SHARE, "detail": rows}
 
+if __name__ == "__main__" and sys.argv[1:2] == ["--serve"]:
+    # Long-lived mode for generate.js's drift check (src/accent-redo.js): one MP3 path per
+    # stdin line → one "SCORE {json}" stdout line (no per-piece detail).
+    for line in sys.stdin:
+        p = line.strip()
+        if not p:
+            continue
+        try:
+            r = score(p); r.pop("detail", None)
+        except Exception as e:  # noqa: BLE001 — report, keep serving
+            r = {"file": os.path.basename(p), "error": str(e)}
+        print("SCORE " + json.dumps(r), flush=True)
+    sys.exit(0)
+
+if __name__ == "__main__" and sys.argv[1:2] == ["--list"]:
+    # Batch mode for the whole-Bible scan: argv[2] = a text file of MP3 paths, argv[3] = out JSON.
+    # Keeps a compact per-piece detail ([t, sim, accent]) so a section can be re-classified later.
+    paths = [l.strip() for l in open(sys.argv[2]) if l.strip()]
+    res = []
+    for i, p in enumerate(paths):
+        try:
+            r = score(p)
+            r["detail"] = [[d["t"], d["sim"], d["accent"]] for d in r["detail"]]
+        except Exception as e:  # noqa: BLE001
+            r = {"file": os.path.basename(p), "error": str(e)}
+        res.append(r)
+        if i % 25 == 0:
+            print(f"{i + 1}/{len(paths)} {r['file']}", flush=True)
+    json.dump(res, open(sys.argv[3], "w"))
+    sys.exit(0)
+
 if __name__ == "__main__":
     d = sys.argv[1]
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(d, "scores.json")

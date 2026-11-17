@@ -1,0 +1,120 @@
+name: Accent-drift scan
+
+# Scores EVERY stored Bible generation (chunk) for accent drift — speaker match to Ali + accent
+# label per ~4 s piece (scripts/accent-check/score.py) — and writes the re-render lists for the
+# accent re-render (plans/2026-10-26-accent-drift.md). Read-only: no ElevenLabs, no writes to GCS.
+# Output = Actions artifact "accent-scan" (accent-scan.json, summary.md, redo-*.json).
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_filter:
+        description: 'Only books whose slug path contains this (e.g. bible/bsb/colossians); empty = whole Bible'
+        required: false
+        default: ''
+      shards:
+        description: 'Parallel scoring jobs'
+        required: false
+        default: '24'
+
+concurrency:
+  group: accent-scan
+  cancel-in-progress: false
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      shards: ${{ steps.list.outputs.shards }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - run: npm ci
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: List stored generations
+        id: list
+        run: |
+          node scripts/accent-check/list-chunks.mjs
+          echo "shards=$(node -e "console.log(JSON.stringify([...Array(+process.env.SHARDS).keys()]))")" >> "$GITHUB_OUTPUT"
+        env:
+          BOOK_FILTER: ${{ github.event.inputs.book_filter }}
+          SHARDS: ${{ github.event.inputs.shards }}
+      - uses: actions/upload-artifact@v5
+        with:
+          name: chunk-list
+          path: |
+            chunks.json
+            shards/
+
+  score:
+    needs: list
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.list.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: chunk-list
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install scorer
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q speechbrain soundfile numpy
+      - name: Download this shard's audio
+        run: |
+          mkdir -p audio
+          [ -s shards/${{ matrix.shard }}.txt ] || exit 0
+          gcloud storage cp -I audio/ < shards/${{ matrix.shard }}.txt
+          ls audio | wc -l
+      - name: Score
+        run: |
+          mkdir -p scores
+          ls -1 "$PWD"/audio/*.mp3 > paths.txt 2>/dev/null || true
+          [ -s paths.txt ] || { echo '[]' > scores/${{ matrix.shard }}.json; exit 0; }
+          python scripts/accent-check/score.py --list paths.txt scores/${{ matrix.shard }}.json
+      - uses: actions/upload-artifact@v5
+        with:
+          name: scores-${{ matrix.shard }}
+          path: scores/
+
+  merge:
+    needs: [list, score]
+    if: always() && needs.list.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - uses: actions/download-artifact@v5
+        with:
+          name: chunk-list
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: scores-*
+          path: scores
+          merge-multiple: true
+      - name: Classify
+        run: |
+          node scripts/accent-check/merge-scan.mjs chunks.json scores out
+          cat out/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: accent-scan
+          path: out/
