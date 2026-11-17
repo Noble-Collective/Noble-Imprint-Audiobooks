@@ -105,7 +105,37 @@ Note: the name-list sections (JOS 15 #3 0.68, 1CH 1 #3/#4 0.71–0.73, SNG 1 #9 
 still score low match with ~0% US — low match there is the content (place/person names, very
 short), not drift. So the low-match/borderline tiers are largely scorer noise; ear check decides.
 
-## Next (awaiting Steve)
+Steve listened to the pilot: "They sound good definitely run the full set".
+
+### Full re-render (2026-11-17) — DONE, LIVE
+
+- Remaining 228 sections in 3 batches (`data/accent/redo-batch-{1,2,3}.json`), runs 44076670387,
+  44082894714, 44090267415, ~40–57 min each. 255 takes; 18 sections needed a re-take; 6 kept "still
+  American" after 3 takes. Report `data/accent/full-qc-2026-11-17.json`.
+- Of those 6, 4 are 2–4-piece sections where one piece reads US every take at normal match (DAN 12
+  #2, LUK 4 #2, NUM 26 #11, PRO 24 #2) — scorer noise, not drift. 2 were real: LEV 15 #1 and NUM 3 #7.
+  Retry run 44100017689 (`redo-retry-1.json`, new `accent_qc_max_takes` input = 8): LEV 15 passed
+  take 1; NUM 3 #7 drifted 7 of 8 takes and passed on take 8 (12% US, match 0.80).
+- Credits ≈ 133K all in (pilot ~6K, batches ~125K incl. retries, retry run ~2.5K).
+
+### Re-score (run 44100867560, whole Bible, 3,711 generations)
+
+`data/accent/scan-2026-11-17-after.json`. With the same tiers as the redo list:
+
+| | Before | After |
+|---|---|---|
+| clear (≥ 25% US) | 177 | 4 (2–4 pieces each, the noise above) |
+| low-match | 15 | 7 |
+| mixed | 22 | 6 |
+| borderline | 25 | 13 |
+
+All 30 still flagged are fresh tagged takes the drift check already passed: short sections and name
+lists (JOS 15, 1CH 1/9, SNG 1–2, GEN 10/46, NUM 26). Steve heard JOS 15, 1CH 1, SNG 1, MRK 9 in the
+pilot and approved them. No section anywhere is ≥ 50% American except DAN 12 #2 (1 of 2 pieces).
+No untouched section was newly flagged. **Done.** Anything new rendered for Ali on v4 now gets the
+tag automatically; run with `accent_qc=true` to also check it.
+
+## Original next steps (all done)
 
 1. Steve listens to tag takes to check that the accent isn't overdone and still sounds like the Ali he chose.
 2. Pipeline changes:
