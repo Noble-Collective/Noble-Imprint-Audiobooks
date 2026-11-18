@@ -51,6 +51,9 @@ When a session has an entry in `voice_test_map`, that voice is used instead of t
 - Go to **Actions -> Generate Audiobook -> Run workflow**
 - Optional: `book_path` filter to limit to one book (e.g., `A Library of Classics/A Pastoral Shelf/Oration II`)
 - Optional: `force_regenerate=true` to regenerate everything (ignores chunk hashes)
+- Optional (Ali on Eleven v4): `accent_qc=true` scores each new take and re-renders any that lose the accent
+  (`accent_qc_max_takes`, default 3); `accent_redo_file=data/accent/<list>.json` re-renders only listed
+  sections (`dry_run` defaults to true). See docs/ELEVENLABS-MODELS.md "Accent drift".
 
 There is also a **Find Voices** workflow (`Actions -> Find Voices -> Run workflow`) that searches the ElevenLabs voice library and lists workspace voices.
 
@@ -86,6 +89,7 @@ All `meta.json` `audiobook` fields:
   rebuild-timestamps.yml -- rebuild .timestamps.json from stored chunk alignments (0 credits)
   pad-chapter-tail.yml -- add the 2 s chapter-end silence to already-rendered chapters (0 credits)
   fidelity-audit.yml   -- Whisper + Vosk check that the audio says the text (free; scripts/fidelity/)
+  accent-scan.yml      -- score every stored Bible generation for accent drift (free; scripts/accent-check/)
   model-ab.yml         -- whole-chapter model/text-fix A/B published to /voice-test/ab-*
   v4-probe.yml         -- short Eleven v4 API probe (kept for re-checking model behaviour)
   voice-compare.yml    -- render one passage in many voices for /voice-test

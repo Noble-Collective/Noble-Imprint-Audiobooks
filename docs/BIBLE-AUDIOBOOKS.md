@@ -318,6 +318,12 @@ generated before normalization existed.
    A book whose name isn't in that list falls back to sentence-casing (still fine, just not
    "…, Chapter N"). Add the name to `EN_BOOKS` if needed.
 
+8. **Ali can lose his accent on v4.** Every Ali/v4 generation gets an automatic
+   `[Saudi Arabic accent]` tag, but a section can still come out North American. Run new or
+   changed Bible renders with `accent_qc=true` (drift check + re-takes). To check the whole Bible
+   for free, run `accent-scan.yml`. See ELEVENLABS-MODELS.md "Accent drift" (whole Bible fixed
+   2026-11-17).
+
 ---
 
 ## 9. Cost model
@@ -345,6 +351,8 @@ typically 1–5K credits. Earlier v2 history: 2 Timothy + Proverbs ≈ 52K credi
 - [ ] Live page shows the player + paragraph rendering; signed MP3/timestamps URLs resolve.
 - [ ] Highlight tracks narration (spot-check by ear on 1–2 chapters).
 - [ ] Chapter title reads correctly (spelled-out ordinal for numbered books).
+- [ ] Ali on v4: rendered with `accent_qc=true`, or checked afterwards with **`accent-scan.yml`**
+      (free; anything ≥ 25% US/Canada → listen, then re-render with `accent_redo_file`).
 - [ ] After a large re-render: run **`fidelity-audit.yml`** (Whisper + Vosk, both-engine
       consensus; free, ~2–3 h for the whole Bible, `filter` for a book). Tier 1 = listen.
 

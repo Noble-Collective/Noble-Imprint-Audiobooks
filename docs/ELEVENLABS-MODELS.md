@@ -137,3 +137,32 @@ makes it only when `VARIANTS` includes `C2`). Steve chose **C** (v4, natural pac
   sound slightly different from its neighbours; re-render a whole book if that matters.
 - **Fidelity:** `fidelity-audit.yml` after any large render. v4 Bible: 0 defects
   (`plans/2026-10-18-v4-fidelity-audit.md`).
+
+### Accent drift + the accent tag (found 2026-10-26, fixed 2026-11-17)
+
+v4 deliberately does **not** carry a voice's native accent into another language, and it decides
+**per request**. Ali (an Arabic-language library voice) therefore sometimes read a whole
+generation (one Bible section) in a North American accent, then snapped back at the next heading.
+Higher similarity/stability did not help. What works:
+
+- **`[Saudi Arabic accent]` before the text.** `src/accent.js` adds it automatically to every
+  generation for Ali on `eleven_v3`/`eleven_v4` (`meta.audiobook.accent_tag`: a string overrides
+  it, `false` turns it off). It is not spoken; `src/pauses.js` `PAUSE_MARKUP_RE` skips it in the
+  alignment, so timestamps are unchanged. Tagged: ~2% of takes drift; untagged: ~60%.
+- **The tag is not a guarantee** (Numbers 3, part 7 drifted on 7 of 8 tagged takes). So render Ali on
+  v4 with the **drift check**: `generate.yml` `accent_qc=true` scores each new take with
+  `scripts/accent-check/score.py` (speechbrain speaker match + CommonAccent) and re-renders a take
+  where ≥ 25% of ~4 s pieces sound US/Canada, up to `accent_qc_max_takes` (default 3), keeping
+  the best one.
+- **Free whole-Bible check:** `accent-scan.yml` (~1 h, 24 shards) scores every stored generation.
+  Drifted sections score ≥ 80% American at match 0.60–0.70; normal Ali sits at 0.74–0.84. Very short
+  sections (2–4 pieces) and name lists (Joshua 15, 1 Chronicles 1) score low or flag one piece
+  without drifting, so listen before re-rendering those.
+- **Re-rendering listed sections only:** `generate.yml` `accent_redo_file=data/accent/<list>.json`
+  (rows `{book, session, code, chapter, chunk, file}`). `dry_run` defaults to **true** (free:
+  checks the list and prints the credit estimate). Replaced chunks are backed up to
+  `audio/_backup/2026-11-accent-redo/`. Stored untagged chunks keep being reused, so chapters mix
+  tagged and untagged generations; `rebuild-timestamps` handles both.
+- **Outcome:** 239 sections re-rendered (≈ 133K credits). After the re-score, nothing in the Bible is
+  still drifted; Steve listened to the last four flagged sections and they're fine. Record:
+  `plans/2026-10-26-accent-drift.md`, data in `data/accent/`.

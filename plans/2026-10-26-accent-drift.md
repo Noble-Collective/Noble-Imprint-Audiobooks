@@ -1,5 +1,9 @@
 # Ali accent drift on Eleven v4 (2026-10-26)
 
+> **CLOSED 2026-11-18.** The whole Bible was re-rendered where needed and is live; the re-score is clean.
+> Steve listened to the last four flagged sections (Daniel 12:13, Luke 4:14–15, Numbers 26:42–43,
+> Proverbs 24:3–4) and said they "sound fine". How to run it in future: docs/ELEVENLABS-MODELS.md "Accent drift".
+
 > **Open items consolidated (2026-10-27):** this doc's still-open items are tracked in ONE list, `Collective-Shared/plans/2026-10-27-loose-ends.md`. Strike an item there and here when it's done; add new loose ends there.
 
 ## Problem
