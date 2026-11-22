@@ -43,6 +43,10 @@ export function stripPageMarkers(markdown) {
     .replace(/<!--\s*page\s+(?:\d{1,4}|[ivxlcdm]{1,8})\s*-->/gi, '');
 }
 
+// A line made only of HTML tags / comments (no words to speak). `<< attribution` lines are
+// not tags (the name must start with a letter right after `<`).
+const MARKUP_ONLY_RE = /^(?:\s*(?:<\/?[A-Za-z][\w:-]*(?:\s[^<>]*)?\/?>|<!--[\s\S]*?-->))+\s*$/;
+
 // Greek Unicode ranges (Basic Greek + Extended Greek)
 const GREEK_RE = /[\u0370-\u03FF\u1F00-\u1FFF]{3,}/;
 
@@ -119,6 +123,11 @@ export function preprocessSession(markdown, voiceId, language = 'en', languageNo
 
     // Skip horizontal rules
     if (/^-{3,}$/.test(trimmed)) continue;
+
+    // Skip lines that are only markup (HTML tags and/or comments, no words): a stray
+    // `<div class="…">` wrapper or an `<!-- @include: Key -->` directive was read aloud
+    // as text. Like a <br>-only line, it neither adds words nor ends the paragraph.
+    if (MARKUP_ONLY_RE.test(trimmed)) continue;
 
     // Track blockquote and attribution lines before cleaning strips their markers
     if (trimmed.startsWith('> ')) {
