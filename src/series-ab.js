@@ -8,6 +8,8 @@
  *   B  — eleven_v4, same voice, same chunking, v4 pause tags, stability/similarity 0.5 (the Bible's
  *        v4 settings; v4 ignores speed/style), at v4's natural pace
  *   B2 — B slowed after rendering to the series speed (ffmpeg atempo, pitch-preserving) — 0 credits
+ *   B3 — B with a reading direction before every generation (DIRECTION, default
+ *        "[calm, reverent narration]"; not spoken, skipped by the timestamps like the accent tag)
  *
  * Everything goes through the production functions (preprocessSession → buildChunks →
  * generateWithRetry → concatenateChunks → normalizeLoudness → buildTimestampsFromAlignments).
@@ -21,7 +23,8 @@
  *   PREFIX    markdown put before the passage (e.g. the session's H1), default none
  *   SLUG, TITLE, SUBTITLE   page slug + heading + subheading
  *   VOICE_ID  default Ollie (jRAAK67SEFE9m7ci5DhD)
- *   VARIANTS  "A,B,B2" (default)
+ *   VARIANTS  "A,B,B2" (default; add B3 for the directed take)
+ *   DIRECTION the B3 tag, default "[calm, reverent narration]"
  *   DRY_RUN=true  print the spoken text of every version, no TTS/upload
  *   FORCE=true    re-render versions whose MP3 already exists in GCS
  */
@@ -56,6 +59,7 @@ const SERIES = {
   voice_settings: { stability: 0.71, similarity_boost: 0.5, style: 0.0, speed: 0.92 },
 };
 const SLOW_TEMPO = SERIES.voice_settings.speed;
+const DIRECTION = process.env.DIRECTION || '[calm, reverent narration]';
 
 const CONFIGS = {
   A: {
@@ -72,6 +76,11 @@ const CONFIGS = {
     file: 'b2-v4-slowed.mp3', derivedFrom: 'B',
     name: `B2 — Eleven v4, slowed to ${SLOW_TEMPO}`,
     blurb: `B slowed after rendering to the series books’ usual ${SLOW_TEMPO} pace (pitch is preserved).`,
+  },
+  B3: {
+    file: 'b3-v4-directed.mp3', model: 'eleven_v4', settings: { stability: 0.5, similarity_boost: 0.5 }, tag: DIRECTION,
+    name: 'B3 — Eleven v4, told to read calmly',
+    blurb: `B with the unspoken direction ${DIRECTION} before each part, to keep v4 from acting out the text (e.g. laughing at “God has made me laugh”).`,
   },
 };
 
@@ -92,16 +101,18 @@ async function render(md, v, outPath, tmpDir, tag) {
   const pre = preprocessSession(md, VOICE_ID, 'en', false, opts);
   const { chunks, chunkGaps } = buildChunks(pre.blocks, pre.plainText, 'linear', undefined, opts.pauseStyle);
   const spokenChars = stripPauses(chunks.join('')).length;
+  // The direction tag goes on the text sent (and so in the alignment); context text stays untagged.
+  const sent = v.tag ? chunks.map(t => `${v.tag} ${t}`) : chunks;
   console.log(`  [${tag}] ${v.model}  chunks=${chunks.length} (${chunks.map(t => t.length).join('/')})  spokenChars=${spokenChars}`);
   if (DRY_RUN) {
-    chunks.forEach((t, i) => console.log(`\n  ----- [${tag}] chunk ${i + 1} -----\n${t}`));
+    sent.forEach((t, i) => console.log(`\n  ----- [${tag}] chunk ${i + 1} -----\n${t}`));
     return { spokenChars, pre };
   }
   const paths = [], aligns = [], ids = [];
   for (let i = 0; i < chunks.length; i++) {
     const prevText = i > 0 ? chunks[i - 1].slice(-200) : undefined;
     const nextText = i < chunks.length - 1 ? chunks[i + 1].slice(0, 200) : undefined;
-    const r = await generateWithRetry(chunks[i], VOICE_ID, v.model, v.settings, 'mp3_44100_128', prevText, nextText, ids.slice());
+    const r = await generateWithRetry(sent[i], VOICE_ID, v.model, v.settings, 'mp3_44100_128', prevText, nextText, ids.slice());
     if (r.requestId) ids.push(r.requestId);
     const cp = join(tmpDir, `${tag}_${i}.mp3`);
     writeFileSync(cp, r.audio);
@@ -111,7 +122,7 @@ async function render(md, v, outPath, tmpDir, tag) {
   const gaps = concatenateChunks(paths, outPath, tmpDir, chunkGaps);
   normalizeLoudness(outPath);
   const stats = { matched: 0, estimated: 0 };
-  const ts = buildTimestampsFromAlignments(aligns, chunks, paths.map(probeDuration), pre.sentences, gaps, { stats });
+  const ts = buildTimestampsFromAlignments(aligns, sent, paths.map(probeDuration), pre.sentences, gaps, { stats });
   return { spokenChars, pre, stats, ts, duration: +probeDuration(outPath).toFixed(1) };
 }
 
@@ -126,6 +137,7 @@ function displayBlocks(md) {
     'padding:0.55rem 0.8rem;background:rgba(200,160,74,0.10);border-left:3px solid #c8a04a;border-radius:0 5px 5px 0;">' +
     'The same reading in the same voice (Ollie). <b>A</b> is the model all our series audiobooks use today. ' +
     '<b>B</b> is the newer, more expressive Eleven v4 at its own pace; <b>B2</b> is B slowed to our usual pace. ' +
+    '<b>B3</b> is B told to read calmly and reverently (an unspoken direction), so it doesn’t act out the text. ' +
     'Listen for warmth and expression, the pace, how the hymn and poem are read, and the pauses at headings.</span>';
   const out = [{ type: 'p', text: note }];
   for (const raw of md.split(/\n\s*\n/)) {
@@ -203,7 +215,7 @@ async function main() {
 
   const fmt = s => s ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}` : '';
   const present = [];
-  for (const key of ['A', 'B', 'B2']) {
+  for (const key of ['A', 'B', 'B2', 'B3']) {
     const v = CONFIGS[key];
     if (!VARIANTS.includes(key) || !(await exists(v.file))) continue;
     const d = metrics.variants[key]?.duration;

@@ -129,3 +129,12 @@ test('timestamps: a tagged chunk is timed from its audio, every sentence matched
   assert.equal(headingSeg.start, Math.round((chunk1Start + firstCharOfSection * 0.05) * 100) / 100);
   assert.equal(wives.words[0][2], 'Wives,');
 });
+
+test('a reading-direction tag ("[calm, reverent narration]") is markup too, skipped by the timestamps', () => {
+  const DIR = '[calm, reverent narration]';
+  assert.equal(stripPauses(`${DIR} Now the Lord attended to Sarah`), 'Now the Lord attended to Sarah');
+  assert.equal(pauseMarkupLengthAt(`${DIR} Now`, 0), DIR.length + 1);
+  // Only a bracketed phrase ending in "narration" — ordinary bracketed text is still words.
+  assert.equal(stripPauses('[a narration of events follows] x'), '[a narration of events follows] x');
+  assert.equal(stripPauses('[see note] x'), '[see note] x');
+});
