@@ -75,12 +75,14 @@ const CONFIGS = {
   B2: {
     file: 'b2-v4-slowed.mp3', derivedFrom: 'B',
     name: `B2 — Eleven v4, slowed to ${SLOW_TEMPO}`,
-    blurb: `B slowed after rendering to the series books’ usual ${SLOW_TEMPO} pace (pitch is preserved).`,
+    blurb: `Eleven v4, same voice and text, slowed after rendering to the series books’ usual ${SLOW_TEMPO} pace (v4 has no speed setting; pitch is preserved).`,
   },
   B3: {
-    file: 'b3-v4-directed.mp3', model: 'eleven_v4', settings: { stability: 0.5, similarity_boost: 0.5 }, tag: DIRECTION,
-    name: 'B3 — Eleven v4, told to read calmly',
-    blurb: `B with the unspoken direction ${DIRECTION} before each part, to keep v4 from acting out the text (e.g. laughing at “God has made me laugh”).`,
+    // Rendered to `raw` (natural pace), then slowed like B2 into `file` (what the page plays).
+    file: 'b3-v4-directed-slowed.mp3', raw: 'b3-v4-directed.mp3',
+    model: 'eleven_v4', settings: { stability: 0.5, similarity_boost: 0.5 }, tag: DIRECTION,
+    name: `B3 — Eleven v4, told to read calmly, slowed to ${SLOW_TEMPO}`,
+    blurb: `B2 with the unspoken direction ${DIRECTION} before each part, to keep v4 from acting out the text (e.g. laughing at “God has made me laugh”).`,
   },
 };
 
@@ -136,8 +138,8 @@ function displayBlocks(md) {
   const note = '<span style="display:block;font-size:0.85rem;opacity:0.8;font-family:\'DM Sans\',sans-serif;' +
     'padding:0.55rem 0.8rem;background:rgba(200,160,74,0.10);border-left:3px solid #c8a04a;border-radius:0 5px 5px 0;">' +
     'The same reading in the same voice (Ollie). <b>A</b> is the model all our series audiobooks use today. ' +
-    '<b>B</b> is the newer, more expressive Eleven v4 at its own pace; <b>B2</b> is B slowed to our usual pace. ' +
-    '<b>B3</b> is B told to read calmly and reverently (an unspoken direction), so it doesn’t act out the text. ' +
+    '<b>B2</b> is the newer, more expressive Eleven v4, slowed to our usual pace. ' +
+    '<b>B3</b> is the same as B2 but told to read calmly and reverently (an unspoken direction), so it doesn’t act out the text. ' +
     'Listen for warmth and expression, the pace, how the hymn and poem are read, and the pauses at headings.</span>';
   const out = [{ type: 'p', text: note }];
   for (const raw of md.split(/\n\s*\n/)) {
@@ -172,6 +174,27 @@ async function main() {
   for (const key of VARIANTS.filter(k => k !== 'B2')) {
     const v = CONFIGS[key];
     if (!v) throw new Error(`unknown variant ${key}`);
+    if (v.raw) {
+      // Directed take: render the natural-pace raw take (unless stored), then slow it like B2.
+      const rawPath = join(tmpDir, v.raw), outPath = join(tmpDir, v.file);
+      if (!FORCE && await exists(v.file)) { console.log(`  [${key}] exists — skipped (FORCE=true to re-render)`); continue; }
+      if (!FORCE && await exists(v.raw)) {
+        console.log(`  [${key}] raw take stored — slowing it (0 credits)`);
+        await bucket.file(`${gcsDir}/${v.raw}`).download({ destination: rawPath });
+      } else {
+        const r = await render(md, v, rawPath, tmpDir, key);
+        total += r.spokenChars;
+        if (DRY_RUN) continue;
+        console.log(`  [${key}] raw ${r.duration}s  timestamps matched ${r.stats.matched}/${r.stats.matched + r.stats.estimated}`);
+        metrics.variants[`${key}raw`] = { model: v.model, settings: v.settings, tag: v.tag, duration: r.duration, spokenChars: r.spokenChars, timestamps: r.stats };
+        await bucket.upload(rawPath, { destination: `${gcsDir}/${v.raw}` });
+      }
+      slowDown(rawPath, outPath);
+      await bucket.upload(outPath, { destination: `${gcsDir}/${v.file}` });
+      metrics.variants[key] = { derivedFrom: `${key}raw`, tempo: SLOW_TEMPO, tag: v.tag, duration: +probeDuration(outPath).toFixed(1) };
+      console.log(`  [${key}] slowed to ${SLOW_TEMPO}: ${metrics.variants[key].duration}s`);
+      continue;
+    }
     const outPath = join(tmpDir, v.file);
     if (!FORCE && await exists(v.file)) {
       console.log(`  [${key}] exists — skipped (FORCE=true to re-render)`);
