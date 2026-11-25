@@ -554,6 +554,27 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
     return words;
   }
 
+  // Last-resort matching IGNORING WHITESPACE: a long paragraph split between two chunks can
+  // lose the space at the seam ("mandrakes.”When Jacob", Come, Let Us Adore Him 2026-11-25)
+  // while the sentence index keeps it as one sentence. Used only when the exact search finds
+  // nothing anywhere, so every sentence that matched before is timed exactly as before.
+  let noWs = null, noWsToClean = null;
+  function findIgnoringWhitespace(needle, from) {
+    if (!noWs) {
+      const out = []; noWsToClean = [];
+      for (let i = 0; i < flatCleanLower.length; i++) if (!/\s/.test(flatCleanLower[i])) { out.push(flatCleanLower[i]); noWsToClean.push(i); }
+      noWs = out.join('');
+    }
+    const n = needle.replace(/\s+/g, '');
+    if (!n) return null;
+    let k = 0; while (k < noWsToClean.length && noWsToClean[k] < from) k++;
+    let at = noWs.indexOf(n, k);
+    if (at < 0) at = noWs.indexOf(n);
+    if (at < 0) return null;
+    const start = noWsToClean[at], end = noWsToClean[at + n.length - 1];
+    return { idx: start, len: end - start + 1 };
+  }
+
   const segments = [];
   let searchFrom = 0;
 
@@ -565,6 +586,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
     const spokenText = stripPauses(sent.matchText || sent.text);
     const needle = spokenText.toLowerCase();
     let cleanIdx = flatCleanLower.indexOf(needle, searchFrom);
+    let matchLen = needle.length;
 
     // If not found forward, try from the beginning
     if (cleanIdx < 0 && searchFrom > 0) {
@@ -576,6 +598,12 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
     if (cleanIdx > searchFrom + 500) {
       const earlier = flatCleanLower.indexOf(needle, Math.max(0, searchFrom - 50));
       if (earlier >= 0 && earlier < cleanIdx) cleanIdx = earlier;
+    }
+
+    let loose = false;
+    if (cleanIdx < 0) {
+      const m = findIgnoringWhitespace(needle, searchFrom);
+      if (m) { cleanIdx = m.idx; matchLen = m.len; loose = true; }
     }
 
     if (opts.stats) opts.stats[cleanIdx < 0 ? 'estimated' : 'matched']++;
@@ -596,9 +624,9 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
 
     // Map clean text positions back to original positions for charTimes lookup
     const startChar = cleanToOriginal[cleanIdx] || 0;
-    const endCleanIdx = cleanIdx + needle.length - 1;
-    const endChar = endCleanIdx < cleanToOriginal.length ? cleanToOriginal[endCleanIdx] : startChar + needle.length;
-    searchFrom = cleanIdx + needle.length;
+    const endCleanIdx = cleanIdx + matchLen - 1;
+    const endChar = endCleanIdx < cleanToOriginal.length ? cleanToOriginal[endCleanIdx] : startChar + matchLen;
+    searchFrom = cleanIdx + matchLen;
 
     // Look up times from charTimes array
     const startTime = startChar < charTimes.length ? charTimes[startChar].start : 0;
@@ -621,7 +649,7 @@ export function buildTimestampsFromAlignments(chunkAlignments, chunkTexts, chunk
         chunk: c, relStart: chunkAlignments[c].character_start_times_seconds[startChar - chunkBase[c]],
         relEnd: chunkAlignments[c].character_end_times_seconds[endChar - chunkBase[c]] } });
     }
-    if (opts.words && needle === sent.text.toLowerCase() && text === sent.text) {
+    if (opts.words && !loose && needle === sent.text.toLowerCase() && text === sent.text) {
       const words = wordsFor(cleanIdx, cleanIdx + needle.length, sent.text);
       if (words) seg.words = words;
     }

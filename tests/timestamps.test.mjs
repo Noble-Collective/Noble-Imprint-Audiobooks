@@ -101,3 +101,22 @@ test('leftover markdown is removed from segment text (the audio is untouched)', 
     assert.equal(segments[0].end, Math.round(a.duration * 100) / 100);
   }
 });
+
+// Come, Let Us Adore Him Part Two (2026-11-25): a long paragraph split between two chunks
+// right after a closing quote drops the space ("mandrakes.”When Jacob"), while the sentence
+// index keeps it as one sentence. It was not found, got a guessed time, and the next sentence
+// went OUT-OF-ORDER (17 times) — generation aborted. Match ignoring whitespace as a last resort.
+test('a sentence split across chunks without the space between them is still matched in order', () => {
+  const chunks = ['First line here. He said, “Go now.”', 'When he came, he left. Last one.'];
+  const aligns = chunks.map(fakeAlignment);
+  const sentences = [
+    { text: 'First line here.', blockIndex: 0, sentenceIndex: 0 },
+    { text: 'He said, “Go now.” When he came, he left.', blockIndex: 0, sentenceIndex: 1 },
+    { text: 'Last one.', blockIndex: 0, sentenceIndex: 2 },
+  ];
+  const { segments } = buildTimestampsFromAlignments(aligns, chunks, aligns.map(a => a.duration), sentences, [0, 0]);
+  const c0 = aligns[0].duration;
+  assert.equal(segments[1].start, Math.round(17 * 0.05 * 100) / 100);           // "He" in chunk 0
+  assert.equal(segments[1].end, Math.round((c0 + 22 * 0.05) * 100) / 100);      // "left." in chunk 1
+  assert.ok(segments[2].start >= segments[1].end - 0.01);
+});
