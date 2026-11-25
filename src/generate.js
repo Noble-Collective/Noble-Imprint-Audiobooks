@@ -31,6 +31,7 @@ import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
 import { pause, stripPauses, pauseMarkupLengthAt, pauseStyleForModel, PAUSES, HEADING_PAUSE } from './pauses.js';
 import { accentTagFor, pickChunk } from './accent.js';
+import { narrationTempo, apiVoiceSettings, scaleTimestamps } from './tempo.js';
 import { loadRedo, startScorer, ACCENT_QC_MAX_TAKES, isAmerican } from './accent-redo.js';
 
 const API_BASE = 'https://api.elevenlabs.io/v1';
@@ -760,6 +761,17 @@ export function normalizeLoudness(path) {
   console.log(`    Loudness: ${m.input_i.toFixed(1)} → ${TARGET_LUFS} LUFS (normalized)`);
 }
 
+// Slow (or speed) a chapter MP3 in place — v4 has no speed setting, so a book's
+// voice_settings.speed is applied here instead (tempo.js). Pitch-preserving; the caller
+// stretches the timestamps by 1/tempo.
+export function applyTempo(path, tempo) {
+  if (!tempo || tempo === 1) return;
+  const tmp = path + '.tempo.mp3';
+  execSync(`ffmpeg -hide_banner -i "${path}" -af atempo=${tempo} -b:a 128k "${tmp}" -y`, { stdio: 'pipe' });
+  renameSync(tmp, path);
+  console.log(`    Tempo: ${tempo} (after rendering; v4 has no speed setting)`);
+}
+
 async function gcsRetry(fn, label, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -1015,7 +1027,7 @@ async function main() {
         const nextChunkText = (flowsIntoNext && c < chunks.length - 1) ? baseChunks[c + 1].slice(0, 200) : undefined;
         console.log(`    Chunk ${c + 1}/${chunks.length} (${chunks[c].length} chars)${chunks[c] !== baseChunks[c] ? ' [accent tag]' : ''}${prevIds.length ? ` — stitched to ${Math.min(3, prevIds.length)} prior` : ''} — generating...`);
         const render = () => generateWithRetry(
-          chunks[c], voiceId, meta.model_id, meta.voice_settings,
+          chunks[c], voiceId, meta.model_id, apiVoiceSettings(meta.model_id, meta.voice_settings),
           meta.output_format || 'mp3_44100_128', prevText, nextChunkText, prevIds
         );
         let result = await render();
@@ -1088,6 +1100,9 @@ async function main() {
       // Level the final MP3 to the library loudness (only if out of band). Gain-only, so
       // duration + timestamps are unaffected.
       normalizeLoudness(outputPath);
+      // v4: the book's speed, applied after rendering (tempo.js) — timestamps follow below.
+      const tempo = narrationTempo(meta.model_id, meta.voice_settings);
+      applyTempo(outputPath, tempo);
 
       // Get duration
       let duration = 0;
@@ -1122,10 +1137,10 @@ async function main() {
         }
 
         // Bible: per-word times too (the app's A–B loop starts verses that begin mid-sentence).
-        const timestamps = buildTimestampsFromAlignments(
+        const timestamps = scaleTimestamps(buildTimestampsFromAlignments(
           chunkAlignments, chunks, chunkDurations, sentences, actualGaps,
           { words: bookSlugPath.startsWith('bible/') }
-        );
+        ), tempo);
         const tsPath = join(tmpDir, `${slug}.timestamps.json`);
         writeFileSync(tsPath, serializeTimestamps(timestamps));
         await uploadToGCS(tsPath, `audio/${bookSlugPath}/${slug}.timestamps.json`);
@@ -1162,6 +1177,7 @@ async function main() {
         ...(key ? { chunkKey: key } : {}),        // cache-key prefix (non-v2 models)
         ...(accentTag ? { accentTag } : {}),      // tag on new/re-rendered chunks (accent.js)
         ...(tailSeconds ? { tailSilenceSeconds: tailSeconds } : {}),   // chapter-end silence
+        ...(tempo !== 1 ? { tempo } : {}),        // slowed after rendering (tempo.js)
       });
     }
 

@@ -170,6 +170,8 @@ async function processSession(src, bookSlugPath, s, workDir) {
     }
   }
   if (!built) return { ...r, status: 'skip', reason: 'chunks rebuilt from tts.json do not hash to the manifest' };
+  // Slowed after rendering (tempo.js): this tool doesn't model the stretch — leave it alone.
+  if (s.tempo && s.tempo !== 1) return { ...r, status: 'skip', reason: `slowed after rendering (tempo ${s.tempo}) — not supported here` };
 
   // Inputs exactly as generate.js had them: alignments, probed chunk durations, real gaps.
   const aligns = [], durs = [];

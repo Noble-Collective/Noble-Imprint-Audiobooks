@@ -16,8 +16,12 @@
 import { hashChunk } from './generate.js';
 
 // The tag each voice needs on v4/v3. Keyed by voice, so it lives with the voice, not the book.
+// Not only accents: Ollie (the series voice) reads with a calm direction on v4 — the "B3"
+// sample the team chose for Come, Let Us Adore Him (2026-11-25); without it v4 performs
+// lines (it laughed at "God has made me laugh"). Unspoken; pauses.js skips it in timestamps.
 export const ACCENT_TAGS = {
   MI88rOZjXbH22N8KHXUo: '[Saudi Arabic accent]',   // Ali – calm & deep Arabic Saudi narrator
+  jRAAK67SEFE9m7ci5DhD: '[calm, reverent narration]',   // Ollie – series books
 };
 
 /** The tag for this book config + voice: meta.accent_tag (string, or false = none) wins. */
