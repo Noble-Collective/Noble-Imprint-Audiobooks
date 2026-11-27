@@ -30,7 +30,7 @@ import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { Storage } from '@google-cloud/storage';
 import { pause, stripPauses, pauseMarkupLengthAt, pauseStyleForModel, PAUSES, HEADING_PAUSE } from './pauses.js';
-import { accentTagFor, pickChunk } from './accent.js';
+import { accentTagFor, pickChunk, reuseStoredChunks } from './accent.js';
 import { narrationTempo, apiVoiceSettings, scaleTimestamps } from './tempo.js';
 import { loadRedo, startScorer, ACCENT_QC_MAX_TAKES, isAmerican } from './accent-redo.js';
 
@@ -955,7 +955,6 @@ async function main() {
 
       // Build hash→file map from existing manifest (supports old and new format)
       const existingHashMap = getExistingHashMap(existingManifest, item.sessionFile);
-      const gcsChunksDir = `audio/${bookSlugPath}/chunks/${slug}`;
 
       // Per chunk: reuse the stored take (tagged preferred), or render — with the accent tag
       // where the voice needs one (accent.js). chunks[] becomes the NARRATED text (tag
@@ -966,6 +965,12 @@ async function main() {
       const picks = baseChunks.map(text => pickChunk({ text, key, tag: accentTag, existing: existingHashMap, redo: redoSet, force: forceRegen }));
       picks.forEach((p, c) => { chunks[c] = p.text; });
       const chunkHashes = picks.map(p => p.hash);
+      const gcsChunksDir = `audio/${bookSlugPath}/chunks/${slug}`;
+      // Chunks a failed earlier run stored but never put in the manifest (accent.js).
+      const foundStored = await reuseStoredChunks(picks,
+        async h => (await bucket.file(`${gcsChunksDir}/${h}.mp3`).exists())[0],
+        { force: forceRegen, redo: !!REDO });
+      if (foundStored) console.log(`    ${foundStored} chunk(s) already in storage from an earlier run — reused`);
       if (REDO) {
         const listedHere = new Set();
         picks.forEach((p, c) => {

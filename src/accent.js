@@ -53,6 +53,27 @@ export function pickChunk({ text, key = '', tag = '', existing = {}, redo = new 
 }
 
 /**
+ * Reuse chunks already in storage that the manifest doesn't list. The manifest is written only
+ * when a whole book finishes, so a run that fails part-way (Come, Let Us Adore Him run
+ * 45628944512, at Part Two's timestamps) leaves every chunk it rendered unknown to the next
+ * run — which paid for all 1,129 again. A chunk's file name is its content hash (text + model +
+ * voice + settings, incl. any tag), so a stored file with that name IS this chunk.
+ * `exists(hash)` = is `{hash}.mp3` in the session's chunk folder. Never on a forced run or an
+ * accent re-render (both must render again). Mutates picks; returns how many it found.
+ */
+export async function reuseStoredChunks(picks, exists, { force = false, redo = false } = {}) {
+  if (force || redo) return 0;
+  let found = 0;
+  for (const p of picks) {
+    if (p.reuse) continue;
+    let ok = false;
+    try { ok = await exists(p.hash); } catch { /* storage hiccup: render it */ }
+    if (ok) { p.reuse = p.hash; found++; }
+  }
+  return found;
+}
+
+/**
  * The narrated chunk texts + hashes for a stored session whose manifest hashes are `want`:
  * each chunk is matched untagged or tagged. null when any chunk matches neither.
  */
